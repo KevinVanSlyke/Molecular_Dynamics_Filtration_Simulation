@@ -7,7 +7,7 @@ Created on Fri Aug 18 14:46:50 2017
 from LAMMPS_files_generator import LAMMPS_files_generator
 import random
 import os
-import numpy as np
+#import numpy as np
 
 topDir = os.getcwd()
 

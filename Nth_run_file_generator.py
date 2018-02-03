@@ -12,7 +12,7 @@ Rush CCR LAMMPS srun start/restart sbatch files
 """
 def Nth_run_file_generator(N):
         rushCores = 4
-        mem = 512
+        mem = 256
         newRushRestartName = 'sbatch_restart_' + str(N) + '_' + dir + '.sh'
         r = open(newRushRestartName,'w')
         r.write('#!/bin/sh \n')
@@ -69,9 +69,7 @@ def Nth_run_file_generator(N):
         copy.close()
         write = open('input_' + dir + '_restart_' + str(N) + '.lmp','w')
         for line in lines:
-            if not line.startswith('dump'):
-                write.write(line)
-            else:
+            if line.startswith('dump'):
                 dumpParts = line.split(' ')
                 newLine = dumpParts[0]
                 for i in xrange(len(dumpParts)):
@@ -91,7 +89,12 @@ def Nth_run_file_generator(N):
                     if (i > 0):
                         newLine = newLine + ' ' + dumpParts[i]
                 write.write(newLine + '\n')
+            elif line.startswith('variable movieTimes'):
+                newLine = 'variable movieTimes equal stride2({0},{1},{2},{3},{4},{5}) \n'.format(N*10**(6), (N+1)*10**(6)+100, 10**6, N*10**(6) + 100, N*10**(6) + 10**5, 100)
+                write.write(newLine)
+            else:
+                write.write(line)
                 
-                return
+            return
                 
                             
