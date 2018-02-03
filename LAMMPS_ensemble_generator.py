@@ -4,7 +4,7 @@ Created on Fri Aug 18 14:46:50 2017
 
 @author: Kevin Van Slyke
 """
-from LAMMPS_impurity_files_generator import LAMMPS_impurity_files_generator
+from LAMMPS_files_generator import LAMMPS_files_generator
 import random
 import os
 import numpy as np
@@ -17,9 +17,12 @@ for trial in xrange(nTrialEnsemble):
     randomSeed = []
     for i in xrange(6):
         randomSeed.append(random.randint(i+1,(i+1)*100000))
-    for firstVar in range(2,42):
-            LAMMPS_impurity_files_generator(randomSeed, firstVar/2.)
-            os.chdir(topDir)
+    for firstVar in [2,10]:
+        for secondVar in [20, 50, 200]:
+            LAMMPS_files_generator(randomSeed, firstVar, secondVar)
+            os.chdir(topDir)    
+    
+    #for firstVar in range(2,42):
         #for secondVar in [2, 5, 10]:
             #LAMMPS_files_generator(randomSeed, firstVar, secondVar)
             #os.chdir(topDir)
