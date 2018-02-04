@@ -147,7 +147,7 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
     tracerDump = False
     tracerTime = 10
     
-    dumpMovies = True
+    dumpMovies = False
     dumpRawMovies = True
     rawHalfWidth = 125
     movieStart = 0
@@ -472,7 +472,7 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
             f.write('region    rawPore block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore to use for dumping atom data \n'.format(int(xMax/2)-rawHalfWidth, int(xMax/2)+rawHalfWidth, int(yMax/2)-rawHalfWidth, int(yMax)/2+rawHalfWidth, int(zMin), int(zMax)))
             f.write('group    rawMovie dynamic all region rawPore every {0}    #Make a dynamic group of particles in pore region every N={0} timesteps \n'.format(movieFrameDelta))
             f.write('dump    10 rawMovie custom {0} dump_'.format(movieFrameDelta) + dirName + '_rawMovie_' + dumpStringDiff + '.lmp type x y    #Dump pore group atom data every N={0} timesteps to file dump_'.format(movieFrameDelta) + dirName + '_rawMovie_' + dumpStringDiff + '.lmp including atom: type, x position, y position in that order \n')
-            f.write('dump_modify 10 flush yes \n')
+            f.write('dump_modify 10 flush yes every v_movieTimes \n')
             
         if dumpMovies == True:
             f.write('## Extra dump for movies \n')
