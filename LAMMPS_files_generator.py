@@ -495,7 +495,7 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
             f.write('\n')
 
         f.write('thermo_modify flush yes \n')
-        f.write('restart {0} {1}_archive.restart {1}_backup.restart \n'.format(restartTime, dirName))
+        f.write('restart {0} {1}_archive.restart {1}_backup_{0}.restart \n'.format(restartTime, dirName))
         f.write('restart {0} {1}_archive.restart \n'.format(archiveRestartTime, dirName))
         f.write('run {0} pre yes post yes \n'.format(totalTime+1))
         
