@@ -80,7 +80,7 @@ def Nth_run_file_generator(N):
                             if j == 0:
                                 newFileName = parts[0]+'_'
                             elif parts[j].endswith('.lmp'):
-                                newFileName = newFileName + '_' + str(N) + '.lmp'
+                                newFileName = newFileName + str(N) + '.lmp'
                             else:
                                 newFileName = newFileName + parts[j] + '_'
                         dumpParts[i] = newFileName
