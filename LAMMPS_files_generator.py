@@ -138,7 +138,7 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
     thermoTime = 10**(3)
     dynamicTime = 10**(3)
     restartTime = 10**(5)
-#    archiveRestartTime = 10**(6)
+    archiveRestartTime = 10**(6)
     totalTime = 10**(6)
     ##Optional Temporal parameters and flags for extra analysis print outs
     ##Set times below to 0 to exclude print out
@@ -203,7 +203,7 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
         f.write('## Dated: ' + time.strftime("%d_%m_%Y") + '\n')
         f.write('\n')
         
-    rf.write('read_restart archive_{0}.restart \n'.format(dirName))
+    rf.write('read_restart {0}_archive.restart \n'.format(dirName))
     
     for f in inputFiles:
         f.write('## Multi neighbor and comm for efficiency \n')
@@ -465,7 +465,7 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
             if f == sf:
                 f.write('variable movieTimes equal stride2({0},{1},{2},{3},{4},{5}) \n'.format(movieStart, 2*totalTime + 100, totalTime + 100, movieStart, movieEnd, movieFrameDelta))
             else:
-                f.write('variable movieTimes equal stride({0},{1},{2},{3},{4},{5}) \n'.format(totalTime, 3*totalTime + 100, totalTime + 100, totalTime + movieStart, totalTime + movieEnd, movieFrameDelta))
+                f.write('variable movieTimes equal stride2({0},{1},{2},{3},{4},{5}) \n'.format(totalTime, 3*totalTime + 100, totalTime + 100, totalTime + movieStart, totalTime + movieEnd, movieFrameDelta))
 
         if dumpRawMovies == True:
             f.write('## Extra dump of mass and position in the region around the pore for making movies \n')
@@ -479,7 +479,7 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
             if f == sf:
                 f.write('variable movieTimes equal stride2({0},{1},{2},{3},{4},{5}) \n'.format(movieStart, 2*totalTime + 100, totalTime + 100, movieStart, movieEnd, movieFrameDelta))
             else:
-                f.write('variable movieTimes equal stride({0},{1},{2},{3},{4},{5}) \n'.format(totalTime, 3*totalTime + 100, totalTime + 100, totalTime + movieStart, totalTime + movieEnd, movieFrameDelta))
+                f.write('variable movieTimes equal stride2({0},{1},{2},{3},{4},{5}) \n'.format(totalTime, 3*totalTime + 100, totalTime + 100, totalTime + movieStart, totalTime + movieEnd, movieFrameDelta))
             zoom = 50
             xScaled = 0.5
             yScaled = 0.5
@@ -495,8 +495,8 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
             f.write('\n')
 
         f.write('thermo_modify flush yes \n')
-        f.write('restart {0} {1}_archive_{0}.restart {1}_backup_{0}.restart \n'.format(restartTime, dirName))
-        #f.write('restart {0} {1}_archive_*.restart \n'.format(archiveRestartTime, dirName))
+        f.write('restart {0} {1}_archive.restart {1}_backup.restart \n'.format(restartTime, dirName))
+        f.write('restart {0} {1}_archive.restart \n'.format(archiveRestartTime, dirName))
         f.write('run {0} pre yes post yes \n'.format(totalTime+1))
         
         f.close()
