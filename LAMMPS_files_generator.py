@@ -471,8 +471,8 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
             f.write('## Extra dump of mass and position in the region around the pore for making movies \n')
             f.write('region    rawPore block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore to use for dumping atom data \n'.format(int(xMax/2)-rawHalfWidth, int(xMax/2)+rawHalfWidth, int(yMax/2)-rawHalfWidth, int(yMax)/2+rawHalfWidth, int(zMin), int(zMax)))
             f.write('group    rawMovie dynamic all region rawPore every {0}    #Make a dynamic group of particles in pore region every N={0} timesteps \n'.format(movieFrameDelta))
-            f.write('dump    10 rawMovie custom {0} dump_'.format(movieFrameDelta) + dirName + '_rawMovie_' + dumpStringDiff + '.lmp type x y    #Dump pore group atom data every N={0} timesteps to file dump_'.format(movieFrameDelta) + dirName + '_rawMovie_' + dumpStringDiff + '.lmp including atom: type, x position, y position in that order \n')
-            f.write('dump_modify 10 flush yes every v_movieTimes \n')
+            f.write('dump    10 rawMovie atom {0} dump_'.format(movieFrameDelta) + dirName + '_rawMovie_' + dumpStringDiff + '.lmp    #Dump pore group atom data every N={0} timesteps to file dump_'.format(movieFrameDelta) + dirName + '_rawMovie_' + dumpStringDiff + '.lmp including atom: id, type, x position, y position, z position in that order \n')
+            f.write('dump_modify 10 flush yes scale no every v_movieTimes \n')
             
         if dumpMovies == True:
             f.write('## Extra dump for movies \n')
@@ -495,7 +495,7 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
             f.write('\n')
 
         f.write('thermo_modify flush yes \n')
-        f.write('restart {0} {1}_backup_*.restart {1}_archive.restart \n'.format(restartTime, dirName))
+        f.write('restart {0} {1}_backup.restart {1}_archive.restart \n'.format(restartTime, dirName))
         f.write('restart {0} {1}_archive_*.restart \n'.format(archiveRestartTime, dirName))
         f.write('run {0} pre yes post yes \n'.format(totalTime+1))
         
