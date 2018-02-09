@@ -1,7 +1,7 @@
-function [ varargout ] = plot_pressure_fit( pData )
+function [ varargout ] = plot_pressure_fit( )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-startDir = pwd;
+
 %LJ dimensionless unit conversion for Argon gas
 sigma = 3.4*10^(-10); %meters
 mass = 6.69*10^(-26); %kilograms
@@ -9,12 +9,24 @@ epsilon = 1.65*10^(-21); %joules
 tau = 2.17*10^(-12); %seconds
 timestep = tau/200; %seconds
 kb = 1.38*10^(-23); %Joules/Kelvin
-%cd('/home/Kevin/Documents/Dust_Data/Molecular/December_2017_WidePore_StationaryImpurities/StationaryImpurity_Diameter_Trial1');
-%cd('/home/Kevin/Documents/Dust_Data/Molecular/December_2017_WidePore_StationaryImpurities/Wide_Pore_Diameter_Trial1');
-%cd('/home/Kevin/Documents/Dust_Data/Molecular/October_2017_Multiple_Parameters/Mom_Flow_Diameter/Mom_Flow_Diameter_Trial1');
-%baseDir = pwd;
+x = (0:100:1900)'*sigma*1/(10^(-9)); %nm
 
-rawPData = read_pressure_data(D);
+cwd = pwd;
+dirs = strsplit(cwd,'/');
+nDirParts = size(dirs,2);
+cDir = dirs(nDirParts);
+simString = cDir{1,1};
+
+wString = strsplit(simString,{'W'});
+W = str2double(wString{1,1});
+w=W*sigma*(10^(9)); %nanometers
+
+dString = strsplit(simString,{'_'});
+DString = strsplit(dString{1,2},{'D'});
+D = str2double(DString{1,1});
+d=D*sigma*(10^(9)); %nanometers
+
+rawPData = read_pressure_data();
 
 t = rawPData.t; %timesteps
 P = rawPData.P*epsilon/sigma^(2)*(1/(10^(-3))); %milliJoules/meter^2;
@@ -38,8 +50,9 @@ n = (1 : 1 : n_max)';
 sampleFreq = n/(n_max);
 mag = fft(P_diff);
 power = (abs(mag)).^2;
-[power_max,fundIndx] = max(power(10:n_max));
+[power_max,fundIndx] = max(power(1:n_max));
 fundSampleFreq = sampleFreq(fundIndx);
+peakDistance = 1/fundSampleFreq;
 minPeakDistance = round(4/5*(1/fundSampleFreq),0);
 
 t_peaks = [];
@@ -50,8 +63,8 @@ for j = 1:1:num_peaks
 end
 
 %Convert to real time
-freq = sampleFreq/(10000*timestep*(1/(10^(-9)))); %GHz (1/ns)
-fundFreq = fundSampleFreq/(10000*timestep*(1/(10^(-9)))); %GHz (1/ns)
+freq = sampleFreq/(1000*timestep*(1/(10^(-9)))); %GHz (1/ns)
+fundFreq = fundSampleFreq/(1000*timestep*(1/(10^(-9)))); %GHz (1/ns)
 t = t*timestep*(1/(10^(-9))); %ns
 t_peaks = t_peaks*timestep*(1/(10^(-9))); %ns
 
@@ -99,13 +112,9 @@ pow_rmse = pow_fit_goodness.rmse;
 pow_fit_line = feval(pow_fit_curve, t(2:size(t,1)));
 %t_cutoff = 10*tau_fit;
 
-decay_fit_data(dCount,:) = [d, tau_fit, tau_stddev, exp_rsquare, exp_adjrsquare, exp_rmse, beta_fit, beta_stddev, pow_rsquare, pow_adjrsquare, pow_rmse, fundFreq]; % 1/ns (GHz)
-
-
 %cd('/home/Kevin/Documents/Dust_Data/Molecular/December_2017_WidePore_StationaryImpurities/StationaryImpurity_Figures');
 %cd('/home/Kevin/Documents/Dust_Data/Molecular/December_2017_WidePore_StationaryImpurities/WidePore_Figures');
 %cd('/home/Kevin/Documents/Dust_Data/Molecular/October_2017_Multiple_Parameters/Mom_Flow_Diameter/Mom_Flow_Diameter_Figures');
-cd(strcat(baseDir,'/Figures/'));
 
 fig = figure('Position',[100,100,1280,720],'Visible','off');
 ax0 = axes('Position',[0 0 1 1],'Visible','off');
@@ -141,46 +150,28 @@ text(0.825,0.1, ['RMS Error = ' num2str(pow_rmse,5)], 'Interpreter', 'Latex', 'u
 
 ax1 = axes('Position',[.1 .1 .5 .8],'Visible','off');
 plot(t, P, '.', t_peaks, (P_diff_peaks+P_thermal), 'ro', t, (exp_fit_line+P_thermal), t(2:size(t,1)), (pow_fit_line+P_thermal));
-title(['Pressure at Front of Filter, Gas Impurities of Diameter D = ' num2str(d) 'nm'], 'Interpreter', 'LaTex', 'FontSize', 8 );
+title(strcat('Pressure at Front of Filter for', ' ',simString), 'Interpreter', 'LaTex', 'FontSize', 8 );
 xlabel('Time, $t ~ (ns)$','Interpreter','Latex');
 ylabel('Pressure, $P ~ (\frac{mJ}{m^{2}})$','Interpreter','Latex');
 legend('Raw Data', 'Peak (Fit) Values', 'Exponential Fit', 'Algebraic Fit');
 %axis([0 t_cutoff 0.9*min(P) 1.1*max(P)]);
 axis([0 max(t) 0.9*min(P) 1.1*max(P)]);
-print(['Pressure_vs_Time_D' num2str(D)], '-dpng');
+print(strcat('Pressure_vs_Time_',simString), '-dpng');
 close(fig);
 
 
 norm_power = power/max(power);
 fig = figure('Visible','off');
 plot(freq, norm_power);
-title(['Fourier Transform of Gas Pressure with Impurity Diameter D = ' num2str(d) 'nm'], 'Interpreter', 'LaTex', 'FontSize', 8 );
+title(strcat('Fourier Transform of Gas Pressure for',' ',simString), 'Interpreter', 'LaTex', 'FontSize', 8 );
 xlabel('Frequency, $f ~ (GHz)$','Interpreter','Latex');
 ylabel('Power Spectral Density','Interpreter','latex');
 axis([0 5*fundFreq 0 1]);
-print(['FFT_D' num2str(D)], '-dpng');
+print(strcat('FFT_',simString), '-dpng');
 close(fig);
 
-
-fig = figure('Visible','off');
-plot(freq2, norm_power2, freq10, norm_power10, freq15, norm_power15);
-title('Comparison of Frequency Spectra for Varied Impurity Diameter', 'Interpreter', 'LaTex');
-xlabel('Frequency, $f ~ (GHz)$','Interpreter','Latex');
-ylabel('Power Spectral Density','Interpreter','latex');
-axis([0 1 0 1]);
-d2str = ['D = ' num2str(d2,5) 'nm'];
-d10str = ['D = ' num2str(d10,5) 'nm'];
-d15str = ['D = ' num2str(d15,5) 'nm'];
-legend(d2str, d10str, d15str);
-print('Frequency_D_Comparison', '-dpng');
-close(fig);
-
-cd(startDir);
 %----------Outputs-------------
 %OUTPUTS IN SAME VARIABLE STRUCTURE
-varargout{1}.data_labels = {'d (nm)', 'tau best fit (ns)', 'tau stddev (ns)', 'exp_rsquare', 'exp_adjrsquare', 'exp_rmse', 'beta best fit', 'beta stddev', 'pow_rsquare', 'pow_adjrsquare', 'pow_rmse', 'primary frequency (1/ns)'};
-varargout{1}.decay_fit_data = decay_fit_data;
-
 
 %------------------------------end
 

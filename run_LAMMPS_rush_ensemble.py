@@ -8,47 +8,44 @@ Created on Tue Sep 19 15:01:53 2017
 import os
 from Nth_run_file_generator import Nth_run_file_generator
 topDir = os.getcwd()
-for dir in os.listdir(topDir):
-    if not (dir.endswith('.py') or dir.endswith('.pyc')):
-        trialDir = os.path.join(topDir,dir)
+for dirName in os.listdir(topDir):
+    if not (dirName.endswith('.py') or dirName.endswith('.pyc')):
+        trialDir = os.path.join(topDir,dirName)
         os.chdir(trialDir)
-        sbatchNum = 1
+        sbatchNum = -1
         outputNum = -1
         started = False
+        running = True
         for files in os.listdir(trialDir):
-            if files.startswith('./sbatch_'):
+            if files.startswith('./sbatch'):
                 sbatchFileParts = files.split('_')
-                if sbatchFileParts[-1] != 'start':
-                    num = int(sbatchFileParts[-1])
-                    if num >= sbatchNum:
-                        sbatchNum = num
-                        sbatchFile = files
-            if files.startswith('./output_'):
+                sbatchRestartParts = sbatchFileParts[-1].split('.')
+                if int(sbatchRestartParts[0]) > sbatchNum:
+                    sbatchNum = int(sbatchRestartParts[0])
+            if files.startswith('./output'):
+                started = True
                 outputFileParts = files.split('_')
-                if outputFileParts[-1] != 'start':
-                    num = int(outputFileParts[-1])
-                    if num > outputNum:
-                        output = open(files,'r')
-                        lines = output.readlines()
-                        if lines[-1] == 'All Done!':
-                            outputNum = num
-                            outputFile = files
-                        output.close()
-                else:
-                    output = open(files,'r')
-                    lines = output.readlines()
-                    if lines[-1] == 'All Done!':
-                        if outputNum < 0:
-                            outputNum = 0
+                outputRestartParts = outputFileParts[-1].split('.')
+                if int(outputRestartParts[0]) > outputNum:
+                    outputNum = int(outputRestartParts[0])
+                         
+        output = open('output_' + dirName + '_restart_' + str(outputNum) + '.txt','r')
+        lines = output.readlines() 
+        for line in lines:
+            if line.startswith('All Done!'):
+                running = False
+                        
         if started == False:
-            script = './sbatch_' + dir + '_start.sh'
+            script = './sbatch_' + dirName + '_restart_{0}.sh'.format(sbatchNum)
             os.system("sbatch " + script)
-        elif sbatchNum >= 1 and outputNum == (sbatchNum-1):
-            script = './sbatch_' + dir + '_restart_{0}.sh'.format(sbatchNum)
+        elif running == True:
+            continue
+        elif sbatchNum == outputNum + 1:
+            script = './sbatch_' + dirName + '_restart_{0}.sh'.format(sbatchNum+1)
             os.system("sbatch " + script)
         elif sbatchNum == outputNum:
-            Nth_run_file_generator(sbatchNum+1)
-            script = './sbatch_' + dir + '_restart_{0}.sh'.format(sbatchNum+1)
+            Nth_run_file_generator(sbatchNum+1, dirName)
+            script = './sbatch_' + dirName + '_restart_{0}.sh'.format(sbatchNum+1)
             os.system("sbatch " + script)
         else:
             print 'Error?!'

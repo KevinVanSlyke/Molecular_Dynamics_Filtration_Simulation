@@ -1,4 +1,4 @@
-function [ varargout ] = calc_particle_flow_12_10_17( varargin )
+function [ varargout ] = read_mass_transport_data( varargin )
 %CALC_MASS_FLOW Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -10,7 +10,7 @@ tau = 2.17*10^(-12); %seconds
 timestep = tau/200; %seconds
 
 fPath = pwd;
-startFileList = dir(fullfile(fPath, 'dump_start_pore_*'));
+startFileList = dir(fullfile(fPath, 'dump_*_start_pore.lmp'));
 startDumpFile = startFileList(1).name;
 startDump = readdump_all(startDumpFile);
 
@@ -80,8 +80,9 @@ for i = 1 : 1 : sTimes
     prevAtoms = curAtoms;
 end
 
+%%Need to fix this so that it can read in N restart files.
 try
-    restartFileList = dir(fullfile(fPath, 'dump_restart_pore_*'));
+    restartFileList = dir(fullfile(fPath, 'dump_*_restart_*_pore.lmp'));
     restartDumpFile = restartFileList(1).name;
     restartDump = readdump_all(restartDumpFile);
     time_step = restartDump.timestep;

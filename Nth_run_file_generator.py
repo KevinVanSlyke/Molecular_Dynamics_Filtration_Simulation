@@ -5,23 +5,25 @@ Created on Fri Nov  3 07:56:30 2017
 @author: Kevin
 """
 
-import os
 
 """
 Rush CCR LAMMPS srun start/restart sbatch files
 """
-def Nth_run_file_generator(N):
+def Nth_run_file_generator(N, dirName):
+    if N <= 1:
+        print 'Error, Nth_run_file_generator(N) requires N >= 2'
+    else:
         rushCores = 4
         mem = 256
-        newRushRestartName = 'sbatch_restart_' + str(N) + '_' + dir + '.sh'
+        newRushRestartName = 'sbatch' + dirName + '_restart_' + str(N) +'.sh'
         r = open(newRushRestartName,'w')
         r.write('#!/bin/sh \n')
         r.write('#SBATCH --partition=general-compute \n')
-        r.write('#SBATCH --time=12:00:00 \n')
+        r.write('#SBATCH --time=24:00:00 \n')
         r.write('#SBATCH --nodes=1 \n')
         r.write('#SBATCH --ntasks-per-node={0} \n'.format(rushCores))
         r.write('##SBATCH --constraint=IB \n')
-        r.write('##SBATCH --mem={0} \n'.format(mem))
+        r.write('#SBATCH --mem={0} \n'.format(mem))
         r.write('# Memory per node specification is in MB. It is optional. \n')
         r.write('# The default limit is 3000MB per core. \n')
         r.write('#SBATCH --mail-user=kgvansly@buffalo.edu \n')
@@ -31,10 +33,9 @@ def Nth_run_file_generator(N):
         r.write('#The default is that the job will not be requeued. \n')
             
         
-        r.write('#SBATCH --job-name="' + str(N) + 'r' + dir + '" \n')
-        r.write('#SBATCH --output="output_' + str(N) + 'r' + dir + '.txt" \n')
-        r.write('#SBATCH --error="error_' + str(N) + 'r' + dir + '.txt" \n')
-        
+        r.write('#SBATCH --job-name="r' + str(N) + '_' + dirName + '" \n')
+        r.write('#SBATCH --output="output_' + dirName + '_restart_' + str(N) + '.txt" \n')
+        r.write('#SBATCH --error="error_' + dirName + '_restart_' + str(N) + '.txt" \n')
     
         r.write('echo "SLURM_JOBID=$SLURM_JOBID" \n')
         r.write('echo "SLURM_JOB_NODELIST=$SLURM_JOB_NODELIST" \n')
@@ -42,10 +43,11 @@ def Nth_run_file_generator(N):
         r.write('echo "SLURMTMPDIR=$SLURMTMPDIR" \n')
         r.write('echo "Submit directory = $SLURM_SUBMIT_DIR" \n')
     
-        r.write("NPROCS=`srun --nodes=${SLURM_NNODES} bash -c 'hostname' |wc -l` \n")
+        r.write("NPROCS=`srun --nodes=${SLURM_NNODES} bash -c 'hostname' | wc -l` \n")
         r.write('echo "NPROCS=$NPROCS" \n')
-    
-        r.write('module load intel-mpi/2017.0.1 \n')
+        
+        r.write('module unload intel-mpi \n')
+        r.write('module load intel-mpi/2018.1 \n')
         r.write('module load lammps \n')
         r.write('module list \n')
         r.write('ulimit -s unlimited \n')
@@ -57,17 +59,17 @@ def Nth_run_file_generator(N):
     
         r.write('echo "Launch MPI LAMMPS air filtration simulation with srun" \n')
     
-        r.write('echo "Echo... srun -n $NPROCS lmp_mpi -nocite -screen none -in input_' + dir + '_restart_' + str(N) + '.lmp -log log_' + dir + '_' + str(N) + '.lmp" \n')
-        r.write('srun -n $NPROCS lmp_mpi -nocite -screen none in input_' + dir + '_restart_' + str(N) + '.lmp -log log_' + dir + '_' + str(N) + '.lmp \n')
+        r.write('echo "Echo... srun -n $NPROCS lmp_mpi -nocite -screen none -in input_' + dirName + '_restart_' + str(N) + '.lmp -log log_' + dirName + '_' + str(N) + '.lmp" \n')
+        r.write('srun -n $NPROCS lmp_mpi -nocite -screen none in input_' + dirName + '_restart_' + str(N) + '.lmp -log log_' + dirName + '_' + str(N) + '.lmp \n')
     
         r.write('echo "All Done!"')
         r.close()
         
         
-        copy = open('input_' + dir + '_restart_' + str(N-1) + '.lmp','r')
+        copy = open('input_' + dirName + '_restart_' + str(N-1) + '.lmp','r')
         lines = copy.readlines()
         copy.close()
-        write = open('input_' + dir + '_restart_' + str(N) + '.lmp','w')
+        write = open('input_' + dirName + '_restart_' + str(N) + '.lmp','w')
         for line in lines:
             if line.startswith('dump'):
                 dumpParts = line.split(' ')
@@ -78,7 +80,7 @@ def Nth_run_file_generator(N):
                         parts = fileParts.split('_')
                         for j in xrange(len(parts)):
                             if j == 0:
-                                newFileName = parts[0]+'_'
+                                newFileName = parts[0] + '_'
                             elif parts[j].endswith('.lmp'):
                                 newFileName = newFileName + str(N) + '.lmp'
                             else:
@@ -93,6 +95,6 @@ def Nth_run_file_generator(N):
             else:
                 write.write(line)
                 
-            return
+    return
                 
                             

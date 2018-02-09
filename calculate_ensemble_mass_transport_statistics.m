@@ -1,4 +1,4 @@
-function [stat_data] = calc_flux_stats_12_10_17(~)
+function [stat_data] = calculate_ensemble_mass_transport_statistics(~)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 

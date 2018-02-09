@@ -124,7 +124,8 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
     fluidTemperature = 1
     flagPressureFromKineticOnly = False
     flagImpurityFlow = False
-#    flagPressFilterFaceOnly = True
+    flagPressFilterFaceOnly = True
+    flagPressVerticalSlicesOnly = True
     
     ##Energy minimation parameters/thresholds
     eMin = 10**(-4)
@@ -139,7 +140,7 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
     dynamicTime = 10**(3)
     restartTime = 10**(5)
     archiveRestartTime = 10**(6)
-    totalTime = 10**(6)
+    totalTime = 5*10**(6)
     ##Optional Temporal parameters and flags for extra analysis print outs
     ##Set times below to 0 to exclude print out
     poreDump = False
@@ -148,41 +149,20 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
     tracerTime = 10
     
     dumpMovies = False
-    dumpRawMovies = True
+    dumpRawMovies = False
     rawHalfWidth = 125
-    movieStart = 0
-    movieEnd = 10**(5)
+    movieStartTime = 0
+    movieDuration = 10**(6)
     movieFrameDelta = 100
     
 #    velDumpTime = 0
 
     ##Create a unique file name
     dirName = '{0}W_{1}D'.format(poreWidth, diameterImpurity)
-#==============================================================================
-#     if flagPressureFromKineticOnly and flagImpurityFlow:
-#         dirName = 'ke_flow_D{0}'.format(int(diameterImpurity))
-#     elif flagPressureFromKineticOnly and not flagImpurityFlow:
-#         dirName = 'ke_D{0}'.format(int(diameterImpurity))
-#     elif not flagPressureFromKineticOnly and flagImpurityFlow:
-#         dirName = 'flow_D{0}'.format(int(diameterImpurity))
-#     else:
-#         dirName = 'D{0}'.format(int(diameterImpurity))
-#     
-#     dirName = dirName + 'V{0}T{1}'.format(fluidVelocity, fluidTemperature)
-#     if atomTypes == 2:
-#     dirName = dirName + 'n{0}_'.format(nType[1])
-#     elif atomTypes == 3:
-#     dirName = dirName + 'n{0}N{1}D{2}_'.format(nType[1], nType[2], int(diameterType[3]))
-#     if dimensions == 2:
-#     dirName = 'X{0}Y{1}s{2}d{3}'.format(xMax-xMin, yMax-yMin, int(poreWidth), int(filterDepth))
-#     elif dimensions == 3:
-#     dirName = 'X{0}Y{1}Z{2}s{2}d{3}h{4}'.format(xMax-xMin, yMax-yMin, zMax-zMin, int(poreWidth), int(filterDepth), int(filterHeight))
-#     dirName = dirName + time.strftime("%m_%d_%y")
-#==============================================================================
             
-    startName = 'input_' + dirName + '_start.lmp'
-    rushStartName = 'sbatch_' + dirName + '_start.sh'
-    localStartName = 'local_' + dirName + '_start.sh'
+    startName = 'input_' + dirName + '_restart_0.lmp'
+    rushStartName = 'sbatch_' + dirName + '_restart_0.sh'
+    localStartName = 'local_' + dirName + '_restart_0.sh'
     restartName = 'input_' + dirName + '_restart_1.lmp'
     rushRestartName = 'sbatch_' + dirName + '_restart_1.sh'
     localRestartName = 'local_' + dirName + '_restart_1.sh'
@@ -203,7 +183,7 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
         f.write('## Dated: ' + time.strftime("%d_%m_%Y") + '\n')
         f.write('\n')
         
-    rf.write('read_restart {0}_archive.restart \n'.format(dirName))
+    rf.write('read_restart {0}_archive.rst \n'.format(dirName))
     
     for f in inputFiles:
         f.write('## Multi neighbor and comm for efficiency \n')
@@ -230,7 +210,6 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
     sf.write('timestep    {0}    #One timestep={0}*tau, tau=2.17*10^(-12)s for Argon \n'.format(timeStep))
     sf.write('\n')
     
-    
     sf.write('## LJ potential: atom type 1, atom type 2, epsilon, sigma \n')
     sf.write('pair_style    lj/cut 1.1225    #Lennard-Jones global cut-off=1.1225 \n')
     epsilon = 1.0
@@ -245,10 +224,8 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
     for i in xrange(atomTypes):
         sf.write('mass    {0} {1}    #Sets mass of particle type {0} to {1} \n'.format(idType[i], massType[i]))
     sf.write('pair_modify    shift yes    #Shifts LJ potential to 0.0 at the cut-off \n')
-    
     sf.write('\n')
     
-    ## This needs to be generalized for 3D case
     sf.write('## Define the filter area and fill it with atoms fixed to lattice sites \n')
     if dimensions == 2:
         sf.write('region    topWall block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreWidth)/2+1), int(yMax), 0, 0))
@@ -334,7 +311,7 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
     
     for f in inputFiles:
         if f == sf:
-            dumpStringDiff = 'start'
+            dumpStringDiff = 'restart_0'
         elif f == rf:
             dumpStringDiff = 'restart_1'
         f.write('## Compute thermodynamic temperature based only on gas molecules \n')
@@ -461,25 +438,22 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
             f.write('dump_modify 2 flush yes \n')
             f.write('\n')
             
-        if dumpRawMovies == True or dumpMovies == True:
-            if f == sf:
-                f.write('variable movieTimes equal stride2({0},{1},{2},{3},{4},{5}) \n'.format(movieStart, 2*totalTime + 100, totalTime + 100, movieStart, movieEnd, movieFrameDelta))
-            else:
-                f.write('variable movieTimes equal stride2({0},{1},{2},{3},{4},{5}) \n'.format(totalTime, 3*totalTime + 100, totalTime + 100, totalTime + movieStart, totalTime + movieEnd, movieFrameDelta))
-
         if dumpRawMovies == True:
+            if f == sf:
+                f.write('variable movieTimes equal stride2({0},{1},{2},{3},{4},{5}) \n'.format(movieStartTime, 2*totalTime + 100, totalTime + 100, movieStartTime, movieDuration, movieFrameDelta))
+            else:
+                f.write('variable movieTimes equal stride2({0},{1},{2},{3},{4},{5}) \n'.format(totalTime, 3*totalTime + 100, totalTime + 100, totalTime + movieStartTime, totalTime + movieDuration, movieFrameDelta))
+
             f.write('## Extra dump of mass and position in the region around the pore for making movies \n')
             f.write('region    rawPore block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore to use for dumping atom data \n'.format(int(xMax/2)-rawHalfWidth, int(xMax/2)+rawHalfWidth, int(yMax/2)-rawHalfWidth, int(yMax)/2+rawHalfWidth, int(zMin), int(zMax)))
             f.write('group    rawMovie dynamic all region rawPore every {0}    #Make a dynamic group of particles in pore region every N={0} timesteps \n'.format(movieFrameDelta))
             f.write('dump    10 rawMovie atom {0} dump_'.format(movieFrameDelta) + dirName + '_rawMovie_' + dumpStringDiff + '.lmp    #Dump pore group atom data every N={0} timesteps to file dump_'.format(movieFrameDelta) + dirName + '_rawMovie_' + dumpStringDiff + '.lmp including atom: id, type, x position, y position, z position in that order \n')
             f.write('dump_modify 10 flush yes scale no every v_movieTimes \n')
+            f.write('\n')
+
             
         if dumpMovies == True:
             f.write('## Extra dump for movies \n')
-            if f == sf:
-                f.write('variable movieTimes equal stride2({0},{1},{2},{3},{4},{5}) \n'.format(movieStart, 2*totalTime + 100, totalTime + 100, movieStart, movieEnd, movieFrameDelta))
-            else:
-                f.write('variable movieTimes equal stride2({0},{1},{2},{3},{4},{5}) \n'.format(totalTime, 3*totalTime + 100, totalTime + 100, totalTime + movieStart, totalTime + movieEnd, movieFrameDelta))
             zoom = 50
             xScaled = 0.5
             yScaled = 0.5
@@ -490,15 +464,16 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
             for i in range(atomTypes):
                 f.write('adiam {0} {1} acolor {0} '.format(idType[i], diameterType[i]) + colorType[i] + ' ')
             f.write('\n')
-            f.write('dump_modify    {0} flush yes every v_movieTimes \n'.format(100))
-        
+            f.write('dump_modify    {0} flush yes \n'.format(100))
             f.write('\n')
 
         f.write('thermo_modify flush yes \n')
-        f.write('restart {0} {1}_backup.restart {1}_archive.restart \n'.format(restartTime, dirName))
-        f.write('restart {0} {1}_archive_*.restart \n'.format(archiveRestartTime, dirName))
-        f.write('run {0} pre yes post yes \n'.format(totalTime+1))
-        
+        f.write('restart {0} {1}_backup.rst {1}_archive.rst \n'.format(restartTime, dirName))
+        f.write('restart {0} {1}_archive_*.rst \n'.format(archiveRestartTime, dirName))
+        if dumpMovies == True:
+            f.write('run {0} pre yes post yes \n'.format(totalTime+1))
+        else:
+            f.write('run {0} pre yes post yes \n'.format(movieDuration+1))
         f.close()
     
     """
@@ -512,10 +487,10 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
     for l in localFiles:
         if l == ls:
             fName = startName
-            dumpStringDiff = 'start'
+            dumpStringDiff = 'restart_0'
         elif l == lr:
             fName = restartName
-            dumpStringDiff = 'restart'
+            dumpStringDiff = 'restart_1'
         l.write('#!/bin/bash \n')
         l.write('echo "Launching molecular dynamics filtration simulation(s)..." \n')
         l.write('echo "Running mpirun -n {0} /usr/local/LAMMPS/src/lmp_auto -nocite -in '.format(localCores) + fName + ' -log log_' + dirName + '_' + dumpStringDiff + '.lmp" \n')
@@ -541,7 +516,7 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
     for r in rushFiles:
         r.write('#!/bin/sh \n')
         r.write('#SBATCH --partition=general-compute \n')
-        r.write('#SBATCH --time=12:00:00 \n')
+        r.write('#SBATCH --time=24:00:00 \n')
         r.write('#SBATCH --nodes=1 \n')
         r.write('#SBATCH --ntasks-per-node={0} \n'.format(rushCores))
         r.write('##SBATCH --constraint=IB \n')
@@ -554,21 +529,21 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
         r.write('#Specifies that the job will be requeued after a node failure. \n')
         r.write('#The default is that the job will not be requeued. \n')
         
-    rs.write('#SBATCH --job-name="s' + dirName + '" \n')
-    rs.write('#SBATCH --output="output_s' + dirName + '.txt" \n')
-    rs.write('#SBATCH --error="error_s' + dirName + '.txt" \n')
+    rs.write('#SBATCH --job-name="r0_' + dirName + '" \n')
+    rs.write('#SBATCH --output="output_r0_' + dirName + '.txt" \n')
+    rs.write('#SBATCH --error="error_r0_' + dirName + '.txt" \n')
     
-    rr.write('#SBATCH --job-name="r' + dirName + '" \n')
-    rr.write('#SBATCH --output="output_r' + dirName + '.txt" \n')
-    rr.write('#SBATCH --error="error_r' + dirName + '.txt" \n')
+    rr.write('#SBATCH --job-name="r1_' + dirName + '" \n')
+    rr.write('#SBATCH --output="output_r1_' + dirName + '.txt" \n')
+    rr.write('#SBATCH --error="error_r1_' + dirName + '.txt" \n')
     
     for r in rushFiles:
         if r == rs:
             fName = startName
-            dumpStringDiff = 'start'
+            dumpStringDiff = 'restart_0'
         elif r == rr:
             fName = restartName
-            dumpStringDiff = 'restart'
+            dumpStringDiff = 'restart_1'
         r.write('echo "SLURM_JOBID=$SLURM_JOBID" \n')
         r.write('echo "SLURM_JOB_NODELIST=$SLURM_JOB_NODELIST" \n')
         r.write('echo "SLURM_NNODES=$SLURM_NNODES" \n')
@@ -577,8 +552,9 @@ def LAMMPS_files_generator(randomSeed, diameterImpurity, poreWidth):
     
         r.write("NPROCS=`srun --nodes=${SLURM_NNODES} bash -c 'hostname' |wc -l` \n")
         r.write('echo "NPROCS=$NPROCS" \n')
-    
-        r.write('module load intel-mpi/2017.0.1 \n')
+        
+        r.write('module unload intel-mpi \n')
+        r.write('module load intel-mpi/2018.1 \n')
         r.write('module load lammps \n')
         r.write('module list \n')
         r.write('ulimit -s unlimited \n')
