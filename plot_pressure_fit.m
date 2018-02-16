@@ -112,9 +112,7 @@ pow_rmse = pow_fit_goodness.rmse;
 pow_fit_line = feval(pow_fit_curve, t(2:size(t,1)));
 %t_cutoff = 10*tau_fit;
 
-%cd('/home/Kevin/Documents/Dust_Data/Molecular/December_2017_WidePore_StationaryImpurities/StationaryImpurity_Figures');
-%cd('/home/Kevin/Documents/Dust_Data/Molecular/December_2017_WidePore_StationaryImpurities/WidePore_Figures');
-%cd('/home/Kevin/Documents/Dust_Data/Molecular/October_2017_Multiple_Parameters/Mom_Flow_Diameter/Mom_Flow_Diameter_Figures');
+%cd('/home/Kevin/Documents/Dust_Data/Molecular/.../Figures');
 
 fig = figure('Position',[100,100,1280,720],'Visible','off');
 ax0 = axes('Position',[0 0 1 1],'Visible','off');
@@ -150,7 +148,7 @@ text(0.825,0.1, ['RMS Error = ' num2str(pow_rmse,5)], 'Interpreter', 'Latex', 'u
 
 ax1 = axes('Position',[.1 .1 .5 .8],'Visible','off');
 plot(t, P, '.', t_peaks, (P_diff_peaks+P_thermal), 'ro', t, (exp_fit_line+P_thermal), t(2:size(t,1)), (pow_fit_line+P_thermal));
-title(strcat('Pressure at Front of Filter for', ' ',simString), 'Interpreter', 'LaTex', 'FontSize', 8 );
+title(['Pressure at Front of Filter for Pore Width W=' num2str(W) 'nm and Impurity Diameter D=' num2str(d) 'nm'], 'Interpreter', 'LaTex', 'FontSize', 8 );
 xlabel('Time, $t ~ (ns)$','Interpreter','Latex');
 ylabel('Pressure, $P ~ (\frac{mJ}{m^{2}})$','Interpreter','Latex');
 legend('Raw Data', 'Peak (Fit) Values', 'Exponential Fit', 'Algebraic Fit');
@@ -163,7 +161,7 @@ close(fig);
 norm_power = power/max(power);
 fig = figure('Visible','off');
 plot(freq, norm_power);
-title(strcat('Fourier Transform of Gas Pressure for',' ',simString), 'Interpreter', 'LaTex', 'FontSize', 8 );
+title(['Fourier Transform of Gas Pressure for Pore Width W=' num2str(W) 'nm and Impurity Diameter D=' num2str(d) 'nm'], 'Interpreter', 'LaTex', 'FontSize', 8 );
 xlabel('Frequency, $f ~ (GHz)$','Interpreter','Latex');
 ylabel('Power Spectral Density','Interpreter','latex');
 axis([0 5*fundFreq 0 1]);
@@ -172,6 +170,8 @@ close(fig);
 
 %----------Outputs-------------
 %OUTPUTS IN SAME VARIABLE STRUCTURE
+varargout{1}.t = t;
+varargout{1}.P = P;
 
 %------------------------------end
 

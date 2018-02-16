@@ -14,12 +14,12 @@ def Nth_run_file_generator(N, dirName):
         print 'Error, Nth_run_file_generator(N) requires N >= 2'
     else:
         rushCores = 4
-        mem = 256
+        mem = 512
         newRushRestartName = 'sbatch' + dirName + '_restart_' + str(N) +'.sh'
         r = open(newRushRestartName,'w')
         r.write('#!/bin/sh \n')
         r.write('#SBATCH --partition=general-compute \n')
-        r.write('#SBATCH --time=24:00:00 \n')
+        r.write('#SBATCH --time=12:00:00 \n')
         r.write('#SBATCH --nodes=1 \n')
         r.write('#SBATCH --ntasks-per-node={0} \n'.format(rushCores))
         r.write('##SBATCH --constraint=IB \n')

@@ -1,4 +1,4 @@
-function [ varargout ] = read_pressure_data( varargin )
+function [ varargout ] = read_multiple_pressure_slice_data( varargin )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 cwd = pwd;
@@ -16,7 +16,7 @@ catch
 end
 thermStartStrings = logData.data{1,2};
 sTimes = size(thermStartStrings,1)-1;
-thermData = zeros(sTimes,7);
+thermData = zeros(sTimes,9);
 for i = 1 : 1 : sTimes
     thermStartString = strtrim(thermStartStrings(i,:));
     thermStartWords = strsplit(thermStartString);
@@ -26,7 +26,9 @@ for i = 1 : 1 : sTimes
     end
 end
 ts = thermStartData(:,1);
-Ps = thermStartData(:,7);
+Pfs = thermStartData(:,7);
+Pms = thermStartData(:,8);
+Prs = thermStartData(:,9);
 
 files = dir(strcat('log_',sDir,'_restart_1.lmp'));
 if ~isempty(files)
@@ -39,7 +41,7 @@ if ~isempty(files)
     end
     thermRestartStrings = logData.data{1,1};
     rTimes = size(thermRestartStrings,1)-1;
-    thermRestartData = zeros(rTimes,7);
+    thermRestartData = zeros(rTimes,9);
     for i = 1 : 1 : rTimes
         thermRestartString = strtrim(thermRestartStrings(i,:));
         thermRestartWords = strsplit(thermRestartString);
@@ -49,8 +51,10 @@ if ~isempty(files)
         end
     end
     tr = thermRestartData(:,1);
-    Pr = thermRestartData(:,7);
-    
+    Pfr = thermRestartData(:,7);
+    Pmr = thermRestartData(:,8);
+    Prr = thermRestartData(:,9);
+
     rStrtIndx = 1;
     for i = 1 : 1 : rTimes
         if tr(i) == ts(sTimes)
@@ -58,14 +62,21 @@ if ~isempty(files)
             break;
         end
     end
-    P = Ps;
+    Pf = Pfs;
+    Pm = Pms;
+    Pr = Prs;
     t = ts;
     for i = 1 : 1 : rTimes-rStrtIndx
-        P(sTimes + i) = Pr(i+rStrtIndx);
+        Pf(sTimes + i) = Pfr(i+rStrtIndx);
+        Pm(sTimes + i) = Pmr(i+rStrtIndx);
+        Pr(sTimes + i) = Prr(i+rStrtIndx);
+
         t(sTimes + i) = tr(i+rStrtIndx);
     end
 else
-    P = Ps;
+    Pf = Pfs;
+    Pm = Pms;
+    Pr = Prs;  
     t = ts;
 end
 
@@ -92,8 +103,10 @@ if ~isempty(files)
             end
         end
         tr = thermRestartData(:,1);
-        Pr = thermRestartData(:,7);
-
+        Pfr = thermRestartData(:,7);
+        Pmr = thermRestartData(:,8);
+        Prr = thermRestartData(:,9);
+        
         pTimes = size(t,1);
         rStrtIndx = 1;
         for i = 1 : 1 : rTimes
@@ -104,7 +117,9 @@ if ~isempty(files)
         end
 
         for i = 1 : 1 : rTimes-rStrtIndx
-            P(pTimes + i) = Pr(i+rStrtIndx);
+            Pf(pTimes + i) = Pfr(i+rStrtIndx);
+            Pm(pTimes + i) = Pmr(i+rStrtIndx);
+            Pr(pTimes + i) = Prr(i+rStrtIndx);
             t(pTimes + i) = tr(i+rStrtIndx);
         end
     end
@@ -112,7 +127,10 @@ end
 
 %----------Outputs-------------
 %OUTPUTS IN SAME VARIABLE STRUCTURE
-varargout{1}.P = P;
+varargout{1}.Pf = Pf;
+varargout{1}.Pm = Pm;
+varargout{1}.Pr = Pr;
+
 varargout{1}.t = t;
 %------------------------------
 end

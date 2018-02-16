@@ -21,23 +21,15 @@ stepParam = 1;
 paramList = (minParam:stepParam:maxParam);
 nParam = max(size(paramList));
 
-baseDir = '/home/Kevin/Documents/Dust_Data/Molecular/October_2017_Multiple_Parameters/Diameter/Diameter_Trials';
+baseDir = '/home/Kevin/Documents/Dust_Data/Molecular/.../';
 for n = 1 : 1 : nTrials
     trialString = ['Diameter_Trial' num2str(n)];
     for D = 1 : 1 : 20
         simString = ['D' num2str(D)];
         directory = strcat(baseDir,'/',trialString,'/',simString);
         cd(directory);
-        if n == 1
-            rawFluxData = calc_particle_flow_12_10_17();
-        elseif D == 1
-            rawFluxData = calc_particle_flow_12_10_17();
-        elseif n >= 4
-            rawFluxData = calc_particle_flow_11_12_17();
-        else
-            rawFluxData = calc_particle_flow_11_02_17();
-        end
-        
+        rawFluxData = rad_pressure_data();
+
         t = rawFluxData.t; %timesteps
         argonFlow = rawFluxData.argonFlow;
         impurityFlow = rawFluxData.impurityFlow;

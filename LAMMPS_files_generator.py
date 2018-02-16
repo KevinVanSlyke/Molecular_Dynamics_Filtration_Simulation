@@ -57,7 +57,7 @@ def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth):
     dynamicTime = 10**(3)
     restartTime = 10**(5)
     archiveRestartTime = 10**(6)
-    totalTime = 10**(6)
+    totalTime = 5*10**(6)
     
     ##Optional Temporal parameters and flags for extra analysis print outs
     ##Set times below to 0 to exclude print out
@@ -595,7 +595,7 @@ def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth):
             if f == sf:
                 f.write('run {0} pre yes post yes \n'.format(totalTime+1))
             elif f == rf:
-                f.write('run {0} pre yes post yes \n'.format(2*totalTime+1))
+                f.write('run {0} pre yes post yes \n'.format(totalTime+1))
 
         f.close()
     
@@ -639,7 +639,7 @@ def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth):
     for r in rushFiles:
         r.write('#!/bin/sh \n')
         r.write('#SBATCH --partition=general-compute \n')
-        r.write('#SBATCH --time=12:00:00 \n')
+        r.write('#SBATCH --time=24:00:00 \n')
         r.write('#SBATCH --nodes=1 \n')
         r.write('#SBATCH --ntasks-per-node={0} \n'.format(rushCores))
         r.write('##SBATCH --constraint=IB \n')
@@ -656,9 +656,9 @@ def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth):
     rs.write('#SBATCH --output="output_' + dirName + '_restart_0.txt" \n')
     rs.write('#SBATCH --error="error_' + dirName + '_restart_0.txt" \n')
     
-    rs.write('#SBATCH --job-name="r1_' + dirName + '" \n')
-    rs.write('#SBATCH --output="output_' + dirName + '_restart_1.txt" \n')
-    rs.write('#SBATCH --error="error_' + dirName + '_restart_1.txt" \n')
+    rr.write('#SBATCH --job-name="r1_' + dirName + '" \n')
+    rr.write('#SBATCH --output="output_' + dirName + '_restart_1.txt" \n')
+    rr.write('#SBATCH --error="error_' + dirName + '_restart_1.txt" \n')
     
     for r in rushFiles:
         if r == rs:

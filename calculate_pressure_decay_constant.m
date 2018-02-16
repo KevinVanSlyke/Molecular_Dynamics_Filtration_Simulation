@@ -1,4 +1,4 @@
-function [ varargout ] = plot_pressure_fit( pData )
+function [ varargout ] = calculate_pressure_decay_constant( pData )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 startDir = pwd;
