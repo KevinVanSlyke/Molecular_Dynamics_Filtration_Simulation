@@ -1,6 +1,7 @@
 function [ varargout ] = plot_pressure_fit( )
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%Plots pressure versus time for varied pore width and impurity diameter
+%   Crawls through simulation directories to read pressure data and plot
+%   with fit lines and details
 
 %LJ dimensionless unit conversion for Argon gas
 sigma = 3.4*10^(-10); %meters
@@ -9,7 +10,6 @@ epsilon = 1.65*10^(-21); %joules
 tau = 2.17*10^(-12); %seconds
 timestep = tau/200; %seconds
 kb = 1.38*10^(-23); %Joules/Kelvin
-x = (0:100:1900)'*sigma*1/(10^(-9)); %nm
 
 cwd = pwd;
 dirs = strsplit(cwd,'/');
@@ -148,7 +148,7 @@ text(0.825,0.1, ['RMS Error = ' num2str(pow_rmse,5)], 'Interpreter', 'Latex', 'u
 
 ax1 = axes('Position',[.1 .1 .5 .8],'Visible','off');
 plot(t, P, '.', t_peaks, (P_diff_peaks+P_thermal), 'ro', t, (exp_fit_line+P_thermal), t(2:size(t,1)), (pow_fit_line+P_thermal));
-title(['Pressure at Front of Filter for Pore Width W=' num2str(W) 'nm and Impurity Diameter D=' num2str(d) 'nm'], 'Interpreter', 'LaTex', 'FontSize', 8 );
+title(['Pressure at Front of Filter for Pore Width W=' num2str(w) 'nm and Impurity Diameter D=' num2str(d) 'nm'], 'Interpreter', 'LaTex', 'FontSize', 8 );
 xlabel('Time, $t ~ (ns)$','Interpreter','Latex');
 ylabel('Pressure, $P ~ (\frac{mJ}{m^{2}})$','Interpreter','Latex');
 legend('Raw Data', 'Peak (Fit) Values', 'Exponential Fit', 'Algebraic Fit');
@@ -161,7 +161,7 @@ close(fig);
 norm_power = power/max(power);
 fig = figure('Visible','off');
 plot(freq, norm_power);
-title(['Fourier Transform of Gas Pressure for Pore Width W=' num2str(W) 'nm and Impurity Diameter D=' num2str(d) 'nm'], 'Interpreter', 'LaTex', 'FontSize', 8 );
+title(['Fourier Transform of Gas Pressure for Pore Width W=' num2str(w) 'nm and Impurity Diameter D=' num2str(d) 'nm'], 'Interpreter', 'LaTex', 'FontSize', 8 );
 xlabel('Frequency, $f ~ (GHz)$','Interpreter','Latex');
 ylabel('Power Spectral Density','Interpreter','latex');
 axis([0 5*fundFreq 0 1]);

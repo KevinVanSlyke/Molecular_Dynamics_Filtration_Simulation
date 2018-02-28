@@ -1,6 +1,7 @@
 function [ varargout ] = read_pressure_data( varargin )
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%Reads pressure data from thermodynamic output in LAMMPS log files
+%   Catenates pressure data from multiple restarts using the 7th collumn of
+%   LAMMPS log file
 cwd = pwd;
 dirs = strsplit(cwd,'/');
 nDirParts = size(dirs,2);

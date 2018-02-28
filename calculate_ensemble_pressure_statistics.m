@@ -1,6 +1,8 @@
-function [stat_data] = calculate_ensemble_pressure_statistics(baseDir)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+function [stat_data] = calculate_ensemble_pressure_statistics()
+%Calculates average and standard deviation of pressure from multiple runs
+%   For a given list of simulation ID's their pressure data is iteratively read from
+%   multiple runs differing only by random seed. Statistical average and
+%   standard deviation are then calculated and output.
 
 %LJ dimensionless unit conversion for Argon gas
 %sigma = 3.4*10^(-10); %meters
@@ -15,21 +17,24 @@ nTimeMax = Inf;
 
 nTrials = 5;
 
-maxParam = 20;
-minParam = 1;
-stepParam = 1;
-paramList = (minParam:stepParam:maxParam);
-nParam = max(size(paramList));
+%maxParam = 20;
+%minParam = 1;
+%stepParam = 1;
+%paramList = (minParam:stepParam:maxParam);
+%nParam = max(size(paramList));
+simStrings = {'20W_2D'; '20W_10D'; '50W_2D'; '50W_10D'; '200W_2D'; '200W_10D'};
+nSims = size(simStrings, 1); 
 
-%baseDir = '/home/Kevin/Documents/Dust_Data/Molecular/October_2017_Multiple_Parameters/Diameter/Diameter_Trials';
+%baseDir = '/home/Kevin/Documents/Dust_Data/Molecular/.../';
+baseDir = '/home/Kevin/Documents/Dust_Data/Molecular/February_2018_Movies_Boundary_DualFilter/Multi_Filter_Data/';
+
 for n = 1 : 1 : nTrials
-    trialString = ['Diameter_Trial' num2str(n)];
-    for D = 1 : 1 : 20
-        simString = ['D' num2str(D)];
+    trialString = strcat('Multi_Filter_Trial_', num2str(n-1));
+    for i = 1 : 1 : nSims
+        simString = simStrings{i,1};
         directory = strcat(baseDir,'/',trialString,'/',simString);
         cd(directory);
-        rawPData = get_press_merge_11_13_17();
-        
+        rawPData = read_pressure_data();
         
         t = rawPData.t; %timesteps
         P = rawPData.P; %LJ Dimensionless
@@ -37,22 +42,23 @@ for n = 1 : 1 : nTrials
             nTimeMax = max(size(t));
             tF = t;
         end
-        data{n,D} = {P};
+        data{n,i} = {P};
     end
 end
-P_trial = zeros(nTimeMax,nTrials,nParam);
+P_trial = zeros(nTimeMax,nTrials,nSims);
 for n = 1 : 1 : nTrials
-    for i = 1 : 1 : nParam
+    for i = 1 : 1 : nSims
         P_trial(:,n,i) = data{n,i}{1,1}(1:nTimeMax);
     end
 end
 P_avg(:,:) = mean(P_trial,2);
 P_std(:,:) = std(P_trial,0,2);
 
+cd(baseDir);
 
 %----------Outputs-------------
 %OUTPUTS IN SAME VARIABLE STRUCTURE
-stat_data = {paramList; tF; P_avg; P_std};
+stat_data = {simStrings; tF; P_avg; P_std};
 %------------------------------
 end
 
