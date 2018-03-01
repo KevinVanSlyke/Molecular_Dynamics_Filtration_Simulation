@@ -8,7 +8,7 @@ Created on Fri Aug 18 14:46:50 2017
 import time
 import os
 import stat
-def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth, filterSpacing):
+def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth):
     #randomSeed = [12461,6426357,32578,1247568,124158,12586]
 
     ##Spatial input parameters
@@ -34,7 +34,7 @@ def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth, filterSpacin
 #    poreWidth = 50
     filterDepth = 5
 #    filterHeight = 3
-#    filterSpacing = 50
+    filterSpacing = 100
     poreSpacing = poreWidth
     
     ##Initialization temperature and velocity parameters
@@ -63,13 +63,13 @@ def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth, filterSpacin
 
     ##Optional Temporal parameters and flags for extra analysis print outs
     ##Set times below to 0 to exclude print out
-    poreDump = True
+    poreDump = False
     
     tracerDump = False
     tracerTime = 10
     nTracers = 10
     
-    dumpMovies = False
+    dumpMovies = True
     dumpRawMovies = False
     rawHalfWidth = 125
     movieStartTime = 0
@@ -156,14 +156,19 @@ def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth, filterSpacin
             
 
     ##Create a unique file name
-    dirName = '{0}W_{1}D_{2}F'.format(poreWidth, impurityDiameter, filterSpacing)
-            
-    startName = 'input_' + dirName + '_restart_0.lmp'
-    rushStartName = 'sbatch_' + dirName + '_restart_0.sh'
-    localStartName = 'local_' + dirName + '_restart_0.sh'
-    restartName = 'input_' + dirName + '_restart_1.lmp'
-    rushRestartName = 'sbatch_' + dirName + '_restart_1.sh'
-    localRestartName = 'local_' + dirName + '_restart_1.sh'
+#    dirName = '{0}W_{1}D_{2}F'.format(poreWidth, impurityDiameter, filterSpacing)
+    dirName = '{0}W_{1}D'.format(poreWidth, impurityDiameter)
+    
+    if (dumpMovies == True):
+        localStartName = 'local_movie_' + dirName + '_restart_0.sh'
+        localRestartName = 'local_movie_' + dirName + '_restart_1.sh'
+        startName = 'input_movie_' + dirName + '_restart_0.lmp'
+        restartName = 'input_movie_' + dirName + '_restart_1.lmp'
+    else:
+        startName = 'input_' + dirName + '_restart_0.lmp'
+        rushStartName = 'sbatch_' + dirName + '_restart_0.sh'
+        restartName = 'input_' + dirName + '_restart_1.lmp'
+        rushRestartName = 'sbatch_' + dirName + '_restart_1.sh'
     
     trialDir = os.getcwd()
     if not os.path.exists(dirName):
@@ -560,6 +565,7 @@ def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth, filterSpacin
             f.write('dump_modify 2 flush yes \n')
             f.write('\n')
             
+        ##This is meant to be used to write data in format readable by VMD, but futher reading seems to indicate that VMD only works with a combination of write_data and dump dcd methods.
         if dumpRawMovies == True:
             if f == sf:
                 f.write('variable movieTimes equal stride2({0},{1},{2},{3},{4},{5}) \n'.format(movieStartTime, 2*totalTime + 100, totalTime + 100, movieStartTime, movieDuration, movieFrameDelta))
@@ -572,12 +578,11 @@ def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth, filterSpacin
             f.write('dump    100 rawMovie atom {0} dump_'.format(movieFrameDelta) + dirName + '_rawMovie_' + dumpStringDiff + '.lmp    #Dump pore group atom data every N={0} timesteps to file dump_'.format(movieFrameDelta) + dirName + '_rawMovie_' + dumpStringDiff + '.lmp including atom: id, type, x position, y position, z position in that order \n')
             f.write('dump_modify 100 flush yes scale no every v_movieTimes \n')
             f.write('\n')
-
             
         if dumpMovies == True:
             f.write('## Extra dump for movies \n')
             zoom = 50
-            xScaled = 0.525
+            xScaled = 0.5275
             yScaled = 0.5
             zScaled = 0.5
             colorType = ['white', 'blue', 'red', 'yellow', 'green']
@@ -595,108 +600,107 @@ def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth, filterSpacin
         if dumpMovies == True:
             f.write('run {0} pre yes post yes \n'.format(movieDuration+1))
         else:
-            if f == sf:
-                f.write('run {0} pre yes post yes \n'.format(totalTime+1))
-            elif f == rf:
-                f.write('run {0} pre yes post yes \n'.format(totalTime+1))
+            f.write('run {0} pre yes post yes \n'.format(totalTime+1))
 
         f.close()
+        
     
     """
         Local LAMMPS run start/restart shell files
     """
+    if dumpMovies == True:
+        localCores = 2
+        ls = open(localStartName, 'w')
+        lr = open(localRestartName, 'w')
+        localFiles = [ls, lr]
+        for l in localFiles:
+            if l == ls:
+                fName = startName
+                dumpStringDiff = 'restart_0'
+            elif l == lr:
+                fName = restartName
+                dumpStringDiff = 'restart_1'
+            l.write('#!/bin/bash \n')
+            l.write('echo "Launching molecular dynamics filtration simulation(s)..." \n')
+            l.write('echo "Running mpirun -n {0} /usr/local/LAMMPS/src/lmp_auto -nocite -in '.format(localCores) + fName + ' -log log_movie_' + dirName + '_' + dumpStringDiff + '.lmp" \n')
+            l.write('mpirun -n {0} /usr/local/LAMMPS/src/lmp_auto -nocite -in '.format(localCores) + fName + ' -log log_movie_' + dirName + '_' + dumpStringDiff + '.lmp \n')
+            l.write('echo "All Done!" \n')
+            l.close()
+            
+        st = os.stat(os.path.join('.',localStartName))
+        os.chmod(os.path.join('.',localStartName), st.st_mode | stat.S_IEXEC)
     
-    localCores = 2
-    ls = open(localStartName, 'w')
-    lr = open(localRestartName, 'w')
-    localFiles = [ls, lr]
-    for l in localFiles:
-        if l == ls:
-            fName = startName
-            dumpStringDiff = 'restart_0'
-        elif l == lr:
-            fName = restartName
-            dumpStringDiff = 'restart_1'
-        l.write('#!/bin/bash \n')
-        l.write('echo "Launching molecular dynamics filtration simulation(s)..." \n')
-        l.write('echo "Running mpirun -n {0} /usr/local/LAMMPS/src/lmp_auto -nocite -in '.format(localCores) + fName + ' -log log_' + dirName + '_' + dumpStringDiff + '.lmp" \n')
-        l.write('mpirun -n {0} /usr/local/LAMMPS/src/lmp_auto -nocite -in '.format(localCores) + fName + ' -log log_' + dirName + '_' + dumpStringDiff + '.lmp \n')
-        l.write('echo "All Done!" \n')
-        l.close()
-        
-    st = os.stat(os.path.join('.',localStartName))
-    os.chmod(os.path.join('.',localStartName), st.st_mode | stat.S_IEXEC)
-
-    st = os.stat(os.path.join('.',localRestartName))
-    os.chmod(os.path.join('.',localRestartName), st.st_mode | stat.S_IEXEC)
+        st = os.stat(os.path.join('.',localRestartName))
+        os.chmod(os.path.join('.',localRestartName), st.st_mode | stat.S_IEXEC)
+    
     
     """
         Rush CCR LAMMPS srun start/restart sbatch files
     """
-    
-    rushCores = 4
-    mem = 512
-    rs = open(rushStartName,'w')
-    rr = open(rushRestartName,'w')
-    rushFiles = [rs, rr]
-    for r in rushFiles:
-        r.write('#!/bin/sh \n')
-        r.write('#SBATCH --partition=general-compute \n')
-        r.write('#SBATCH --time=36:00:00 \n')
-        r.write('#SBATCH --nodes=1 \n')
-        r.write('#SBATCH --ntasks-per-node={0} \n'.format(rushCores))
-        r.write('##SBATCH --constraint=IB \n')
-        r.write('#SBATCH --mem={0} \n'.format(mem))
-        r.write('# Memory per node specification is in MB. It is optional. \n')
-        r.write('# The default limit is 3000MB per core. \n')
-        r.write('#SBATCH --mail-user=kgvansly@buffalo.edu \n')
-        r.write('#SBATCH --mail-type=ALL \n')
-        r.write('##SBATCH --requeue \n')
-        r.write('#Specifies that the job will be requeued after a node failure. \n')
-        r.write('#The default is that the job will not be requeued. \n')
+    if dumpMovies == False:
+        rushCores = 4
+        mem = 512
+        rs = open(rushStartName,'w')
+        rr = open(rushRestartName,'w')
+        rushFiles = [rs, rr]
+        for r in rushFiles:
+            r.write('#!/bin/sh \n')
+            r.write('#SBATCH --partition=general-compute \n')
+            r.write('#SBATCH --time=36:00:00 \n')
+            r.write('#SBATCH --nodes=1 \n')
+            r.write('#SBATCH --ntasks-per-node={0} \n'.format(rushCores))
+            r.write('##SBATCH --constraint=IB \n')
+            r.write('#SBATCH --mem={0} \n'.format(mem))
+            r.write('# Memory per node specification is in MB. It is optional. \n')
+            r.write('# The default limit is 3000MB per core. \n')
+            r.write('#SBATCH --mail-user=kgvansly@buffalo.edu \n')
+            r.write('#SBATCH --mail-type=ALL \n')
+            r.write('##SBATCH --requeue \n')
+            r.write('#Specifies that the job will be requeued after a node failure. \n')
+            r.write('#The default is that the job will not be requeued. \n')
+            
+        rs.write('#SBATCH --job-name="r0_' + dirName + '" \n')
+        rs.write('#SBATCH --output="output_' + dirName + '_restart_0.txt" \n')
+        rs.write('#SBATCH --error="error_' + dirName + '_restart_0.txt" \n')
         
-    rs.write('#SBATCH --job-name="r0_' + dirName + '" \n')
-    rs.write('#SBATCH --output="output_' + dirName + '_restart_0.txt" \n')
-    rs.write('#SBATCH --error="error_' + dirName + '_restart_0.txt" \n')
-    
-    rr.write('#SBATCH --job-name="r1_' + dirName + '" \n')
-    rr.write('#SBATCH --output="output_' + dirName + '_restart_1.txt" \n')
-    rr.write('#SBATCH --error="error_' + dirName + '_restart_1.txt" \n')
-    
-    for r in rushFiles:
-        if r == rs:
-            fName = startName
-            dumpStringDiff = 'restart_0'
-        elif r == rr:
-            fName = restartName
-            dumpStringDiff = 'restart_1'
-        r.write('echo "SLURM_JOBID=$SLURM_JOBID" \n')
-        r.write('echo "SLURM_JOB_NODELIST=$SLURM_JOB_NODELIST" \n')
-        r.write('echo "SLURM_NNODES=$SLURM_NNODES" \n')
-        r.write('echo "SLURMTMPDIR=$SLURMTMPDIR" \n')
-        r.write('echo "Submit directory = $SLURM_SUBMIT_DIR" \n')
-    
-        r.write("NPROCS=`srun --nodes=${SLURM_NNODES} bash -c 'hostname' |wc -l` \n")
-        r.write('echo "NPROCS=$NPROCS" \n')
+        rr.write('#SBATCH --job-name="r1_' + dirName + '" \n')
+        rr.write('#SBATCH --output="output_' + dirName + '_restart_1.txt" \n')
+        rr.write('#SBATCH --error="error_' + dirName + '_restart_1.txt" \n')
         
-        r.write('module unload intel-mpi \n')
-        r.write('module load intel-mpi/2017.0.1 \n')
-        r.write('module load lammps \n')
-        r.write('module list \n')
-        r.write('ulimit -s unlimited \n')
-    
-        r.write('#The PMI library is necessary for srun \n')
-        r.write('export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi.so \n')
-    
-        r.write('echo "Working directory = $PWD" \n')
-    
-        r.write('echo "Launch MPI LAMMPS air filtration simulation with srun" \n')
-    
-        r.write('echo "Echo... srun -n $NPROCS lmp_mpi -nocite -screen none -in ' + fName + ' -log log_' + dirName + '_' + dumpStringDiff + '.lmp" \n')
-        r.write('srun -n $NPROCS lmp_mpi -nocite -screen none -in ' + fName + ' -log log_' + dirName + '_' + dumpStringDiff + '.lmp \n')
-    
-        r.write('echo "All Done!"')
-        r.close()
+        for r in rushFiles:
+            if r == rs:
+                fName = startName
+                dumpStringDiff = 'restart_0'
+            elif r == rr:
+                fName = restartName
+                dumpStringDiff = 'restart_1'
+            r.write('echo "SLURM_JOBID=$SLURM_JOBID" \n')
+            r.write('echo "SLURM_JOB_NODELIST=$SLURM_JOB_NODELIST" \n')
+            r.write('echo "SLURM_NNODES=$SLURM_NNODES" \n')
+            r.write('echo "SLURMTMPDIR=$SLURMTMPDIR" \n')
+            r.write('echo "Submit directory = $SLURM_SUBMIT_DIR" \n')
+        
+            r.write("NPROCS=`srun --nodes=${SLURM_NNODES} bash -c 'hostname' |wc -l` \n")
+            r.write('echo "NPROCS=$NPROCS" \n')
+            
+            r.write('module unload intel-mpi \n')
+            r.write('module load intel-mpi/2017.0.1 \n')
+            r.write('module load lammps \n')
+            r.write('module list \n')
+            r.write('ulimit -s unlimited \n')
+        
+            r.write('#The PMI library is necessary for srun \n')
+            r.write('export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi.so \n')
+        
+            r.write('echo "Working directory = $PWD" \n')
+        
+            r.write('echo "Launch MPI LAMMPS air filtration simulation with srun" \n')
+        
+            r.write('echo "Echo... srun -n $NPROCS lmp_mpi -nocite -screen none -in ' + fName + ' -log log_' + dirName + '_' + dumpStringDiff + '.lmp" \n')
+            r.write('srun -n $NPROCS lmp_mpi -nocite -screen none -in ' + fName + ' -log log_' + dirName + '_' + dumpStringDiff + '.lmp \n')
+        
+            r.write('echo "All Done!"')
+            r.close()
 
     os.chdir(trialDir)
     return
