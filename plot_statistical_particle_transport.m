@@ -15,10 +15,17 @@ nPores = size(transport_data,2);
 simList = transport_data{1,1}{2,1};
 nSims = size(simList,1);
 
-t = transport_data{1,1}{3,1}*timestep*(1/10^(-9)); %nanoseconds
-
+nTimes = inf;
 for n = 1 : 1 : nPores
+
     pore{n} = transport_data{1,n}{1,1};
+    time{n} = transport_data{1,n}{3,1}*timestep*(1/10^(-9)); %nanoseconds
+    %%Need to move this time trimming to the
+    %%calculate_ensemble_*_statistics.m files
+    if size(time{n},2) < nTimes
+       nTimes = size(time{n},2);
+       t = time{n};
+    end
     %    aF_avg{n} = transport_data{1,n}{4,1};
     %    aF_std{n} = transport_data{1,n}{5,1};
     aS_avg{n} = transport_data{1,n}{6,1};
@@ -41,18 +48,18 @@ for i = 1 : 1 : nSims
     d=D*sigma*(10^(9)); %nanometers
     
     for j = 1 : 1 : nPores
-        %    aFlowCount(:,j) = aF_avg{1,j}(:,i);
-        %    iFlowCount(:,j) = iF_avg{1,j}(:,i);
-        aSumCount(:,j) = aS_avg{1,j}(:,i);
-        iSumCount(:,j) = iS_avg{1,j}(:,i);
-        %    aFlowStd(:,j) = aF_std{1,j}(:,i);
-        %    iFlowStd(:,i,j) = iF_std{1,j}(:,i);
-        aSumStd(:,j) = aS_std{1,j}(:,i);
-        iSumStd(:,j) = iS_std{1,j}(:,i);
-        aSumUpConf(:,j) = aSumCount(:,j) + aSumStd(:,j);
-        aSumLowConf(:,j) = aSumCount(:,j) - aSumStd(:,j);
-        iSumUpConf(:,j) = iSumCount(:,j) + iSumStd(:,j);
-        iSumLowConf(:,j) = iSumCount(:,j) - iSumStd(:,j);
+        %    aFlowCount(:,j) = aF_avg{1,j}(1:nTimes,i);
+        %    iFlowCount(:,j) = iF_avg{1,j}(1:nTimes,i);
+        aSumCount(:,j) = aS_avg{1,j}(1:nTimes,i);
+        iSumCount(:,j) = iS_avg{1,j}(1:nTimes,i);
+        %    aFlowStd(:,j) = aF_std{1,j}(1:nTimes,i);
+        %    iFlowStd(:,i,j) = iF_std{1,j}(1:nTimes,i);
+        aSumStd(:,j) = aS_std{1,j}(1:nTimes,i);
+        iSumStd(:,j) = iS_std{1,j}(1:nTimes,i);
+        aSumUpConf(:,j) = aSumCount(1:nTimes,j) + aSumStd(1:nTimes,j);
+        aSumLowConf(:,j) = aSumCount(1:nTimes,j) - aSumStd(1:nTimes,j);
+        iSumUpConf(:,j) = iSumCount(1:nTimes,j) + iSumStd(1:nTimes,j);
+        iSumLowConf(:,j) = iSumCount(1:nTimes,j) - iSumStd(1:nTimes,j);
     end
     if min(aSumLowConf(:,1)) < min(aSumLowConf(:,2)+aSumLowConf(:,3))
         minC = min(aSumLowConf(:,1));

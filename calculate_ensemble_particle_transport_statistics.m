@@ -11,7 +11,7 @@ function [stat_data] = calculate_ensemble_particle_transport_statistics()
 %tau = 2.17*10^(-12); %seconds
 %timestep = tau/200; %seconds
 %kb = 1.38*10^(-23); %Joules/Kelvin
-%x = (0:100:1900)'*sigma*1/(10^(-9)); %nm
+%x = (0:100:1500)'*sigma*1/(10^(-9)); %nm
 
 nTimeMax = Inf;
 
@@ -21,16 +21,16 @@ nTrials = 5;
 %stepParam = 1;
 %paramList = (minParam:stepParam:maxParam);
 %nParam = max(size(paramList));
-simStrings = {'20W_2D'; '20W_10D'; '50W_2D'; '50W_10D'; '200W_2D'; '200W_10D'};
+simStrings = {'20W_2D_50F'; '20W_10D_50F'; '50W_2D_50F'; '50W_10D_50F'; '200W_2D_50F'; '200W_10D_50F'};
 nSims = size(simStrings,1);
 pores = {'pore'; 'pore1'; 'pore2'};
 nPores = size(pores,1);
 %baseDir = '/home/Kevin/Documents/Dust_Data/Molecular/.../';
-baseDir = '/home/Kevin/Documents/Dust_Data/Molecular/February_2018_Movies_Boundary_DualFilter/Multi_Filter_Data/';
+baseDir = '/home/Kevin/Documents/Dust_Data/Molecular/February_2018_Movies_Boundary_DualFilter/Filter_Spacing_Probe_Data/Filter_Spacing_50';
 for j = 1 : 1 : nPores
     pore = pores{j,1};
     for n = 1 : 1 : nTrials
-        trialString = strcat('Multi_Filter_Trial_', num2str(n-1));
+        trialString = strcat('Multi_Filter_Spacing_50_Trial_', num2str(n-1));
         for i = 1 : 1 : nSims
             simString = simStrings{i,1};
             directory = strcat(baseDir,'/',trialString,'/',simString);
@@ -42,10 +42,12 @@ for j = 1 : 1 : nPores
             impurityFlow = rawFluxData.impurityFlow;
             argonSum = rawFluxData.argonSum;
             impuritySum = rawFluxData.impuritySum;
+            %%Need to move time trimming to the end
             if max(size(t)) < nTimeMax
                 nTimeMax = max(size(t));
                 tF = t;
             end
+            %%Can make this smarter using 4D matrices
             aFdata{n,i} = {argonFlow};
             aSdata{n,i} = {argonSum};
             iFdata{n,i} = {impurityFlow};
@@ -57,7 +59,14 @@ for j = 1 : 1 : nPores
     aS_trial = zeros(nTimeMax,nTrials,nSims);
     iF_trial = zeros(nTimeMax,nTrials,nSims);
     iS_trial = zeros(nTimeMax,nTrials,nSims);
-    
+    aF_avg = zeros(nTimeMax,nSims);
+    aF_std = zeros(nTimeMax,nSims);
+    aS_avg = zeros(nTimeMax,nSims);
+    aS_std = zeros(nTimeMax,nSims);
+    iF_avg = zeros(nTimeMax,nSims);
+    iF_std = zeros(nTimeMax,nSims);
+    iS_avg = zeros(nTimeMax,nSims);
+    iS_std = zeros(nTimeMax,nSims);
     for n = 1 : 1 : nTrials
         for i = 1 : 1 : nSims
             aF_trial(:,n,i) = aFdata{n,i}{1,1}(1:nTimeMax);
@@ -76,6 +85,7 @@ for j = 1 : 1 : nPores
     iS_std(:,:) = std(iS_trial,0,2);
     stat_data{:,j} = {pore; simStrings; tF; aF_avg; aF_std; aS_avg; aS_std; iF_avg; iF_std; iS_avg; iS_std};
 end
+%%Need to do time trimming at the end for all pores/trials/simulations
 
 cd(baseDir);
 %----------Outputs-------------

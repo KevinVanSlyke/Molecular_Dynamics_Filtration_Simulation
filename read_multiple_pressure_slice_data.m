@@ -127,10 +127,7 @@ end
 
 %----------Outputs-------------
 %OUTPUTS IN SAME VARIABLE STRUCTURE
-varargout{1}.Pf = Pf;
-varargout{1}.Pm = Pm;
-varargout{1}.Pr = Pr;
-
+varargout{1}.P = [Pf, Pm, Pr];
 varargout{1}.t = t;
 %------------------------------
 end
