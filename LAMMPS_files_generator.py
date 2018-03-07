@@ -8,7 +8,7 @@ Created on Fri Aug 18 14:46:50 2017
 import time
 import os
 import stat
-def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth):
+def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, timeout):
     #randomSeed = [12461,6426357,32578,1247568,124158,12586]
 
     ##Spatial input parameters
@@ -58,18 +58,18 @@ def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth):
     thermoTime = 10**(3)
     dynamicTime = 10**(3)
     restartTime = 10**(5)
-    totalTime = 5*10**(6)
-    archiveRestartTime = totalTime
+    archiveRestartTime = 10**(6)
+    totalTime = 10**(7)
 
     ##Optional Temporal parameters and flags for extra analysis print outs
     ##Set times below to 0 to exclude print out
-    poreDump = False
+    poreDump = True
     
     tracerDump = False
     tracerTime = 10
     nTracers = 10
     
-    dumpMovies = True
+    dumpMovies = False
     dumpRawMovies = False
     rawHalfWidth = 125
     movieStartTime = 0
@@ -157,7 +157,7 @@ def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth):
 
     ##Create a unique file name
 #    dirName = '{0}W_{1}D_{2}F'.format(poreWidth, impurityDiameter, filterSpacing)
-    dirName = '{0}W_{1}D'.format(poreWidth, impurityDiameter)
+    dirName = '{0}W_{1}D_{2}T'.format(poreWidth, impurityDiameter, trialNum)
     
     if (dumpMovies == True):
         localStartName = 'local_movie_' + dirName + '_restart_0.sh'
@@ -184,7 +184,7 @@ def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth):
     for f in inputFiles:
         f.write('## LAMMPS input start file for filtration research  \n')
         f.write('## Written by Kevin Van Slyke  \n')
-        f.write('## Dated: ' + time.strftime("%d_%m_%Y") + '\n')
+        f.write('## Dated: ' + time.strftime("%m_%d_%Y") + '\n')
         f.write('\n')
         
     rf.write('read_restart {0}_archive.rst \n'.format(dirName))
@@ -654,7 +654,7 @@ def LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth):
         for r in rushFiles:
             r.write('#!/bin/sh \n')
             r.write('#SBATCH --partition=general-compute \n')
-            r.write('#SBATCH --time=36:00:00 \n')
+            r.write('#SBATCH --time={0}:00:00 \n'.format(timeout))
             r.write('#SBATCH --nodes=1 \n')
             r.write('#SBATCH --ntasks-per-node={0} \n'.format(rushCores))
             r.write('##SBATCH --constraint=IB \n')
