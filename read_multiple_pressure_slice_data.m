@@ -11,7 +11,7 @@ fileName = files.name;
 try
     logData = readlog(fileName);
 catch
-    disp('ERROR: readlog.m failed presumably due to improper file termination. Attempting readlog_fix.m');
+    error('ERROR: readlog.m failed presumably due to improper file termination. Attempting readlog_fix.m');
     logData = readlog_fix(fileName);
 end
 thermStartStrings = logData.data{1,2};
@@ -36,7 +36,7 @@ if ~isempty(files)
     try
         logData = readlog(fileName);
     catch
-        disp('ERROR: readlog.m failed presumably due to improper file termination. Attempting readlog_fix.m');
+        error('ERROR: readlog.m failed presumably due to improper file termination. Attempting readlog_fix.m');
         logData = readlog_fix(fileName);
     end
     thermRestartStrings = logData.data{1,1};
@@ -88,7 +88,7 @@ if ~isempty(files)
         try
             logData = readlog(fileName);
         catch
-            disp('ERROR: readlog.m failed presumably due to improper file termination. Attempting readlog_fix.m');
+            error('ERROR: readlog.m failed presumably due to improper file termination. Attempting readlog_fix.m');
             logData = readlog_fix(fileName);
         end
         thermRestartStrings = logData.data{1,1};

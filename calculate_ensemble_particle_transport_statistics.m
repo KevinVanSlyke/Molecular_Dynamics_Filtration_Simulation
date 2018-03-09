@@ -11,7 +11,6 @@ function [stat_data] = calculate_ensemble_particle_transport_statistics()
 %tau = 2.17*10^(-12); %seconds
 %timestep = tau/200; %seconds
 %kb = 1.38*10^(-23); %Joules/Kelvin
-%x = (0:100:1500)'*sigma*1/(10^(-9)); %nm
 
 nTimeMax = Inf;
 
@@ -35,13 +34,13 @@ for j = 1 : 1 : nPores
             simString = simStrings{i,1};
             directory = strcat(baseDir,'/',trialString,'/',simString);
             cd(directory);
-            rawFluxData = read_particle_transport_data(pore);
+            rawTransportData = read_particle_transport_data(pore);
             
-            t = rawFluxData.t; %timesteps
-            argonFlow = rawFluxData.argonFlow;
-            impurityFlow = rawFluxData.impurityFlow;
-            argonSum = rawFluxData.argonSum;
-            impuritySum = rawFluxData.impuritySum;
+            t = rawTransportData.t; %timesteps
+            argonFlow = rawTransportData.ptclTrans(:,1);
+            impurityFlow = rawTransportData.ptclTrans(:,2);
+            argonSum = rawTransportData.netPtclTrans(:,1);
+            impuritySum = rawTransportData.netPtclTrans(:,2);
             %%Need to move time trimming to the end
             if max(size(t)) < nTimeMax
                 nTimeMax = max(size(t));

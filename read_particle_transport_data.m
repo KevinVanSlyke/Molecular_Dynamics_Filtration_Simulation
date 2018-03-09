@@ -1,156 +1,108 @@
 function [ varargout ] = read_particle_transport_data( varargin )
-%CALC_MASS_FLOW Summary of this function goes here
-%   Detailed explanation goes here
-nPore = varargin{1,1};
+%Counts number of particles by type that are transmitted through a given pore
+%   Reads pore region dump, making an id list of particles currently inside the
+%   region at each dumped timestep. If a particle is no longer in the
+%   region during the following timestep dump its velocity in the previous
+%   dump is used to count the as a positive or negative transmission of the
+%   particles type.
+
 %LJ dimensionless unit conversion for Argon gas
-sigma = 3.4*10^(-10); %meters
-mass = 6.69*10^(-26); %kilograms
-epsilon = 1.65*10^(-21); %joules
-tau = 2.17*10^(-12); %seconds
-timestep = tau/200; %seconds
+%sigma = 3.4*10^(-10); %meters
+%mass = 6.69*10^(-26); %kilograms
+%epsilon = 1.65*10^(-21); %joules
+%tau = 2.17*10^(-12); %seconds
+%timestep = tau/200; %seconds
+%kb = 1.38*10^(-23); %Joules/Kelvin
+nPore = varargin{1,1};
+massType(1) = 1;
+
 
 fPath = pwd;
-dirs = strsplit(fPath,'/');
-nDirParts = size(dirs,2);
-cDir = dirs(nDirParts);
-sDir = cDir{1,1};
+dirParts = strsplit(fPath,'/');
+nDirParts = size(dirParts,2);
+simDir = dirParts(nDirParts);
+simString = simDir{1,1};
 
-dumpFileList = dir(fullfile(fPath, strcat('dump_',sDir,'_', nPore,'_restart_*.lmp')));
-nDumpFiles = size(dumpFileList,1);
+%Need to generalize for arbitrary simulation folder name such as more/different
+%parameters
+aString = strsplit(simString,{'_'});
+dString = strsplit(aString{1,2},{'D'});
+if size(dString,1) > 0
+    D = str2double(dString{1,1});
+    %d=D*sigma*(10^(9)); %nanometers
+    if D ~= 1
+        massType(2) = D^2;
+    end
+end
+
+dumpFileList = dir(fullfile(fPath, strcat('dump_',simString,'_', nPore,'_restart_*.lmp')));
+nDumpFiles = size(dumpFileList,1); %number of dump files for current pore
 if nDumpFiles > 0
-    startDumpFile = fullfile(fPath, strcat('dump_',sDir,'_', nPore,'_restart_0.lmp'));
-    startDump = readdump_all(startDumpFile);
+    ptclTrans = [];
+    t = [];
 end
-
-try
-    time_step = startDump.timestep;
-    Natoms = startDump.Natoms;
-    x_bound = startDump.x_bound;
-    y_bound = startDump.y_bound;
-    z_bound = startDump.z_bound;
-    atom_data = startDump.atom_data;
-    x_min = x_bound(1,1);
-    x_max = x_bound(1,2);
-    y_min = y_bound(1,1);
-    y_max = y_bound(1,2);
-catch
-    error('Data formats not matching!');
-end
-
-sTimes = size(atom_data,3);
-sNAtoms = size(atom_data,1);
-aStartFlowCount = [];
-iStartFlowCount = [];
-prevAtoms = [];
-for i = 1 : 1 : sTimes
-    ts(i) = time_step(i);
-    curAtoms = [];
-    k = 1;
-    for j = 1 : 1 : sNAtoms
-        curData = atom_data(j,:,i);
-        if atom_data(j,1,i) ~= 0
-            curAtoms(k,:) = curData;
-            k = k+1;
-        end
-    end
-    aStartFlowCount(i) = 0;
-    iStartFlowCount(i) = 0;
-    if (i > 1)
-        prevNum = size(prevAtoms,1);
-        curNum = size(curAtoms,1);
-        ignoreIndex = zeros(prevNum);
-        for l = 1 : 1 : prevNum
-            for m = 1 : 1 : curNum
-                if(prevAtoms(l,1) == curAtoms(m,1))
-                    ignoreIndex(l) = 1;
-                    break;
-                else
-                    ignoreIndex(l) = 0;
-                end
-            end
-        end
-        for l = 1 : 1 : prevNum
-            if ((ignoreIndex(l) ~= 1) && (prevAtoms(l,3) > 0))
-                if (prevAtoms(l,2)  == 1) %If mass equal to 1, i.e. Argon mass
-                    aStartFlowCount(i) = aStartFlowCount(i) + 1;
-                else
-                    iStartFlowCount(i) = iStartFlowCount(i) + 1;
-                end
-            elseif ((ignoreIndex(l) ~= 1) && (prevAtoms(l,3) < 0))
-                if (prevAtoms(l,2)  == 1) %If mass equal to 1, i.e. Argon mass
-                    aStartFlowCount(i) = aStartFlowCount(i) - 1;
-                else
-                    iStartFlowCount(i) = iStartFlowCount(i) - 1;
-                end
-            end
-        end
-    end
-    prevAtoms = curAtoms;
-end
-
-for n = 1 : 1 : nDumpFiles - 1
+for n = 1 : 1 : nDumpFiles
+    dataDumpFile = fullfile(fPath, strcat('dump_',simString,'_', nPore,'_restart_',num2str(n-1),'.lmp'));
+    dataDump = readdump_all(dataDumpFile); %Creates 3D matrix, each timestep is NxM where N is the maximum number of particles in any timestep of the dump and M is the number of parameters output for each particle
     try
-        restartFileList = dir(fullfile(fPath, strcat('dump_',sDir,'_', nPore,'_restart_',num2str(n),'.lmp')));
-        restartDumpFile = restartFileList(1).name;
-        restartDump = readdump_all(restartDumpFile);
-        time_step = restartDump.timestep;
-        Natoms = restartDump.Natoms;
-        x_bound = restartDump.x_bound;
-        y_bound = restartDump.y_bound;
-        z_bound = restartDump.z_bound;
-        atom_data = restartDump.atom_data;
+        time_step = dataDump.timestep;
+        Natoms = dataDump.Natoms;
+        x_bound = dataDump.x_bound;
+        y_bound = dataDump.y_bound;
+        z_bound = dataDump.z_bound;
+        atom_data = dataDump.atom_data;
         x_min = x_bound(1,1);
         x_max = x_bound(1,2);
         y_min = y_bound(1,1);
         y_max = y_bound(1,2);
+        clear dataDump;
     catch
-        error('Restart Data formats not matching!');
+        error('ERROR: Data not matching expected format!');
     end
     
-    rTimes = size(atom_data,3);
-    rNAtoms = size(atom_data,1);
-    aRestartFlowCount = [];
-    iRestartFlowCount = [];
+    nTimes = size(atom_data,3);
+    nAtoms = size(atom_data,1);
     prevAtoms = [];
-    for i = 1 : 1 : rTimes
-        tr(i) = time_step(i);
+    for i = 1 : 1 : nTimes
         curAtoms = [];
         k = 1;
-        for j = 1 : 1 : rNAtoms
+        for j = 1 : 1 : nAtoms
             curData = atom_data(j,:,i);
-            if atom_data(j,1,i) ~= 0
-                curAtoms(k,:) = curData;
+            if atom_data(j,1,i) ~= 0 %If atom ID is NOT equal to 0
+                curAtoms(k,:) = curData; %Add that atoms parameters to current list
                 k = k+1;
             end
         end
-        aRestartFlowCount(i) = 0;
-        iRestartFlowCount(i) = 0;
-        if (i > 1)
-            prevNum = size(prevAtoms,1);
-            curNum = size(curAtoms,1);
-            ignoreIndex = zeros(prevNum);
-            for l = 1 : 1 : prevNum
-                for m = 1 : 1 : curNum
-                    if(prevAtoms(l,1) == curAtoms(m,1))
-                        ignoreIndex(l) = 1;
+        for j = 1 : 1 : size(massType,2)
+            currPtclTrans(i,j) = 0; %Count of type 1 particles transmitted at timestep i
+        end
+        prevNum = size(prevAtoms,1); %Number of atoms previously in the region
+        curNum = size(curAtoms,1); %Number of atoms currently in the region
+        if prevNum > 0 %Only start checking if atoms have left region if the previous dump time contained atoms
+            %Start of routine to see what atoms have left the region between
+            %dumped timesteps
+            
+            ignoreIndex = zeros(prevNum,1); %NxN matrix where N is number of atoms previously in the region
+            for m = 1 : 1 : curNum
+                for l = 1 : 1 : prevNum
+                    if(prevAtoms(l,1) == curAtoms(m,1)) %Check if each current atom's id matches any previous id
+                        ignoreIndex(l) = 1; %Ignore index of 1 will ignore the particle in transport counting
                         break;
                     else
-                        ignoreIndex(l) = 0;
+                        ignoreIndex(l) = 0; %Ignore index of 0 will count the particle transport
                     end
                 end
             end
             for l = 1 : 1 : prevNum
-                if ((ignoreIndex(l) ~= 1) && (prevAtoms(l,3) > 0))
-                    if (prevAtoms(l,2)  == 1) %If mass equal to 1, i.e. Argon mass
-                        aRestartFlowCount(i) = aRestartFlowCount(i) + 1;
-                    else
-                        iRestartFlowCount(i) = iRestartFlowCount(i) + 1;
-                    end
-                elseif ((ignoreIndex(l) ~= 1) && (prevAtoms(l,3) < 0))
-                    if (prevAtoms(l,2)  == 1) %If mass equal to 1, i.e. Argon mass
-                        aRestartFlowCount(i) = aRestartFlowCount(i) - 1;
-                    else
-                        iRestartFlowCount(i) = iRestartFlowCount(i) - 1;
+                if ignoreIndex(l) ~= 1
+                    for j = 1 : 1 : size(massType,2)
+                        if prevAtoms(l,2) == massType(j) %If atom mass in dump is of mass type j
+                            if prevAtoms(l,3) > 0 %if velocity is positive
+                                currPtclTrans(i,j) = currPtclTrans(i,j) + 1; %add one transport for time i
+                            else
+                                currPtclTrans(i,j) = currPtclTrans(i,j) - 1; %subtract one transport for time i
+                            end
+                        end
                     end
                 end
             end
@@ -158,55 +110,35 @@ for n = 1 : 1 : nDumpFiles - 1
         prevAtoms = curAtoms;
     end
     
-    if n == 1
-        rStrtIndx = 1;
-        for i = 1 : 1 : rTimes
-            if tr(i) == ts(sTimes)
-                rStrtIndx = i;
+    if n == 1 %If restart_0 (start), copy single file output to head of output
+        ptclTrans = currPtclTrans;
+        t = time_step;
+    elseif n >= 2 %If actual restart dump, copy find index of matching times and append single file data
+        tIndx = 1;
+        tMax = max(size(t));
+        for i = 1 : 1 : nTimes %For all number of times is current dump file
+            if time_step(i) == tMax %If time at index i equals final time in output vector
+                tIndx = i; %Record index of matching time
                 break;
             end
         end
-        t = ts;
-        aFlowCount = aStartFlowCount;
-        iFlowCount = iStartFlowCount;
-        for i = 1 : 1 : rTimes-rStrtIndx
-            aFlowCount(sTimes + i) = aRestartFlowCount(i+rStrtIndx);
-            iFlowCount(sTimes + i) = iRestartFlowCount(i+rStrtIndx);
-            t(sTimes + i) = tr(i + rStrtIndx);
-        end
-    else
-        rStrtIndx = 1;
-        tTimes = size(t,2);
-        for i = 1 : 1 : rTimes
-            if tr(i) == t(tTimes)
-                rStrtIndx = i;
-                break;
-            end
-        end
-        for i = 1 : 1 : rTimes-rStrtIndx
-            aFlowCount(tTimes + i) = aRestartFlowCount(i+rStrtIndx);
-            iFlowCount(tTimes + i) = iRestartFlowCount(i+rStrtIndx);
-            t(tTimes + i) = tr(i + rStrtIndx);
+        for i = 1 : 1 : nTimes-tIndx %For the difference in matching index to total times in current dump file
+            ptclTrans(tMax + i,:) = currPtclTrans(i+tIndx,:); %Append next dumped transport to output matrix
+            t(tMax + i) = time_step(i + tIndx); %Append next dumped transport to output vector
         end
     end
 end
 
-aFlowSum = [];
-iFlowSum = [];
-aFlowSum(1) = aFlowCount(1);
-iFlowSum(1) = iFlowCount(1);
-for i = 2 : 1 : max(size(t))
-    aFlowSum(i) = aFlowCount(i) + aFlowSum(i-1);
-    iFlowSum(i) = iFlowCount(i) + iFlowSum(i-1);
+netPtclTrans(1,:) = ptclTrans(1,:);
+for i = 2 : 1 : max(size(ptclTrans))
+    netPtclTrans(i,:) = netPtclTrans(i-1,:) + ptclTrans(i,:);
 end
 
 
 
 %----------Outputs-------------
 %OUTPUTS IN SAME VARIABLE STRUCTURE
-varargout{1}.argonFlow = aFlowCount;
-varargout{1}.impurityFlow = iFlowCount;
-varargout{1}.argonSum = aFlowSum;
-varargout{1}.impuritySum = iFlowSum;
+varargout{1}.ptclTrans = ptclTrans;
+varargout{1}.netPtclTrans = netPtclTrans;
 varargout{1}.t = t;
 %------------------------------
