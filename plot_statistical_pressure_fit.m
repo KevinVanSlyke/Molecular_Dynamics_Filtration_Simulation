@@ -71,8 +71,6 @@ for i = 1 : 1 : size(simList,1)
         t = t*timestep*(1/(10^(-9))); %ns
         
         if j ~= 2
-            
-            
             minPeakDistance = round(4/5*(1/fundSampleFreq),0);
             
             t_peaks = [];

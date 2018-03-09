@@ -35,7 +35,7 @@ for n = 1 : 1 : nTrials
         simString = simStrings{i,1};
         directory = strcat(baseDir,'/',trialString,'/',simString);
         cd(directory);
-        rawPData = read_pressure_data();
+        rawPData = read_multiple_pressure_slice_data();
         t = rawPData.t; %timesteps
         P = rawPData.P; %LJ Dimensionless
         nPressures = size(P,2);
