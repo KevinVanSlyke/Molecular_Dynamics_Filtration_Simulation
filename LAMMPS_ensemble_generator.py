@@ -11,10 +11,10 @@ import shutil
 import time
 
 nTrialEnsemble = 50 #number of trials with differing random seed but otherwise identical parameters to create
-timeout = 48 #hours
+timeout = 72 #hours
 filterSpacing = [100]
-poreWidth = [20, 50]
-impurityDiamter = [2, 5]
+poreWidth = [20]
+impurityDiamter = [10]
 #poreWidth = [20, 50, 200]
 #impurityDiamter = [2, 5, 10]
 
@@ -23,14 +23,14 @@ ensembleDir = 'Simulation_Ensemble_' + time.strftime("%m_%d_%Y")
 if not os.path.exists(ensembleDir):
     os.makedirs(ensembleDir)
 shutil.copy2('./Nth_LAMMPS_restart_generator.py',ensembleDir)
-shutil.copy2('./run_Nth_LAMMPS_trials.py',ensembleDir)
+shutil.copy2('./run_Nth_LAMMPS_restarts.py',ensembleDir)
 shutil.copy2('./delete_extra_ensemble_files.py',ensembleDir)
 os.chdir(ensembleDir)
 
 for width in poreWidth:
     for diameter in impurityDiamter:
         for spacing in filterSpacing:
-            paramDir = '{0}W_{1}D_{2}S_Trials'.format(width, diameter, spacing)
+            paramDir = '{0}W_{1}D_{2}L_Trials'.format(width, diameter, spacing)
             if not os.path.exists(paramDir):
                 os.makedirs(paramDir)
             os.chdir(paramDir)

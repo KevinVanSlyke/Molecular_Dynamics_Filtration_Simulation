@@ -2,7 +2,6 @@ function [varargout] = plot_statistical_particle_transport( varargin )
 %Plots statistical particle count passing through each pore
 %   Given the pore transport statistics as input, plots the cumulative
 %   particle count through the given pore
-
 %LJ dimensionless unit conversion for Argon gas
 sigma = 3.4*10^(-10); %meters
 mass = 6.69*10^(-26); %kilograms

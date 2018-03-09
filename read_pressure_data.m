@@ -12,7 +12,7 @@ fileName = files.name;
 try
     logData = readlog(fileName);
 catch
-    print 'readlog failed, attempting original readlog';
+    disp('ERROR: readlog.m failed presumably due to improper file termination. Attempting readlog_fix.m');
     logData = readlog_fix(fileName);
 end
 thermStartStrings = logData.data{1,2};
@@ -35,7 +35,7 @@ if ~isempty(files)
     try
         logData = readlog(fileName);
     catch
-        print 'readlog failed, attempting original readlog';
+        disp('ERROR: readlog.m failed presumably due to improper file termination. Attempting readlog_fix.m');
         logData = readlog_fix(fileName);
     end
     thermRestartStrings = logData.data{1,1};
@@ -78,7 +78,7 @@ if ~isempty(files)
         try
             logData = readlog(fileName);
         catch
-            print 'readlog failed, attempting original readlog';
+            disp('ERROR: readlog.m failed presumably due to improper file termination. Attempting readlog_fix.m');
             logData = readlog_fix(fileName);
         end
         thermRestartStrings = logData.data{1,1};
@@ -94,7 +94,7 @@ if ~isempty(files)
         end
         tr = thermRestartData(:,1);
         Pr = thermRestartData(:,7);
-
+        
         pTimes = size(t,1);
         rStrtIndx = 1;
         for i = 1 : 1 : rTimes
@@ -103,7 +103,7 @@ if ~isempty(files)
                 break;
             end
         end
-
+        
         for i = 1 : 1 : rTimes-rStrtIndx
             P(pTimes + i) = Pr(i+rStrtIndx);
             t(pTimes + i) = tr(i+rStrtIndx);

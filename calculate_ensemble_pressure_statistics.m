@@ -24,18 +24,18 @@ nTrials = 5;
 %nParam = max(size(paramList));
 
 %%%Make this dynamic based on dir output%%%
-simStrings = {'20W_2D_50F'; '20W_10D_50F'; '50W_2D_50F'; '50W_10D_50F'; '200W_2D_50F'; '200W_10D_50F'};
+simStrings = {'20W_10D'; '20W_2D'; '200W_10D'; '200W_2D'; '50W_10D'; '50W_2D'};
 nSims = size(simStrings, 1); 
-baseDir = '/home/Kevin/Documents/Dust_Data/Molecular/February_2018_Movies_Boundary_DualFilter/Filter_Spacing_Probe_Data/Filter_Spacing_50/';
+baseDir = '/home/Kevin/Documents/Dust_Data/Molecular/February_2018_Movies_Boundary_DualFilter/Multi-Filter_Spacing_Data/Filter_Spacing_100';
 cd(baseDir);
 %%%
 for n = 1 : 1 : nTrials
-    trialString = strcat('Multi_Filter_Spacing_50_Trial_', num2str(n-1));
+    trialString = strcat('Multi_Filter_Trial_', num2str(n-1));
     for i = 1 : 1 : nSims
         simString = simStrings{i,1};
         directory = strcat(baseDir,'/',trialString,'/',simString);
         cd(directory);
-        rawPData = read_multiple_pressure_slice_data();
+        rawPData = read_pressure_data();
         t = rawPData.t; %timesteps
         P = rawPData.P; %LJ Dimensionless
         nPressures = size(P,2);
