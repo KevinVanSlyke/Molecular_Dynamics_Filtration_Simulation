@@ -36,25 +36,32 @@ for n = 1 : 1 : nPores
 end
 
 for i = 1 : 1 : nSims
+    
     simString = simList{i,1};
-    wString = strsplit(simString,{'W'});
+    parStrings = strsplit(simString,{'_'});
+    
+    wString = strsplit(parStrings{1,1},{'W'});
     W = str2double(wString{1,1});
     w=W*sigma*(10^(9)); %nanometers
     
-    dString = strsplit(simString,{'_'});
-    DString = strsplit(dString{1,2},{'D'});
-    D = str2double(DString{1,1});
+    dString = strsplit(parStrings{1,2},{'D'});
+    D = str2double(dString{1,1});
     d=D*sigma*(10^(9)); %nanometers
     
+    hString = strsplit(parStrings{1,3},{'H'});
+    H = str2double(hString{1,1});
+    h=H*sigma*(10^(9)); %nanometers
+
     for j = 1 : 1 : nPores
         %    aFlowCount(:,j) = aF_avg{1,j}(1:nTimes,i);
         %    iFlowCount(:,j) = iF_avg{1,j}(1:nTimes,i);
-        aSumCount(:,j) = aS_avg{1,j}(1:nTimes,i);
-        iSumCount(:,j) = iS_avg{1,j}(1:nTimes,i);
+%        test = aS_avg{1,j};
+        aSumCount(:,j) = aS_avg{1,j}(1,i,1:nTimes);
+        iSumCount(:,j) = iS_avg{1,j}(1,i,1:nTimes);
         %    aFlowStd(:,j) = aF_std{1,j}(1:nTimes,i);
         %    iFlowStd(:,i,j) = iF_std{1,j}(1:nTimes,i);
-        aSumStd(:,j) = aS_std{1,j}(1:nTimes,i);
-        iSumStd(:,j) = iS_std{1,j}(1:nTimes,i);
+        aSumStd(:,j) = aS_std{1,j}(1,i,1:nTimes);
+        iSumStd(:,j) = iS_std{1,j}(1,i,1:nTimes);
         aSumUpConf(:,j) = aSumCount(1:nTimes,j) + aSumStd(1:nTimes,j);
         aSumLowConf(:,j) = aSumCount(1:nTimes,j) - aSumStd(1:nTimes,j);
         iSumUpConf(:,j) = iSumCount(1:nTimes,j) + iSumStd(1:nTimes,j);
@@ -78,12 +85,12 @@ for i = 1 : 1 : nSims
     p3a = plot(t,aSumCount(:,2)+aSumCount(:,3),'r');
     p3au = plot(t,aSumUpConf(:,2)+aSumUpConf(:,3),'r:');
     p3al = plot(t,aSumLowConf(:,2)+aSumLowConf(:,3),'r:');
-    title(['Net Argon Count Transmitted through Layers with Pores of Width W=' num2str(W) 'd and Impurity Diameter D=' num2str(D) 'd'], 'Interpreter', 'LaTex', 'FontSize', 8 );
+    title(['Net Argon Count Transmitted through Layers with Pores of Width W=' num2str(W) 'd, Impurity Diameter D=', num2str(D), 'd and Registry Shift H=', num2str(H),'d'], 'Interpreter', 'LaTex', 'FontSize', 8 );
     xlabel('Time, $t ~ (ns)$','Interpreter','Latex');
     ylabel('Net Argon Particles Transmitted','Interpreter','latex');
     axis([0 max(t) minC maxC]);
     legend([p0a p0au p3a p3au], {'1st Layer Avg.', '1st Layer 95% Conf.','2nd Layer Avg.', '2nd Layer 95% Conf.'},'Location','NorthWest');
-    print(['Net_Layer_Statistical_Argon_Particle_Transmitted_W' num2str(W) '_D' num2str(D)], '-dpng');
+    print(strcat('Net_Layer_Statistical_Argon_Particle_Transmitted_',simString), '-dpng');
     close(fig);
     
     if min(iSumLowConf(:,1)) < min(iSumLowConf(:,2)+iSumLowConf(:,3))
@@ -104,12 +111,12 @@ for i = 1 : 1 : nSims
     p1i = plot(t,iSumCount(:,2)+iSumCount(:,3),'r');
     p1iu = plot(t,iSumUpConf(:,2)+iSumUpConf(:,3),'r:');
     p1il = plot(t,iSumLowConf(:,2)+iSumLowConf(:,3),'r:');
-    title(['Net Impurity Count Transmitted through Layers with Pores of Width W=' num2str(W) 'd and Impurity Diameter D=' num2str(D) 'd'], 'Interpreter', 'LaTex', 'FontSize', 8 );
+    title(['Impurity Count thru Layers with Pores of Width W=' num2str(W) 'd, Impurity Diameter D=', num2str(D), 'd and Registry Shift H=', num2str(H),'d'], 'Interpreter', 'LaTex', 'FontSize', 8 );
     xlabel('Time, $t ~ (ns)$','Interpreter','Latex');
     ylabel('Net Impurity Particles Transmitted','Interpreter','latex');
     axis([0 max(t) minC maxC]);
     legend([p0i p0iu p1i p1iu], {'1st Layer Avg.', '1st Layer 95% Conf.','2nd Layer Avg.', '2nd Layer 95% Conf.'},'Location','NorthWest');
-    print(['Net_Layer_Statistical_Impurity_Particle_Transmitted_W' num2str(W) '_D' num2str(D)], '-dpng');
+    print(strcat('Net_Layer_Statistical_Impurity_Particle_Transmitted_',simString), '-dpng');
     close(fig);
     
     if min(aSumLowConf(:,2)) < min(aSumLowConf(:,3))
@@ -130,12 +137,12 @@ for i = 1 : 1 : nSims
     p3a = plot(t,aSumCount(:,3),'r');
     p3au = plot(t,aSumUpConf(:,3),'r:');
     p3al = plot(t,aSumLowConf(:,3),'r:');
-    title(['Net Argon Count Transmitted through 2nd Layer Pores of Width W=' num2str(W) 'd for Impurity Diameter D=' num2str(D) 'd'], 'Interpreter', 'LaTex', 'FontSize', 8 );
+    title(['Argon Count thru 2nd Layer Pores of Width W=' num2str(W) 'd, Impurity Diameter D=', num2str(D), 'd and Registry Shift H=', num2str(H),'d'], 'Interpreter', 'LaTex', 'FontSize', 8 );
     xlabel('Time, $t ~ (ns)$','Interpreter','Latex');
     ylabel('Net Argon Particles Transmitted','Interpreter','latex');
     axis([0 max(t) minC maxC]);
     legend([p2a p2au p3a p3au], {'Upper Pore Avg.', 'Upper Pore 95% Conf.','Lower Pore Avg.', 'Lower Pore 95% Conf.'},'Location','SouthWest');
-    print(['Net_Dual_Pore_Statistical_Argon_Particle_Transmitted_W' num2str(W) '_D' num2str(D)], '-dpng');
+    print(strcat('Net_Dual_Pore_Statistical_Argon_Particle_Transmitted_',simString), '-dpng');
     close(fig);
     
     if min(iSumLowConf(:,2)) < min(iSumLowConf(:,3))
@@ -156,14 +163,15 @@ for i = 1 : 1 : nSims
     p3i = plot(t,iSumCount(:,3),'r');
     p3iu = plot(t,iSumUpConf(:,3),'r:');
     p3il = plot(t,iSumLowConf(:,3),'r:');
-    title(['Net Impurity Count Transmitted through 2nd Layer Pores of Width W=' num2str(W) 'd for Impurity Diameter D=' num2str(D) 'd'], 'Interpreter', 'LaTex', 'FontSize', 8 );
+    title(['Impurity Count thru 2nd Layer Pores of Width W=' num2str(W) 'd, Impurity Diameter D=', num2str(D), 'd and Registry Shift H=', num2str(H),'d'], 'Interpreter', 'LaTex', 'FontSize', 8 );
     xlabel('Time, $t ~ (ns)$','Interpreter','Latex');
     ylabel('Net Impurity Particles Transmitted','Interpreter','latex');
     axis([0 max(t) minC maxC]);
     legend([p2i p2iu p3i p3iu], {'Upper Pore Avg.', 'Upper Pore 95% Conf.','Lower Pore Avg.', 'Lower Pore 95% Conf.'},'Location','SouthWest');
-    print(['Net_Dual_Pore_Statistical_Impurity_Particle_Transmitted_W' num2str(W) '_D' num2str(D)], '-dpng');
+    print(strcat('Net_Dual_Pore_Statistical_Impurity_Particle_Transmitted_', simString), '-dpng');
     close(fig);
     
+    clear aSumCount aSumLowConf aSumUpConf aSumStd iSumCount iSumLowConf iSumUpConf iSumStd;
 end
 
 %----------Outputs-------------

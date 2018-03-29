@@ -24,16 +24,27 @@ nTrials = 5;
 %nParam = max(size(paramList));
 
 %%%Make this dynamic based on dir output%%%
-simStrings = {'20W_10D'; '20W_2D'; '200W_10D'; '200W_2D'; '50W_10D'; '50W_2D'};
-nSims = size(simStrings, 1); 
-baseDir = '/home/Kevin/Documents/Dust_Data/Molecular/February_2018_Movies_Boundary_DualFilter/Multi-Filter_Spacing_Data/Filter_Spacing_100';
-cd(baseDir);
-%%%
-for n = 1 : 1 : nTrials
-    trialString = strcat('Multi_Filter_Trial_', num2str(n-1));
-    for i = 1 : 1 : nSims
-        simString = simStrings{i,1};
-        directory = strcat(baseDir,'/',trialString,'/',simString);
+%simStrings = {'20W_10D'; '20W_2D'; '200W_2D'; '50W_2D'; '20W_5D'; '50W_5D'};
+widthStrings = {'20W'; '200W'};  %'50W_2D'; '50W_10D'; '20W_5D'; '50W_5D'};
+diameterStrings = {'10D'; '2D'};
+registryStrings = {'0H'; '1H'; '5H'; '10H'; '20H'; '50H'; '100H'; '200H'};
+simCount = 1;
+for i = 1 : 1 : max(size(widthStrings))
+    for j = 1 : 1 : max(size(diameterStrings))
+        for k = 1 : 1 : max(size(registryStrings))
+            simStrings{simCount,1} = strcat(widthStrings{i,1}, '_',diameterStrings{j,1}, '_', registryStrings{k,1});;
+            simCount = simCount + 1;
+        end
+    end
+end
+nSims = size(simStrings,1);
+%baseDir = '/home/Kevin/Documents/Dust_Data/Molecular/.../';
+baseDir = '/home/Kevin/Documents/Dust_Data/Molecular/March_2018_DualFilter_Statistical/Registry_Shift';
+for i = 1 : 1 : nSims
+    simString = simStrings{i,1};
+    for n = 1 : 1 : nTrials
+        trialString = strcat(simString, '_',num2str(n-1),'T');
+        directory = strcat(baseDir,'/',simString,'/',trialString);
         cd(directory);
         rawPData = read_multiple_pressure_slice_data();
         t = rawPData.t; %timesteps

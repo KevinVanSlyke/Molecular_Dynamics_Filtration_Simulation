@@ -47,14 +47,7 @@ for n = 1 : 1 : nDumpFiles
     try
         time_step = dataDump.timestep;
         Natoms = dataDump.Natoms;
-        x_bound = dataDump.x_bound;
-        y_bound = dataDump.y_bound;
-        z_bound = dataDump.z_bound;
         atom_data = dataDump.atom_data;
-        x_min = x_bound(1,1);
-        x_max = x_bound(1,2);
-        y_min = y_bound(1,1);
-        y_max = y_bound(1,2);
         clear dataDump;
     catch
         error('ERROR: Data not matching expected format!');
@@ -63,13 +56,14 @@ for n = 1 : 1 : nDumpFiles
     nTimes = size(atom_data,3);
     nAtoms = size(atom_data,1);
     prevAtoms = [];
+    currPtclTrans = [];
     for i = 1 : 1 : nTimes
         curAtoms = [];
         k = 1;
         for j = 1 : 1 : nAtoms
             curData = atom_data(j,:,i);
             if atom_data(j,1,i) ~= 0 %If atom ID is NOT equal to 0
-                curAtoms(k,:) = curData; %Add that atoms parameters to current list
+                curAtoms(k,:) = [curData, curData(3)]; %Add that atoms parameters to current list with an additional column repeating it's velocity
                 k = k+1;
             end
         end
@@ -82,19 +76,18 @@ for n = 1 : 1 : nDumpFiles
             %Start of routine to see what atoms have left the region between
             %dumped timesteps
             
-            ignoreIndex = zeros(prevNum,1); %NxN matrix where N is number of atoms previously in the region
+            ignoreIndex = zeros(prevNum,1); %Matrix of length equal to the number of atoms previously in the region, first column indicates whether particle was previously held in region, second column indicates direction of particle entry
             for m = 1 : 1 : curNum
                 for l = 1 : 1 : prevNum
-                    if(prevAtoms(l,1) == curAtoms(m,1)) %Check if each current atom's id matches any previous id
+                    if(curAtoms(m,1) == prevAtoms(l,1)) %Check if each current atom's id matches any previous id
                         ignoreIndex(l) = 1; %Ignore index of 1 will ignore the particle in transport counting
+                        curAtoms(m,4) = prevAtoms(l,4);
                         break;
-                    else
-                        ignoreIndex(l) = 0; %Ignore index of 0 will count the particle transport
                     end
                 end
             end
             for l = 1 : 1 : prevNum
-                if ignoreIndex(l) ~= 1
+                if (ignoreIndex(l) == 0 && prevAtoms(l,3)/prevAtoms(l,4) > 0) %If the atom isn't either still in the pore, or exiting the pore through the same side it entered
                     for j = 1 : 1 : size(massType,2)
                         if prevAtoms(l,2) == massType(j) %If atom mass in dump is of mass type j
                             if prevAtoms(l,3) > 0 %if velocity is positive
@@ -114,17 +107,18 @@ for n = 1 : 1 : nDumpFiles
         ptclTrans = currPtclTrans;
         t = time_step;
     elseif n >= 2 %If actual restart dump, copy find index of matching times and append single file data
-        tIndx = 1;
-        tMax = max(size(t));
+        tIndx = 0;
+        tMaxIndx = max(size(t));
+        tMax = t(tMaxIndx);
         for i = 1 : 1 : nTimes %For all number of times is current dump file
             if time_step(i) == tMax %If time at index i equals final time in output vector
                 tIndx = i; %Record index of matching time
                 break;
             end
         end
-        for i = 1 : 1 : nTimes-tIndx %For the difference in matching index to total times in current dump file
-            ptclTrans(tMax + i,:) = currPtclTrans(i+tIndx,:); %Append next dumped transport to output matrix
-            t(tMax + i) = time_step(i + tIndx); %Append next dumped transport to output vector
+        for i = 1 : 1 : nTimes - tIndx %For the difference in matching index to total times in current dump file
+            ptclTrans(tMaxIndx + i,:) = currPtclTrans(i + tIndx,:); %Append next dumped transport to output matrix
+            t(tMaxIndx + i) = time_step(i + tIndx); %Append next dumped transport to output vector
         end
     end
 end

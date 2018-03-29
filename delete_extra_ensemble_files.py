@@ -6,6 +6,7 @@ Created on Tue Sep 19 15:01:53 2017
 """
 
 import os
+#import shutil
 
 ensembleDir = os.getcwd()
 for paramDir in os.listdir(ensembleDir):
@@ -14,11 +15,12 @@ for paramDir in os.listdir(ensembleDir):
             if not (trialDir.endswith('.py') or trialDir.endswith('.pyc')):
                 os.chdir(os.path.join(ensembleDir, paramDir, trialDir))
                 for aFile in os.listdir(os.path.join(ensembleDir, paramDir, trialDir)):
-                    fileParts = aFile.split('.')         
-                    
+                    fileParts = aFile.split('.')
+
                     ##If file IS a restart output and NOT a backup or for a specified timestep, delete said file
-                    if (fileParts[1] == 'rst'): 
+                    if (fileParts[1] == 'rst'):
                         nameParts = fileParts[0].split('_')
-                        if (not nameParts[-1] == 'archive'): 
+                        if (not nameParts[-1] == 'archive'):
                             os.remove(os.path.join('./',aFile))
-    
+#                        else:
+#                            shutil.copy2(fileParts[0] + '.rst', fileParts[0] + '.bak' )

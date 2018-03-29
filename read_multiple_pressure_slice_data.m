@@ -11,8 +11,8 @@ fileName = files.name;
 try
     logData = readlog(fileName);
 catch
-    error('ERROR: readlog.m failed presumably due to improper file termination. Attempting readlog_fix.m');
     logData = readlog_fix(fileName);
+    error('ERROR: readlog.m failed presumably due to improper file termination. Attempting readlog_fix.m');
 end
 thermStartStrings = logData.data{1,2};
 sTimes = size(thermStartStrings,1)-1;
