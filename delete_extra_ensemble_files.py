@@ -4,9 +4,12 @@ Created on Tue Sep 19 15:01:53 2017
 
 @author: kevin
 """
+flagMakeBackups = True
+flagRemoveBackups = False
 
 import os
-#import shutil
+if flagMakeBackups:
+    import shutil
 
 ensembleDir = os.getcwd()
 for paramDir in os.listdir(ensembleDir):
@@ -22,5 +25,8 @@ for paramDir in os.listdir(ensembleDir):
                         nameParts = fileParts[0].split('_')
                         if (not nameParts[-1] == 'archive'):
                             os.remove(os.path.join('./',aFile))
-#                        else:
-#                            shutil.copy2(fileParts[0] + '.rst', fileParts[0] + '.bak' )
+                        elif flagMakeBackups:
+                            shutil.copy2(fileParts[0] + '.rst', fileParts[0] + '.bak' )
+                    elif flagRemoveBackups:
+                        if (fileParts[1] == 'bak'):
+                            os.remove(os.path.join('./',aFile))
