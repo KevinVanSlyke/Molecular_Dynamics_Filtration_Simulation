@@ -1,26 +1,47 @@
 function [ varargout ] = fit_pressure_decay_constant_versus_parameter( varargin )
-%UNTITLED3 Summary of this function goes here
-%   Detailed explanation goes here
-
-%cd('/home/Kevin/Documents/Dust_Data/Molecular/December_2017_WidePore_StationaryImpurities/StationaryImpurity_Figures');
-%cd('/home/Kevin/Documents/Dust_Data/Molecular/December_2017_WidePore_StationaryImpurities/WidePore_Figures');
-%cd('/home/Kevin/Documents/Dust_Data/Molecular/October_2017_Multiple_Parameters/Mom_Flow_Diameter/Mom_Flow_Diameter_Figures');
+%Takes the exponential decay constant data of pressure envelope as a
+%function of parameter and plots a functional fit
+%   Current Input data format:
+%   fit_data{trial,:} = {simString, tau_fit, tau_stddev, exp_rsquare, exp_adjrsquare, exp_rmse, beta_fit, beta_stddev, pow_rsquare, pow_adjrsquare, pow_rmse, fundFreq};
+sigma = 3.4*10^(-10); %Nm
 startDir = pwd;
 
+%%Old Input format
+% data_labels = varargin{1}.data_labels;
+% decay_fit_data = varargin{1}.decay_fit_data;
+% baseDir = varargin{2};
+% cd(baseDir);
+% dList = decay_fit_data(:,1);
+% tau_est = decay_fit_data(:,2);
+% tau_stddev = decay_fit_data(:,3);
+% beta = decay_fit_data(:,7);
+% beta_stddev = decay_fit_data(:,8);
+% primary_freq = decay_fit_data(:,12);
 
-data_labels = varargin{1}.data_labels;
-decay_fit_data = varargin{1}.decay_fit_data;
-baseDir = varargin{2};
-cd(baseDir);
+fit_data = varargin{1,1}.fit_data;
+nTrials = max(size(fit_data));
 
-dList = decay_fit_data(:,1);
-tau_est = decay_fit_data(:,2);
-tau_stddev = decay_fit_data(:,3);
-beta = decay_fit_data(:,7);
-beta_stddev = decay_fit_data(:,8);
-primary_freq = decay_fit_data(:,12);
-data = [dList, tau_est, tau_stddev, beta, beta_stddev, primary_freq];
-sorted_data = sortrows(data);
+for i = 1 : 1 : nTrials
+    simString = fit_data{i,1}{1,1};
+    parStrings = strsplit(simString,{'_'});
+
+    wString = strsplit(parStrings{1,1},{'W'});
+    wList(i) = str2double(wString{1,1}); %Argon Diameters
+
+    dString = strsplit(parStrings{1,2},{'D'});
+    dList(i) = str2double(dString{1,1})*sigma*(1/(10^(-9))); %nanometers
+    
+    tau_est(i) = fit_data{i,1}{1,2};
+    tau_stddev(i) = fit_data{i,1}{1,3};
+    beta(i) = fit_data{i,1}{1,7};
+    beta_stddev(i) = fit_data{i,1}{1,8};
+    primary_freq(i) = fit_data{i,1}{1,12};
+end
+
+
+data = [dList; tau_est; tau_stddev; beta; beta_stddev; primary_freq];
+
+sorted_data = sortrows(data');
 dList = sorted_data(:,1);
 tau_est = sorted_data(:,2);
 tau_stddev = sorted_data(:,3);
@@ -84,39 +105,40 @@ ax0 = axes('Position',[0 0 1 1],'Visible','off');
 % text(0.725,0.6+shift, ['Adj. $R^2$ Value = ' num2str(lin_tau_adjrsquare,5)], 'Interpreter', 'latex', 'units', 'normalized');
 % text(0.725,0.55+shift, ['RMS Error = ' num2str(lin_tau_rmse)], 'Interpreter', 'latex', 'units', 'normalized');
 
-text(0.725,0.95, 'Linear Fit:','Interpreter','latex', 'FontSize', 9);
-text(0.725,0.9, '$\tau(D) = a \cdot D + b$','Interpreter','latex');
-text(0.725,0.85, ['$a =$ ' num2str(lin_tau_c(1),5) '$\frac{ns}{nm}$'], 'Interpreter', 'latex', 'units', 'normalized');
-text(0.725,0.8, ['$\sigma_a =$ ' num2str(lin_tau_c_stddev(1),5) '$\frac{ns}{nm}$'], 'Interpreter', 'latex', 'units', 'normalized');
-text(0.725,0.75, ['$b =$ ' num2str(lin_tau_c(2),5) '$ns$'], 'Interpreter', 'latex', 'units', 'normalized');
-text(0.725,0.7, ['$\sigma_b =$ ' num2str(lin_tau_c_stddev(2),5) '$ns$'], 'Interpreter', 'latex', 'units', 'normalized');
-text(0.725,0.65, ['$R^2$ Value = ' num2str(lin_tau_rsquare,5)], 'Interpreter', 'latex', 'units', 'normalized');
-text(0.725,0.6, ['Adj. $R^2$ Value = ' num2str(lin_tau_adjrsquare,5)], 'Interpreter', 'latex', 'units', 'normalized');
-text(0.725,0.55, ['RMS Error = ' num2str(lin_tau_rmse)], 'Interpreter', 'latex', 'units', 'normalized');
+text(0.725,0.95+shift, 'Linear Fit:','Interpreter','latex', 'FontSize', 9);
+text(0.725,0.9+shift, '$\tau(D) = a \cdot D + b$','Interpreter','latex');
+text(0.725,0.85+shift, ['$a =$ ' num2str(lin_tau_c(1),5) '$\frac{s}{m}$'], 'Interpreter', 'latex', 'units', 'normalized');
+text(0.725,0.8+shift, ['$\sigma_a =$ ' num2str(lin_tau_c_stddev(1),5) '$\frac{ns}{nm}$'], 'Interpreter', 'latex', 'units', 'normalized');
+text(0.725,0.75+shift, ['$b =$ ' num2str(lin_tau_c(2),5) '$ns$'], 'Interpreter', 'latex', 'units', 'normalized');
+text(0.725,0.7+shift, ['$\sigma_b =$ ' num2str(lin_tau_c_stddev(2),5) '$ns$'], 'Interpreter', 'latex', 'units', 'normalized');
+text(0.725,0.65+shift, ['$R^2$ Value = ' num2str(lin_tau_rsquare,5)], 'Interpreter', 'latex', 'units', 'normalized');
+text(0.725,0.6+shift, ['Adj. $R^2$ Value = ' num2str(lin_tau_adjrsquare,5)], 'Interpreter', 'latex', 'units', 'normalized');
+text(0.725,0.55+shift, ['RMS Error = ' num2str(lin_tau_rmse)], 'Interpreter', 'latex', 'units', 'normalized');
 
-text(0.725,0.45, 'Exponential Fit:','Interpreter','latex', 'FontSize', 9);
-text(0.725,0.4, '$\tau(D) = \alpha \cdot exp(\zeta \cdot D)$','Interpreter','latex');
-text(0.725,0.35, ['$\alpha =$ ' num2str(exp_tau_c(1),5) '$ns$'], 'Interpreter', 'latex', 'units', 'normalized');
-text(0.725,0.3, ['$\sigma_{\alpha} =$ ' num2str(exp_tau_c_stddev(1),5) '$ns$'], 'Interpreter', 'latex', 'units', 'normalized');
-text(0.725,0.25, ['$\zeta =$ ' num2str(exp_tau_c(2),5) '$\frac{1}{nm}$'], 'Interpreter', 'latex', 'units', 'normalized');
-text(0.725,0.2, ['$\sigma_{\zeta} =$ ' num2str(exp_tau_c_stddev(2),5) '$\frac{1}{nm}$'], 'Interpreter', 'latex', 'units', 'normalized');
-text(0.725,0.15, ['$R^2$ Value = ' num2str(exp_tau_rsquare,5)], 'Interpreter', 'latex', 'units', 'normalized');
-text(0.725,0.1, ['Adj. $R^2$ Value = ' num2str(exp_tau_adjrsquare,5)], 'Interpreter', 'latex', 'units', 'normalized');
-text(0.725,0.05, ['RMS Error = ' num2str(exp_tau_rmse)], 'Interpreter', 'latex', 'units', 'normalized');
+% text(0.725,0.45, 'Exponential Fit:','Interpreter','latex', 'FontSize', 9);
+% text(0.725,0.4, '$\tau(D) = \alpha \cdot exp(\zeta \cdot D)$','Interpreter','latex');
+% text(0.725,0.35, ['$\alpha =$ ' num2str(exp_tau_c(1),5) '$ns$'], 'Interpreter', 'latex', 'units', 'normalized');
+% text(0.725,0.3, ['$\sigma_{\alpha} =$ ' num2str(exp_tau_c_stddev(1),5) '$ns$'], 'Interpreter', 'latex', 'units', 'normalized');
+% text(0.725,0.25, ['$\zeta =$ ' num2str(exp_tau_c(2),5) '$\frac{1}{nm}$'], 'Interpreter', 'latex', 'units', 'normalized');
+% text(0.725,0.2, ['$\sigma_{\zeta} =$ ' num2str(exp_tau_c_stddev(2),5) '$\frac{1}{nm}$'], 'Interpreter', 'latex', 'units', 'normalized');
+% text(0.725,0.15, ['$R^2$ Value = ' num2str(exp_tau_rsquare,5)], 'Interpreter', 'latex', 'units', 'normalized');
+% text(0.725,0.1, ['Adj. $R^2$ Value = ' num2str(exp_tau_adjrsquare,5)], 'Interpreter', 'latex', 'units', 'normalized');
+% text(0.725,0.05, ['RMS Error = ' num2str(exp_tau_rmse)], 'Interpreter', 'latex', 'units', 'normalized');
 
 ax1 = axes('Position',[.1 .1 .6 .8],'Visible','off');
 pRaw = errorbar(dList, tau_est, tau_95_conf, 'square');
 hold on;
 pLin = plot(dList, lin_tau_line);
 hold on;
-pExp = plot(dList, exp_tau_line);
-hold on;
+%pExp = plot(dList, exp_tau_line);
+%hold on;
 
-title('Experimental Data and Fitted Functions for $\tau(D)$','Interpreter','latex');
+title('Experimental Data and Linear Fit of $\tau(D)$','Interpreter','latex');
 xlabel('Impurity Diameter, $D ~ (nm)$','Interpreter','latex');
-ylabel('$\tau, (ns)$','Interpreter','latex');
-%legend('95% Confidence Interval', 'Linear Fit', 'Location', 'northwest');
-legend('95% Confidence Interval', 'Linear Fit', 'Exponential Fit', 'Location', 'northwest');
+ylabel('Exponential Decay Constant, $\tau (ns)$','Interpreter','latex');
+legend('95% Confidence Interval', 'Linear Fit', 'Location', 'NorthWest');
+%legend('95% Confidence Interval', 'Linear Fit', 'Exponential Fit', 'Location', 'northwest');
+xlim([0 7]);
 print('tau_func_D', '-dpng');
 close(fig);
 

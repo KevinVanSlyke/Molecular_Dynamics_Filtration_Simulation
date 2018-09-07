@@ -28,11 +28,11 @@ for i = 1 : 1 : size(simList,1)
     D = str2double(dString{1,1});
     d=D*sigma*(10^(9)); %nanometers
     
-    hString = strsplit(parStrings{1,3},{'H'});
-    H = str2double(hString{1,1});
-    h=H*sigma*(10^(9)); %nanometers
+%     hString = strsplit(parStrings{1,3},{'H'});
+%     H = str2double(hString{1,1});
+%     h=H*sigma*(10^(9)); %nanometers
     
-    for j = 1 : 1 : size(P_avg,3)
+    for j = 1 : 1 : size(P_avg,2)
         if j == 1
             region = 'Front';
         elseif j == 2
@@ -41,10 +41,10 @@ for i = 1 : 1 : size(simList,1)
             region = 'Rear';
         end
         t = times; %timesteps
-        P = P_avg(:,i,j); %LJ Dimensionless
-        P_plot = P*epsilon/sigma^(2)*(1/(10^(-3))); %milliJoules/meter^2
-        P_plot_dev = P_std(:,i)*epsilon/sigma^(2)*(1/(10^(-3))); %milliJoules/meter^2
-        P_dev = P_std(:,i,j); %LJ Dimensionless
+        P(:,1) = P_avg(:,j,i); %LJ Dimensionless
+        P_plot = P*epsilon/sigma^(3)*10^(-6); %kJoules/meter^3
+        P_plot_dev(:,1) = P_std(:,j,i)*epsilon/sigma^(3)*10^(-6); %kJoules/meter^3
+        P_dev(:,1) = P_std(:,j,i); %LJ Dimensionless
         P_weights = P_dev.^(-2); %LJ Dimensionless
         
         n_max = max(size(P));
@@ -57,8 +57,8 @@ for i = 1 : 1 : size(simList,1)
             count = count + 1;
         end
         P_thermal = P_thermal/count; %LJ Dimensionless
-        P_diff = (P - P_thermal)*epsilon/sigma^(2)*(1/(10^(-3))); %milliJoules/meter^2
-        P_thermal_stddev = std(P(round(n_max*0.9,0):n_max))*epsilon/sigma^(2)*(1/(10^(-3))); %milliJoules/meter^2
+        P_diff = (P - P_thermal)*epsilon/sigma^(3)*10^(-6); %kJoules/meter^3
+        P_thermal_stddev = std(P(round(n_max*0.9,0):n_max))*epsilon/sigma^(3)*10^(-6); %kJoules/meter^3
         
         n = (1 : 1 : n_max)';
         sampleFreq = n/(n_max);
@@ -95,9 +95,9 @@ for i = 1 : 1 : size(simList,1)
             exp_fit_coef = coeffvalues(exp_fit_curve);
             exp_coef_conf_int = confint(exp_fit_curve);
             
-            P_0_fit = exp_fit_coef(1); % \frac{mJ}{m^{2}}
-            P_0_up_95_conf = exp_coef_conf_int(1,1); % \frac{mJ}{m^{2}}
-            P_0_low_95_conf = exp_coef_conf_int(2,1); % \frac{mJ}{m^{2}}
+            P_0_fit = exp_fit_coef(1); % \frac{kJ}{m^{3}}
+            P_0_up_95_conf = exp_coef_conf_int(1,1); % \frac{kJ}{m^{3}}
+            P_0_low_95_conf = exp_coef_conf_int(2,1); % \frac{kJ}{m^{3}}
             P_0_stddev = (abs(P_0_fit-P_0_up_95_conf)/1.96 + abs(P_0_fit-P_0_low_95_conf)/1.96)/2; % \frac{mJ}{m^{2}}
             
             tau_fit = -1/exp_fit_coef(2); % 1/ns (GHz)
@@ -109,7 +109,7 @@ for i = 1 : 1 : size(simList,1)
             exp_adjrsquare = exp_fit_goodness.adjrsquare;
             exp_rmse = exp_fit_goodness.rmse;
             
-            exp_fit_line = feval(exp_fit_curve, t); %milliJoules/meter^2
+            exp_fit_line = feval(exp_fit_curve, t); %kJoules/meter^2
             
             
             [pow_fit_curve, pow_fit_goodness, pow_fit_output] = fit(t_peaks,P_diff_peaks,'power1','Weights', P_peaks_weight);
@@ -117,10 +117,10 @@ for i = 1 : 1 : size(simList,1)
             pow_fit_coef = coeffvalues(pow_fit_curve);
             pow_coef_conf_int = confint(pow_fit_curve); 
             
-            A_fit = pow_fit_coef(1); % \frac{mJ}{m^{2}}
-            A_up_95_conf = pow_coef_conf_int(1,1); % \frac{mJ}{m^{2}}
-            A_low_95_conf = pow_coef_conf_int(2,1); % \frac{mJ}{m^{2}}
-            A_stddev = (abs(A_fit-A_up_95_conf)/1.96 + abs(A_fit-A_low_95_conf)/1.96)/2; % \frac{mJ}{m^{2}}
+            A_fit = pow_fit_coef(1); % \frac{kJ}{m^{3}}
+            A_up_95_conf = pow_coef_conf_int(1,1); % \frac{kJ}{m^{3}}
+            A_low_95_conf = pow_coef_conf_int(2,1); % \frac{kJ}{m^{3}}
+            A_stddev = (abs(A_fit-A_up_95_conf)/1.96 + abs(A_fit-A_low_95_conf)/1.96)/2; % \frac{kJ}{m^{3}}
             
             beta_fit = pow_fit_coef(2);
             beta_up_95_conf = pow_coef_conf_int(1,2);
@@ -131,27 +131,27 @@ for i = 1 : 1 : size(simList,1)
             pow_adjrsquare = pow_fit_goodness.adjrsquare;
             pow_rmse = pow_fit_goodness.rmse;
             
-            pow_fit_line = feval(pow_fit_curve, t(2:size(t,1))); %milliJoules/meter^2
+            pow_fit_line = feval(pow_fit_curve, t(2:size(t,1))); %kJoules/meter^3
             %t_cutoff = 10*tau_fit;
             
             %cd('/home/Kevin/Documents/Dust_Data/Molecular/.../Figures');
             fit_data{i,:,j} = {simString, tau_fit, tau_stddev, exp_rsquare, exp_adjrsquare, exp_rmse, beta_fit, beta_stddev, pow_rsquare, pow_adjrsquare, pow_rmse, fundFreq};
                  
-            P_plot_peaks_dev = P_peaks_dev*epsilon/sigma^(2)*(1/(10^(-3))); %milliJoules/meter^2
-            P_thermal = P_thermal*epsilon/sigma^(2)*(1/(10^(-3))); %milliJoules/meter^2
+            P_plot_peaks_dev = P_peaks_dev*epsilon/sigma^(3)*10^(-6); %kJoules/meter^3
+            P_thermal = P_thermal*epsilon/sigma^(3)*10^(-6); %kJoules/meter^3
             
             fig = figure('Position',[100,100,1280,720],'Visible','off');
             ax0 = axes('Position',[0 0 1 1],'Visible','off');
             text(0.75,0.9, 'Assumed Pressure Function', 'Interpreter', 'Latex', 'units', 'normalized', 'FontSize', 9);
             text(0.75,0.85, '$P(t)=P_{\alpha,b}(t) \cdot cos(2 \pi f_0 t) + P_{eq}$', 'Interpreter', 'Latex', 'units', 'normalized');
             text(0.75,0.8, ['$f_0 =$ ' num2str(fundFreq,5) ' GHz'], 'Interpreter', 'Latex', 'units', 'normalized');
-            text(0.75,0.75, ['$P_{eq} =$ ' num2str(P_thermal,5) ' $\frac{mJ}{m^{2}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
-            text(0.75,0.7, ['$\sigma_{eq} =$ ' num2str(P_thermal_stddev,5) ' $\frac{mJ}{m^{2}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.75,0.75, ['$P_{eq} =$ ' num2str(P_thermal,5) ' $\frac{kJ}{m^{3}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.75,0.7, ['$\sigma_{eq} =$ ' num2str(P_thermal_stddev,5) ' $\frac{kJ}{m^{3}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
             
             text(0.625,0.6, 'Exponential Amplitude Decay', 'Interpreter', 'Latex', 'units', 'normalized', 'FontSize', 9);
             text(0.625,0.55, '$P_{\alpha}(t) = P_{0} \cdot exp(-t/\tau)$', 'Interpreter', 'Latex', 'units', 'normalized');
-            text(0.625,0.5, ['$P_{0} =$ ' num2str(P_0_fit,5) ' $\frac{mJ}{m^{2}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
-            text(0.625,0.45, ['$\sigma_{0} =$ ' num2str(P_0_stddev,5) ' $\frac{mJ}{m^{2}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.625,0.5, ['$P_{0} =$ ' num2str(P_0_fit,5) ' $\frac{kJ}{m^{3}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.625,0.45, ['$\sigma_{0} =$ ' num2str(P_0_stddev,5) ' $\frac{kJ}{m^{3}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
             text(0.625,0.4, ['$\tau =$ ' num2str(tau_fit,5) ' $ns$'], 'Interpreter', 'Latex', 'units', 'normalized');
             text(0.625,0.35, ['$\sigma_{\tau} =$ ' num2str(tau_stddev,5) ' $ns$'], 'Interpreter', 'Latex', 'units', 'normalized');
             
@@ -163,7 +163,7 @@ for i = 1 : 1 : size(simList,1)
             text(0.825,0.6, 'Algebraic Amplitude Decay', 'Interpreter', 'Latex', 'units', 'normalized', 'FontSize', 9);
             text(0.825,0.55, '$P_{b}(t) = A \cdot t^{~\beta}$', 'Interpreter', 'Latex', 'units', 'normalized');
             text(0.825,0.5, ['$A =$ ' num2str(A_fit,5) ' $\frac{mJ}{m^{2}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
-            text(0.825,0.45, ['$\sigma_{A} =$ ' num2str(A_stddev,5) ' $\frac{mJ}{m^{2}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.825,0.45, ['$\sigma_{A} =$ ' num2str(A_stddev,5) ' $\frac{kJ}{m^{3}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
             text(0.825,0.4, ['$\beta =$ ' num2str(beta_fit,5)], 'Interpreter', 'Latex', 'units', 'normalized');
             text(0.825,0.35, ['$\sigma_{\beta} =$ ' num2str(beta_stddev,5)], 'Interpreter', 'Latex', 'units', 'normalized');
             
@@ -179,20 +179,64 @@ for i = 1 : 1 : size(simList,1)
             errorbar(t_peaks, (P_diff_peaks+P_thermal), P_plot_peaks_dev, 'o');
             hold on;
             plot(t, (exp_fit_line+P_thermal), t(2:size(t,1)), (pow_fit_line+P_thermal));    %plot(t, P, '.', t_peaks, (P_diff_peaks+P_thermal), 'ro', t, (exp_fit_line+P_thermal), t(2:size(t,1)), (pow_fit_line+P_thermal));
-            title(strcat('Statistical Pressure at~', region, ' of Filter with Pore Width W=', num2str(W), 'd, Impurity Diameter D=', num2str(D), 'd and Registry Shift H=', num2str(H),'d'), 'Interpreter', 'LaTex', 'FontSize', 8 );
+%            title(strcat('Statistical Pressure at~', region, ' of Filter with Pore Width W=', num2str(W), 'd, Impurity Diameter D=', num2str(D), 'd and Registry Shift H=', num2str(H),'d'), 'Interpreter', 'LaTex', 'FontSize', 8 );
+            title(strcat('Statistical Pressure at~', region, ' of Filter with Pore Width W=', num2str(W), 'd, Impurity Diameter D=', num2str(D), 'd'), 'Interpreter', 'LaTex', 'FontSize', 8 );
             xlabel('Time, $t ~ (ns)$','Interpreter','Latex');
-            ylabel('Pressure, $P ~ (\frac{mJ}{m^{2}})$','Interpreter','Latex');
+            ylabel('Pressure, $P ~ (\frac{kJ}{m^{3}})$','Interpreter','Latex');
             legend('Raw Data', 'Peak (Fit) Values', 'Exponential Fit', 'Algebraic Fit');
             %axis([0 t_cutoff 0.9*min(P) 1.1*max(P)]);
             axis([0 max(t) 0.9*min(P_plot) 1.1*max(P_plot)]);
             print(strcat(region,'_Statistical_Pressure_vs_Time_',simString), '-dpng');
             close(fig);
+            
+%%%%%%%%%%%%%%%%%%%%%%%%            
+            
+            fig1 = figure('Position',[100,100,1280,720],'Visible','off');
+            ax0 = axes('Position',[0 0 1 1],'Visible','off');
+            
+            text(0.825,0.9, 'General Pressure Function', 'Interpreter', 'Latex', 'units', 'normalized', 'FontSize', 9);
+            text(0.825,0.85, '$P(t)=P_{A}(t) \cdot cos(2 \pi f_0 t) + P_{eq}$', 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.825,0.8, ['$f_0 =$ ' num2str(fundFreq,5) ' GHz'], 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.825,0.75, ['$P_{eq} =$ ' num2str(P_thermal,5) ' $\frac{kJ}{m^{3}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.825,0.7, ['$\sigma_{eq} =$ ' num2str(P_thermal_stddev,5) ' $\frac{kJ}{m^{3}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
+       
+            text(0.825,0.6, 'Exponential Amplitude Decay', 'Interpreter', 'Latex', 'units', 'normalized', 'FontSize', 9);
+            text(0.825,0.55, '$P_{A}(t) = P_{0} \cdot exp(-t/\tau)$', 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.825,0.5, ['$P_{0} =$ ' num2str(P_0_fit,5) ' $\frac{kJ}{m^{3}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.825,0.45, ['$\sigma_{0} =$ ' num2str(P_0_stddev,5) ' $\frac{kJ}{m^{3}}$'], 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.825,0.4, ['$\tau =$ ' num2str(tau_fit,5) ' $ns$'], 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.825,0.35, ['$\sigma_{\tau} =$ ' num2str(tau_stddev,5) ' $ns$'], 'Interpreter', 'Latex', 'units', 'normalized');
+            
+            text(0.825,0.25, 'Goodness of Fit for $P_{A}(t)$', 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.825,0.2, ['$R^2$ Value = ' num2str(exp_rsquare,5)], 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.825,0.15, ['Adj. $R^2$ Value = ' num2str(exp_adjrsquare,5)], 'Interpreter', 'Latex', 'units', 'normalized');
+            text(0.825,0.1, ['RMS Error = ' num2str(exp_rmse,5)], 'Interpreter', 'Latex', 'units', 'normalized');
+                
+       
+            ax1 = axes('Position',[.1 .1 .7 .8],'Visible','off');
+            %errorbar(t,P_plot, P_plot_dev, '.');
+            plot(t, P_plot, '.');
+            hold on;
+            errorbar(t_peaks, (P_diff_peaks+P_thermal), P_plot_peaks_dev, 'o');
+            hold on;
+            plot(t, (exp_fit_line+P_thermal));    %plot(t, P, '.', t_peaks, (P_diff_peaks+P_thermal), 'ro', t, (exp_fit_line+P_thermal), t(2:size(t,1)), (pow_fit_line+P_thermal));
+%            title(strcat('Statistical Pressure at~', region, ' of Filter with Pore Width W=', num2str(W), 'd, Impurity Diameter D=', num2str(D), 'd and Registry Shift H=', num2str(H),'d'), 'Interpreter', 'LaTex', 'FontSize', 8 );
+            title(strcat('Statistical Pressure at~', region, ' of Filter with Pore Width W=', num2str(W), 'd, Impurity Diameter D=', num2str(D), 'd'), 'Interpreter', 'LaTex', 'FontSize', 8 );
+            xlabel('Time, $t ~ (ns)$','Interpreter','Latex');
+            ylabel('Pressure, $P ~ (\frac{kJ}{m^{3}})$','Interpreter','Latex');
+            legend('Raw Data', 'Peak (Fit) Values', 'Exponential Fit');
+            %axis([0 t_cutoff 0.9*min(P) 1.1*max(P)]);
+            axis([0 max(t) 0.9*min(P_plot) 1.1*max(P_plot)]);
+            print(strcat(region,'_Clean_Statistical_Pressure_vs_Time_',simString), '-dpng');
+            close(fig1);
+            
         else
             fig = figure('Visible','off');
             plot(t, P_plot, '.');
-            title(strcat('Average Pressure at~', region, ' of Filter with Pore Width W=', num2str(W), 'd, Impurity Diameter D=', num2str(D), 'd and Registry Shift H=', num2str(H),'d'), 'Interpreter', 'LaTex', 'FontSize', 8 );
+%            title(strcat('Average Pressure at~', region, ' of Filter with Pore Width W=', num2str(W), 'd, Impurity Diameter D=', num2str(D), 'd and Registry Shift H=', num2str(H),'d'), 'Interpreter', 'LaTex', 'FontSize', 8 );
+            title(strcat('Average Pressure at~', region, ' of Filter with Pore Width W=', num2str(W), 'd, Impurity Diameter D=', num2str(D), 'd'), 'Interpreter', 'LaTex', 'FontSize', 8 );
             xlabel('Time, $t ~ (ns)$','Interpreter','Latex');
-            ylabel('Pressure, $P ~ (\frac{mJ}{m^{2}})$','Interpreter','Latex');
+            ylabel('Pressure, $P ~ (\frac{kJ}{m^{3}})$','Interpreter','Latex');
             legend('Raw Data');
             %axis([0 t_cutoff 0.9*min(P) 1.1*max(P)]);
             axis([0 max(t) 0.9*min(P_plot) 1.1*max(P_plot)]);
@@ -203,7 +247,8 @@ for i = 1 : 1 : size(simList,1)
         norm_power = power/max(power);
         fig = figure('Visible','off');
         plot(freq, norm_power);
-        title(strcat('FT of Gas Pressure at~', region, ' of Filter with Pore Width W=', num2str(W), 'd, Impurity Diameter D=', num2str(D), 'd and Shift H=', num2str(H),'d'), 'Interpreter', 'LaTex', 'FontSize', 8 );
+%        title(strcat('FT of Gas Pressure at~', region, ' of Filter with Pore Width W=', num2str(W), 'd, Impurity Diameter D=', num2str(D), 'd and Shift H=', num2str(H),'d'), 'Interpreter', 'LaTex', 'FontSize', 8 );
+        title(strcat('FT of Gas Pressure at~', region, ' of Filter with Pore Width W=', num2str(W), 'd, Impurity Diameter D=', num2str(D), 'd'), 'Interpreter', 'LaTex', 'FontSize', 8 );
         xlabel('Frequency, $f ~ (GHz)$','Interpreter','Latex');
         ylabel('Power Spectral Density','Interpreter','latex');
         axis([0 5*fundFreq 0 1]);

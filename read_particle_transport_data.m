@@ -30,9 +30,7 @@ dString = strsplit(aString{1,2},{'D'});
 if size(dString,1) > 0
     D = str2double(dString{1,1});
     %d=D*sigma*(10^(9)); %nanometers
-    if D ~= 1
-        massType(2) = D^2;
-    end
+    massType(2) = D^2;
 end
 
 dumpFileList = dir(fullfile(fPath, strcat('dump_',simString,'_', nPore,'_restart_*.lmp')));
@@ -63,7 +61,11 @@ for n = 1 : 1 : nDumpFiles
         for j = 1 : 1 : nAtoms
             curData = atom_data(j,:,i);
             if atom_data(j,1,i) ~= 0 %If atom ID is NOT equal to 0
-                curAtoms(k,:) = [curData, curData(3)]; %Add that atoms parameters to current list with an additional column repeating it's velocity
+                if D ~= 1
+                    curAtoms(k,:) = [curData, curData(3)]; %Add that atoms parameters to current list with an additional column repeating it's velocity
+                else
+                    curAtoms(k,:) = [curData(1), 1, curData(2), curData(2)]; %Python file currently doesn't output mass if D = 1, so it's manually added here
+                end
                 k = k+1;
             end
         end
@@ -107,18 +109,18 @@ for n = 1 : 1 : nDumpFiles
         ptclTrans = currPtclTrans;
         t = time_step;
     elseif n >= 2 %If actual restart dump, copy find index of matching times and append single file data
-        tIndx = 0;
-        tMaxIndx = max(size(t));
-        tMax = t(tMaxIndx);
+        tIndex = 0;
+        tMaxIndex = max(size(t));
+        tMax = t(tMaxIndex);
         for i = 1 : 1 : nTimes %For all number of times is current dump file
             if time_step(i) == tMax %If time at index i equals final time in output vector
-                tIndx = i; %Record index of matching time
+                tIndex = i; %Record index of matching time
                 break;
             end
         end
-        for i = 1 : 1 : nTimes - tIndx %For the difference in matching index to total times in current dump file
-            ptclTrans(tMaxIndx + i,:) = currPtclTrans(i + tIndx,:); %Append next dumped transport to output matrix
-            t(tMaxIndx + i) = time_step(i + tIndx); %Append next dumped transport to output vector
+        for i = 1 : 1 : nTimes - tIndex %For the difference in matching index to total times in current dump file
+            ptclTrans(tMaxIndex + i,:) = currPtclTrans(i + tIndex,:); %Append next dumped transport to output matrix
+            t(tMaxIndex + i) = time_step(i + tIndex); %Append next dumped transport to output vector
         end
     end
 end

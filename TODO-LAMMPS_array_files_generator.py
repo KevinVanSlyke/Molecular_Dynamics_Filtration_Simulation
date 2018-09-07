@@ -8,55 +8,43 @@ Created on Fri Aug 18 14:46:50 2017
 import time
 import os
 import stat
-def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, timeout, dumpMovies):
+def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, timeout):
     #randomSeed = [12461,6426357,32578,1247568,124158,12586]
 
     ##Spatial input parameters
-    dimensions = 3
-    nFilters = 1
+    dimensions = 2
+    nFilters = 2
     
-    xMax = 200
+    xMax = 2000
     xMin = 0
-    yMax = 200
+    yMax = 2000
     yMin = 0
     yPad = 1
     dx = 100
-    dy = 100
-    
 #    iRange = xMax/dx
     if dimensions == 2:
         zMax = 0.01
         zMin = -0.01
     if dimensions == 3:
-        zMax = 25
+        zMax = 5
         zMin = 0
         zPad = 1
 
     ##Currently filter must span entire z dimension and pore is open along this entire axis
 #    poreWidth = 50
-    if poreWidth >= yMax:
-        nFilters = 0
     filterDepth = 5
 #    filterHeight = 3
     filterSpacing = 100
     poreSpacing = poreWidth
-    registryShift = 0
-    flagRegistryShift = False
-    if registryShift != 0:
-        flagRegistryShift = True
-        
+    
     ##Initialization temperature and velocity parameters
     fluidVelocity = 1
     fluidTemperature = 1
     flagPressureFromKineticOnly = False
-    flagImpurityVel = False
-    flagImpurityMom = False
+    flagImpurityFlow = False
 #    flagPressFilterFaceOnly = True
 #    flagPressVerticalSlicesOnly = True
-    flagRearPressure = False
-    flagVCM = True
-    vcmChunks = False
-    flagPairShift = True
+    flagRearPressure = True
     
     ##Energy minimation parameters/thresholds
     eMin = 10**(-4)
@@ -71,32 +59,28 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
     dynamicTime = 10**(3)
     restartTime = 10**(5)
     archiveRestartTime = 10**(6)
-#    totalTime = int(0.1*10**(7))
-    ##Reduced for 3D
-    totalTime = int(10**(7))
+    totalTime = 10**(7)
 
     ##Optional Temporal parameters and flags for extra analysis print outs
     ##Set times below to 0 to exclude print out
-    poreDump = False
+    poreDump = True
     
     tracerDump = False
     tracerTime = 10
     nTracers = 10
     
-#    dumpMovies = True
+    dumpMovies = False
     dumpRawMovies = False
     rawHalfWidth = 125
     movieStartTime = 0
-    movieDuration = 10**(4)
+    movieDuration = 10**(5)
     movieFrameDelta = 100
     
 #    velDumpTime = 0
     
-    ##Default for 2D simulation of L_x = 2000, L_y = 2000
-#   nTotal = 100000
-    ##Equal volume density to default 2D area density with L_x = 200, L_y= 200, L_z = 25
-    nTotal = 18750
-    nImpurities = int(nTotal*0.05)
+
+    nTotal = 100000
+    nImpurities = 5000
 #    impurityDiameter = 1
     
     idType = []
@@ -173,22 +157,8 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
 
     ##Create a unique file name
 #    dirName = '{0}W_{1}D_{2}F'.format(poreWidth, impurityDiameter, filterSpacing)
-    if trialNum >= 0:
-        if flagRegistryShift :
-            dirName = '{0}W_{1}D_{2}H_{3}T'.format(poreWidth, impurityDiameter, registryShift, trialNum)
-        else:
-            dirName = '{0}W_{1}D_{2}T'.format(poreWidth, impurityDiameter, trialNum)
-    else:
-        if flagRegistryShift:
-            dirName = '{0}W_{1}D_{2}H'.format(poreWidth, impurityDiameter, registryShift)
-        else:
-            dirName = '{0}W_{1}D'.format(poreWidth, impurityDiameter)#    if flagImpurityVel == True:
-#        dirName = dirName + '_IV'
-#    elif flagImpurityMom== True:
-#        dirName = dirName + '_IM'
-#    if flagVCM == True:
-#        dirName = dirName + '_VCM'
-
+    dirName = '{0}W_{1}D_{2}T'.format(poreWidth, impurityDiameter, trialNum)
+    
     if (dumpMovies == True):
         localStartName = 'local_movie_' + dirName + '_restart_0.sh'
         localRestartName = 'local_movie_' + dirName + '_restart_1.sh'
@@ -235,19 +205,17 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
     if dimensions == 2:
         sf.write('boundary    p f p    #Set boundaries such that x_axis=fixed, y_axis=periodic, z_axis=periodic \n')
         sf.write('lattice    sq 1    #Simple square lattice with one basis atom per cell, lattice_spacing=1/1=1, reduced density rho = 1 \n')
-        if nFilters == 0:
-            sf.write('region    box block {0} {1} {2} {3} {4} {5}    #Create extruded rectangular simulation volume in units of lattice sites, {0}<=x<{1}, {2}<=y<{3}, {4}<=z<{5} \n'.format(int(xMin), int(xMax), int(yMin), int(yMax+yPad), zMin, zMax))            
-        elif nFilters == 1:
-            sf.write('region    box block {0} {1} {2} {3} {4} {5}    #Create extruded rectangular simulation volume in units of lattice sites, {0}<=x<{1}, {2}<=y<{3}, {4}<=z<{5} \n'.format(int(xMin), int(xMax+filterDepth), int(yMin), int(yMax+yPad), zMin, zMax))
+        if nFilters == 1:
+            sf.write('region    box block {0} {1} {2} {3} {4} {5}    #Create extruded rectangular simulation volume in units of lattice sites, {0}<=x<{1}, {2}<=y<{3}, {4}<=z<{5} \n'.format(int(xMin), int(xMax+filterDepth), int(yMin-yPad), int(yMax+yPad), zMin, zMax))
         elif nFilters ==2:
-            sf.write('region    box block {0} {1} {2} {3} {4} {5}    #Create extruded rectangular simulation volume in units of lattice sites, {0}<=x<{1}, {2}<=y<{3}, {4}<=z<{5} \n'.format(int(xMin), int(xMax+2*filterDepth), int(yMin), int(yMax+yPad), zMin, zMax))
+            sf.write('region    box block {0} {1} {2} {3} {4} {5}    #Create extruded rectangular simulation volume in units of lattice sites, {0}<=x<{1}, {2}<=y<{3}, {4}<=z<{5} \n'.format(int(xMin), int(xMax+2*filterDepth), int(yMin-yPad), int(yMax+yPad), zMin, zMax))
     elif dimensions == 3:
         sf.write('boundary    p f f    #Set boundaries such that x_axis=fixed, y_axis=periodic, z_axis=fixed \n')
         sf.write('lattice    sc 1    #Simple cubic lattice with one basis atom per cell, lattice_spacing=1/1=1, reduced density rho = 1 \n')
         if nFilters == 1:
-            sf.write('region    box block {0} {1} {2} {3} {4} {5}    #Create extruded rectangular simulation volume in units of lattice sites, {0}<=x<{1}, {2}<=y<{3}, {4}<=z<{5} \n'.format(int(xMin), int(xMax+filterDepth), int(yMin), int(yMax+yPad), int(zMin-zPad), int(zMax+zPad)))
+            sf.write('region    box block {0} {1} {2} {3} {4} {5}    #Create extruded rectangular simulation volume in units of lattice sites, {0}<=x<{1}, {2}<=y<{3}, {4}<=z<{5} \n'.format(int(xMin), int(xMax+filterDepth), int(yMin-yPad), int(yMax+yPad), int(zMin-zPad), int(zMax+zPad)))
         elif nFilters ==2:
-            sf.write('region    box block {0} {1} {2} {3} {4} {5}    #Create extruded rectangular simulation volume in units of lattice sites, {0}<=x<{1}, {2}<=y<{3}, {4}<=z<{5} \n'.format(int(xMin), int(xMax+2*filterDepth), int(yMin), int(yMax+yPad), int(zMin-zPad), int(zMax+zPad)))
+            sf.write('region    box block {0} {1} {2} {3} {4} {5}    #Create extruded rectangular simulation volume in units of lattice sites, {0}<=x<{1}, {2}<=y<{3}, {4}<=z<{5} \n'.format(int(xMin), int(xMax+2*filterDepth), int(yMin-yPad), int(yMax+yPad), int(zMin-zPad), int(zMax+zPad)))
 
     sf.write('create_box    {0} box    #Create simulation volume in region box with {0} atom types \n'.format(atomTypes))
     sf.write('timestep    {0}    #One timestep={0}*tau, tau=2.17*10^(-12)s for Argon \n'.format(timeStep))
@@ -255,69 +223,58 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
     
     sf.write('## LJ potential: atom type 1, atom type 2, epsilon, sigma \n')
     sf.write('pair_style    lj/cut 1.1225    #Lennard-Jones global cut-off=1.1225 \n')
-#    sf.write('pair_style    lj/cut 1.1    #Lennard-Jones global cut-off=1.1225 \n')
     epsilon = 1.0
     for i in xrange(atomTypes):
         for j in xrange(atomTypes):
             if i <= j:
                 sigma = diameterType[i]/2. + diameterType[j]/2.
                 cutOff = sigma*1.1225 #1.1225 = 2**(1/6)
-#                cutOff = sigma #1.1225 = 2**(1/6)
-#                cutOff = sigma*1.1 #1.1225 = 2**(1/6)
-#                cutOff = sigma*1.5 #1.1225 = 2**(1/6)
                 if ((idType[i] == 1) and (idType[j] == 1)):
                     cutOff = 0.5
                 sf.write('pair_coeff     {0} {1} {2} {3} {4}     #Pairwise {0}-{1} interaction, epsilon={2}, sigma={3}, cut-off={4} \n'.format(idType[i], idType[j], epsilon, sigma, cutOff))
     for i in xrange(atomTypes):
         sf.write('mass    {0} {1}    #Sets mass of particle type {0} to {1} \n'.format(idType[i], massType[i]))
-    if flagPairShift == True:
-        sf.write('pair_modify    shift yes    #Shifts LJ potential to 0.0 at the cut-off \n')
+    sf.write('pair_modify    shift yes    #Shifts LJ potential to 0.0 at the cut-off \n')
     sf.write('\n')
     
     sf.write('## Define the filter area and fill it with atoms fixed to lattice sites \n')
-    if dimensions == 2 and nFilters == 0:
-        sf.write('region    vacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(xMin + diameterType[-1] + 1), int(xMax + filterDepth - (diameterType[-1] + 1)), int(yMin+diameterType[-1]+1), int(yMax-(diameterType[-1]+1)), 0, 0))
-   
-    elif dimensions == 3 and nFilters == 0:
-        sf.write('region    vacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(xMin + diameterType[-1] + 1), int(xMax + filterDepth - (diameterType[-1] + 1)), int(yMin+diameterType[-1]+1), int(yMax-(diameterType[-1]+1)), int(zMin+diameterType[-1]+1), int(zMax-(diameterType[-1]+1))))
-    
-    elif dimensions == 2 and nFilters == 1:
-        sf.write('region    topWall block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreWidth)/2+yPad), int(yMax), 0, 0))
-        sf.write('region    botWall block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMin+yPad), int((yMax+-poreWidth)/2), 0, 0))
+    if dimensions == 2 and nFilters == 1:
+        sf.write('region    topWall block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreWidth)/2+1), int(yMax), 0, 0))
+        sf.write('region    botWall block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMin), int((yMax+yPad-poreWidth)/2-1), 0, 0))
         sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + diameterType[-1] + 1), int(int(xMax/2)-(diameterType[-1] + 1)), int(yMin+diameterType[-1]+1), int(yMax-(diameterType[-1]+1)), 0, 0))
         sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterDepth + diameterType[-1] + 1), int(xMax + filterDepth - (diameterType[-1] + 1)), int(yMin+diameterType[-1]+1), int(yMax-(diameterType[-1]+1)), 0, 0))
         sf.write('region    vacuum union 2 frontVacuum rearVacuum \n')
         
     elif dimensions == 3 and nFilters == 1:
-        sf.write('region    topWall block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreWidth)/2+yPad), int(yMax), int(zMin), int(zMax)))
-        sf.write('region    botWall block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMin+yPad), int((yMax-poreWidth)/2), int(zMin), int(zMax)))
-        sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + diameterType[-1] + 1), int(int(xMax/2) - (diameterType[-1]  + 1)), int(yMin+diameterType[-1]+1), int(yMax-(diameterType[-1]+1)), int(zMin+diameterType[-1]), int(zMax-(diameterType[-1]+1))))
-        sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterDepth + diameterType[-1] + 1), int(xMax + filterDepth - (diameterType[-1] + 1)), int(yMin+diameterType[-1]+yPad), int(yMax-(diameterType[-1])), int(zMin+diameterType[-1]+1), int(zMax-(diameterType[-1]+1))))
+        sf.write('region    topWall block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreWidth)/2+1), int(yMax), int(zMin), int(zMax)))
+        sf.write('region    botWall block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMin), int((yMax+yPad-poreWidth)/2-1), int(zMin), int(zMax)))
+        sf.write('region    vacuum block {0} {1} {2} {3} {4} {5}    #Region to be filled by gas \n'.format(int(xMin + diameterType[-1] + 1), int(xMax-(diameterType[-1] + filterDepth + 1)), int(yMin+diameterType[-1]+1), int(yMax-(diameterType[-1]+1)), int(zMin+diameterType[-1]+1), int(zMax-(diameterType[-1]+1))))
+        sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + diameterType[-1] + 1), int(int(xMax/2) - (diameterType[-1]  + 1)), int(yMin+diameterType[-1]+1), int(yMax-(diameterType[-1]+1)), int(zMin+diameterType[-1]+1), int(zMax-(diameterType[-1]+1))))
+        sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterDepth + diameterType[-1] + 1), int(xMax + filterDepth - (diameterType[-1] + 1)), int(yMin+diameterType[-1]+1), int(yMax-(diameterType[-1]+1)), int(zMin+diameterType[-1]+1), int(zMax-(diameterType[-1]+1))))
         sf.write('region    vacuum union 2 frontVacuum rearVacuum \n')
         
     elif dimensions == 2 and nFilters == 2:
-        sf.write('region    topWall1 block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreWidth)/2+yPad), int(yMax), 0, 0))
-        sf.write('region    botWall1 block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMin+yPad), int((yMax-poreWidth)/2), 0, 0))
-        sf.write('region    topWall2 block {0} {1} {2} {3} {4} {5}    #Top half of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax+poreSpacing)/2+poreWidth+yPad+registryShift), int(yMax), 0, 0))
-        sf.write('region    midWall2 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int(yMax-poreSpacing)/2+yPad+registryShift, int((yMax+poreSpacing)/2+registryShift), 0, 0))
-        sf.write('region    botWall2 block {0} {1} {2} {3} {4} {5}    #Bottom half of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int(yMin+yPad), int((yMax-poreSpacing)/2-poreWidth)+registryShift, 0, 0))
-        sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + diameterType[-1] + 1), int(int(xMax/2) - (diameterType[-1] + 1)), int(yMin+diameterType[-1]+yPad), int(yMax-(diameterType[-1])), 0, 0))
-        sf.write('region    midVacuum block {0} {1} {2} {3} {4} {5}    #Middle Region to be filled by gas \n'.format(int(int(xMax/2)+(diameterType[-1] + filterDepth + 1)), int(int(xMax/2) + filterSpacing + filterDepth - (diameterType[-1] + yPad)), int(yMin+diameterType[-1]), int(yMax-(diameterType[-1]+1)), 0, 0))        
-        sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterSpacing + 2*filterDepth + diameterType[-1] + 1), int(xMax + 2*filterDepth - (diameterType[-1] + yPad)), int(yMin+diameterType[-1]), int(yMax-(diameterType[-1]+1)), 0, 0))
+        sf.write('region    topWall1 block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreWidth)/2+1), int(yMax), 0, 0))
+        sf.write('region    botWall1 block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMin), int((yMax+yPad-poreWidth)/2-1), 0, 0))
+        sf.write('region    topWall2 block {0} {1} {2} {3} {4} {5}    #Top half of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax+poreSpacing)/2+poreWidth+1), int(yMax), 0, 0))
+        sf.write('region    midWall2 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int(yMax-poreSpacing)/2+1, int((yMax+poreSpacing)/2-1), 0, 0))
+        sf.write('region    botWall2 block {0} {1} {2} {3} {4} {5}    #Bottom half of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int(yMin), int((yMax+yPad-poreSpacing)/2-poreWidth-1), 0, 0))
+        sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + diameterType[-1] + 1), int(int(xMax/2) - (diameterType[-1] + 1)), int(yMin+diameterType[-1]+1), int(yMax-(diameterType[-1]+1)), 0, 0))
+        sf.write('region    midVacuum block {0} {1} {2} {3} {4} {5}    #Middle Region to be filled by gas \n'.format(int(int(xMax/2)+(diameterType[-1] + filterDepth + 1)), int(int(xMax/2) + filterSpacing + filterDepth - (diameterType[-1] + 1)), int(yMin+diameterType[-1]+1), int(yMax-(diameterType[-1]+1)), 0, 0))        
+        sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterSpacing + 2*filterDepth + diameterType[-1] + 1), int(xMax + 2*filterDepth - (diameterType[-1] + 1)), int(yMin+diameterType[-1]+1), int(yMax-(diameterType[-1]+1)), 0, 0))
         sf.write('region    vacuum union 3 frontVacuum midVacuum rearVacuum \n')
         
     elif dimensions == 3 and nFilters == 2:
-        sf.write('region    topWall1 block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreWidth)/2+yPad), int(yMax), int(zMin), int(zMax)))
-        sf.write('region    botWall1 block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMin+yPad), int((yMax-poreWidth)/2), int(zMin), int(zMax)))
+        sf.write('region    topWall1 block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreWidth)/2+1), int(yMax), int(zMin), int(zMax)))
+        sf.write('region    botWall1 block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMin), int((yMax+yPad-poreWidth)/2-1), int(zMin), int(zMax)))
         sf.write('region    topWall2 block {0} {1} {2} {3} {4} {5}    #Top half of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax+poreSpacing)/2+poreWidth+1), int(yMax), int(zMin), int(zMax)))
-        sf.write('region    midWall2 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int(yMax-poreSpacing)/2+yPad, int((yMax+poreSpacing)/2-1), int(zMin), int(zMax)))
-        sf.write('region    botWall2 block {0} {1} {2} {3} {4} {5}    #Bottom half of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int(yMin+yPad), int((yMax-poreSpacing)/2-yPad), int(zMin), int(zMax)))
+        sf.write('region    midWall2 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int(yMax-poreSpacing)/2+1, int((yMax+poreSpacing)/2-1), int(zMin), int(zMax)))
+        sf.write('region    botWall2 block {0} {1} {2} {3} {4} {5}    #Bottom half of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int(yMin), int((yMax+yPad-poreSpacing)/2-1), int(zMin), int(zMax)))
         sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + diameterType[-1] + 1), int(int(xMax/2)-(diameterType[-1] + 1)), int(yMin+diameterType[-1]+1), int(yMax-(diameterType[-1]+1)), int(zMin+diameterType[-1]+1), int(zMax-(diameterType[-1]+1))))
         sf.write('region    midVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(int(xMax/2)+(diameterType[-1] + filterDepth + 1)), int(int(xMax/2) + filterSpacing + filterDepth - (diameterType[-1] + 1)), int(yMin+diameterType[-1]+1), int(yMax-(diameterType[-1]+1)), int(zMax-(diameterType[-1]+1))))
         sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterSpacing + 2*filterDepth + diameterType[-1] + 1), int(xMax + 2*filterDepth - (diameterType[-1] + 1)), int(yMin+diameterType[-1]+1), int(yMax-(diameterType[-1]+1)), int(zMin+diameterType[-1]+1), int(zMax-(diameterType[-1]+1))))
         sf.write('region    vacuum union 3 frontVacuum midVacuum rearVacuum \n')
     
-
     if nFilters == 1:
         sf.write('create_atoms    {0} region topWall \n'.format(idType[0]))
         sf.write('create_atoms    {0} region botWall \n'.format(idType[0]))
@@ -364,13 +321,13 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
     for f in inputFiles:
         f.write('## Thermodynamic calculation method and dynamics \n')
         f.write('fix    1 gas nve    #Fix microcanonical ensemble \n')
-        if nFilters > 0:    
+        if poreWidth > 0:    
             f.write('fix    2 filter setforce 0.0 0.0 0.0  #Fix force on filter to zero \n')
         if dimensions == 2:
-            f.write('fix    3 gas wall/reflect ylo {0} yhi {1}    #Fix walls parallel to xz plane at y={0} and y={1} to reflect particles \n'.format(int(yMin+yPad), int(yMax)))
+            f.write('fix    3 gas wall/reflect ylo {0} yhi {1}    #Fix walls parallel to xz plane at y={0} and y={1} to reflect particles \n'.format(int(yMin), int(yMax)))
             f.write('fix    4 all enforce2d    #Fix motion along the z-axis to simulate 2D \n')
         elif dimensions == 3:
-            f.write('fix    3 gas wall/reflect ylo {0} yhi {1} zlo {2} zhi {3}    #Fix walls parallel to xz plane at y={0} and y={1} and xy plane at z={2} and z={3} to reflect particles \n'.format(int(yMin+yPad), int(yMax), int(zMin), int(zMax)))
+            f.write('fix    3 gas wall/reflect ylo {0} yhi {1} zlo {2} zhi {3}    #Fix walls parallel to xz plane at y={0} and y={1} and xy plane at z={2} and z={3} to reflect particles \n'.format(int(yMin), int(yMax), int(zMin), int(zMax)))
 
         f.write('\n')
     
@@ -389,8 +346,7 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
     sf.write('\n')
     
     sf.write('## Define velocity for initialization of gas and fixing filter \n')
-    if nFilters > 0:
-        sf.write('velocity	filter set 0.0 0.0 0.0     #Set initial velocity of walls to zero \n')
+    sf.write('velocity	filter set 0.0 0.0 0.0     #Set initial velocity of walls to zero \n')
     if impurityDiameter == 1:
         sf.write('velocity    gas create {0} {1} dist gaussian    #Create velocity of gas particles from a Gaussian distribution at temperature={0} with random seed={1} \n'.format(fluidTemperature, randomSeed[3]))
         sf.write('velocity    gas set {0} 0 0 sum yes units box    #Add initial fluid velocity bias of v_x={0} (towards the filter) \n'.format(fluidVelocity))
@@ -398,13 +354,9 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
         sf.write('velocity    argon create {0} {1} dist gaussian    #Create velocity of Argon particles from a Gaussian distribution at temperature={0} with random seed={1} \n'.format(fluidTemperature, randomSeed[3]))
         sf.write('velocity    argon set {0} 0 0 sum yes units box    #Add initial fluid velocity bias of v_x={0} (towards the filter) to the Argon \n'.format(fluidVelocity))
         sf.write('velocity    impurity create {0} {1} dist gaussian    #Create velocity of large particles from a Gaussian distribution at temperature={0} with random seed={1} \n'.format(fluidTemperature, randomSeed[0]))
-        if flagImpurityVel == True:        
+        if flagImpurityFlow == True:        
             sf.write('velocity    impurity set {0} 0 0 sum yes units box    #Add initial fluid velocity bias of v_x={0} (towards the filter) to the Impurities \n'.format(float(fluidVelocity)))
-        if flagImpurityMom == True:        
-            sf.write('velocity    impurity set {0} 0 0 sum yes units box    #Add initial fluid velocity bias of v_x={0} (towards the filter) to the Impurities \n'.format(float(fluidVelocity)/float(massType[2])))
     
-
-        
     for f in inputFiles:
         if f == sf:
             dumpStringDiff = 'restart_0'
@@ -415,36 +367,20 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
         if flagPressureFromKineticOnly == True:
             f.write('compute    kePress all pressure gasTemp ke \n')
         f.write('\n')
-        
-        if vcmChunks == True:  
-            if dimensions == 2 and nFilters == 1:
-                f.write('compute leftChunks gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+yPad), int(dy), int(xMin), int(xMax/2-1), int(yMin+yPad), int(yMax)))
-                f.write('compute leftChunkVCM gas vcm/chunk leftChunks \n')
-                f.write('fix leftChunksAvgVCM gas ave/time 100 10 1000 c_leftChunkVCM[*] file ave_vcm_leftChunks.lmp mode vector \n')
-                f.write('compute rightChunks gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMax/2)+filterDepth-1, int(dx), int(yMin+yPad), int(dy), int(xMax/2)+filterDepth-1, int(xMax-1), int(yMin+yPad), int(yMax)))
-                f.write('compute rightChunkVCM gas vcm/chunk rightChunks \n')
-                f.write('fix rightChunksAvgVCM gas ave/time 100 10 1000 c_rightChunkVCM[*] file ave_vcm_rightChunks.lmp mode vector \n')
-                f.write('compute poreChunk gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMax/2), int(filterDepth), int((yMax-poreWidth)/2+yPad), int(poreWidth), int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax-poreWidth)/2+yPad), int((yMax+poreWidth)/2)))
-                f.write('compute poreChunkVCM gas vcm/chunk poreChunk \n')
-                f.write('fix poreChunksAvgVCM gas ave/time 100 10 1000 c_poreChunkVCM[*] file ave_vcm_poreChunk.lmp mode vector \n')
-    #            for x in range(0,1000,100):
-    #                for y in range(1,2000,100):
-    #                    sf.write('region x{0}y{1} block {0} {1} {2} {3} {4} {5} #Square region of area 100x100 infront of filter with lower left corner at x={0}, y={1}'.format(int(x), int(y), int(x+dx), int(y+dy), int(zMin), int(zMax)))
-            f.write('\n')
 
         if poreDump == True:
             f.write('## Define region inside pore as dynamic \n')
             if dimensions == 2:
-                f.write('region    orifice block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore to use for dumping atom data \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax-poreWidth)/2+yPad), int((yMax+poreWidth)/2), 0, 0))
+                f.write('region    orifice block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore to use for dumping atom data \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+yPad-poreWidth)/2), int((yMax+poreWidth)/2), 0, 0))
                 if nFilters == 2:
-                    f.write('region    orifice1 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore1 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax+poreSpacing)/2)+registryShift+yPad, int((yMax+poreSpacing)/2+poreWidth)+registryShift, 0, 0))
-                    f.write('region    orifice2 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore2 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax-poreSpacing)/2-poreWidth)+yPad+registryShift, int((yMax+yPad-poreSpacing)/2)+registryShift, 0, 0))
+                    f.write('region    orifice1 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore1 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax+yPad+poreSpacing)/2), int((yMax+poreSpacing)/2+poreWidth), 0, 0))
+                    f.write('region    orifice2 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore2 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax-poreSpacing)/2-poreWidth), int((yMax+yPad-poreSpacing)/2), 0, 0))
             
             elif dimensions == 3:
-                f.write('region    orifice block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore to use for dumping atom data \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax-poreWidth)/2+yPad), int((yMax+poreWidth)/2), int(zMin), int(zMax)))
+                f.write('region    orifice block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore to use for dumping atom data \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+yPad-poreWidth)/2), int((yMax+poreWidth)/2), int(zMin), int(zMax)))
                 if nFilters == 2:
-                    f.write('region    orifice1 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore1 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax+poreSpacing)/2)+yPad+registryShift, int((yMax+poreSpacing)/2+poreWidth)+registryShift, int(zMin), int(zMax)))
-                    f.write('region    orifice2 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore2 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax-poreSpacing)/2)-poreWidth+yPad+registryShift, int((yMax+yPad-poreSpacing)/2)+registryShift, int(zMin), int(zMax)))
+                    f.write('region    orifice1 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore1 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax+yPad+poreSpacing)/2), int((yMax+poreSpacing)/2+poreWidth), int(zMin), int(zMax)))
+                    f.write('region    orifice2 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore2 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax-poreSpacing)/2-poreWidth), int((yMax+yPad-poreSpacing)/2), int(zMin), int(zMax)))
             
             f.write('group    pore dynamic gas region orifice every {0}    #Make a dynamic group of particles in pore region every N={0} timesteps \n'.format(dynamicTime))
             if nFilters == 2:
@@ -456,7 +392,7 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
 
         if nFilters >= 1:
             f.write('## Define regions in which Pressure will be calculated and inside of the pore \n')
-            f.write('region    pressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)-dx+1,int(xMax/2),yMin+yPad,yMax,zMin,zMax))
+            f.write('region    pressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)-dx,int(xMax/2),yMin,yMax,zMin,zMax))
             f.write('group    pressureGroup dynamic gas region pressureRegion every {0} \n'.format(dynamicTime))
             if flagPressureFromKineticOnly == True:
                 f.write('compute    Pp pressureGroup stress/atom gasTemp ke \n')
@@ -470,14 +406,14 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
             elif dimensions == 3:
                 f.write('compute    Ps pressureGroup reduce sum c_Pp[1] c_Pp[2] c_Pp[3] \n')
                 f.write('variable    Px equal -(c_Ps[1])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
-                f.write('variable    Py equal -(c_Ps[2])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
-                f.write('variable    Pz equal -(c_Ps[3])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
+                f.write('variable    Py equal -(c_P{0}s[2])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
+                f.write('variable    Pz equal -(c_P{0}s[3])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
                 f.write('variable    P equal (v_Px+v_Py+v_Pz)/3 \n')
             f.write('\n')
             
         if nFilters == 2:
             f.write('## Define regions in which Pressure will be calculated and inside of the pore \n')
-            f.write('region    midPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+filterSpacing-1,yMin+yPad,yMax,zMin,zMax))
+            f.write('region    midPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+filterSpacing,yMin,yMax,zMin,zMax))
             f.write('group    midPressureGroup dynamic gas region midPressureRegion every {0} \n'.format(dynamicTime))
             if flagPressureFromKineticOnly == True:
                 f.write('compute    mPp midPressureGroup stress/atom gasTemp ke \n')
@@ -491,16 +427,16 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
             elif dimensions == 3:
                 f.write('compute    mPs midPressureGroup reduce sum c_mPp[1] c_mPp[2] c_mPp[3] \n')
                 f.write('variable    mPx equal -(c_mPs[1])/({0}*{1}*{2}) \n'.format(filterSpacing,yMax-yMin, zMax-zMin))
-                f.write('variable    mPy equal -(c_mPs[2])/({0}*{1}*{2}) \n'.format(filterSpacing,yMax-yMin, zMax-zMin))
-                f.write('variable    mPz equal -(c_mPs[3])/({0}*{1}*{2}) \n'.format(filterSpacing,yMax-yMin, zMax-zMin))
+                f.write('variable    mPy equal -(c_mP{0}s[2])/({0}*{1}*{2}) \n'.format(filterSpacing,yMax-yMin, zMax-zMin))
+                f.write('variable    mPz equal -(c_mP{0}s[3])/({0}*{1}*{2}) \n'.format(filterSpacing,yMax-yMin, zMax-zMin))
                 f.write('variable    mP equal (v_mPx+v_mPy+v_mPz)/3 \n')
             f.write('\n')
             
         if flagRearPressure == True:
             if nFilters == 1:
-                f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+dx-1,yMin+yPad,yMax,zMin,zMax))
+                f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+dx,yMin,yMax,zMin,zMax))
             elif nFilters == 2:
-                f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterSpacing+2*filterDepth,int(xMax/2)+filterSpacing+dx+2*filterDepth-1,yMin,yMax,zMin,zMax))
+                f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterSpacing+2*filterDepth,int(xMax/2)+filterSpacing+dx+2*filterDepth,yMin,yMax,zMin,zMax))
             
             f.write('group    rearPressureGroup dynamic gas region rearPressureRegion every {0} \n'.format(dynamicTime))
             if flagPressureFromKineticOnly == True:
@@ -515,74 +451,38 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
             elif dimensions == 3:
                 f.write('compute    rPs rearPressureGroup reduce sum c_rPp[1] c_rPp[2] c_rPp[3] \n')
                 f.write('variable    rPx equal -(c_rPs[1])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
-                f.write('variable    rPy equal -(c_rPs[2])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
-                f.write('variable    rPz equal -(c_rPs[3])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
+                f.write('variable    rPy equal -(c_rP{0}s[2])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
+                f.write('variable    rPz equal -(c_rP{0}s[3])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
                 f.write('variable    rP equal (v_rPx+v_rPy+v_rPz)/3 \n')
             f.write('\n')
-        if flagVCM == True:
-            f.write('variable    VCMx equal vcm(gas,x) \n')
-            f.write('variable    VCMy equal vcm(gas,y) \n')
-            f.write('\n')
-
             
         if nFilters == 1:
             if flagRearPressure == True:
                 if flagPressureFromKineticOnly == True:
-                    if flagVCM == False:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_rP \n')
-                    else:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_rP v_VCMx v_VCMy \n')
+                    f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_rP \n')
                 else:
-                    if flagVCM == False:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_rP \n')
-                    else:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_rP v_VCMx v_VCMy \n')
+                    f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_rP \n')
             else:
                 if flagPressureFromKineticOnly == True:
-                    if flagVCM == False:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P \n')
-                    else:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_VCMx v_VCMy \n')                        
+                    f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P \n')
                 else:
-                    if flagVCM == False:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P \n')
-                    else:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_VCMx v_VCMy \n')
+                    f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P \n')
         elif nFilters == 2:
             if flagRearPressure == True:
                 if flagPressureFromKineticOnly == True:
-                    if flagVCM == False:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_mP v_rP \n')
-                    else:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_mP v_rP v_VCMx v_VCMy \n')
+                    f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_mP v_rP \n')
                 else:
-                    if flagVCM == False:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP v_rP \n')
-                    else:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP v_rP v_VCMx v_VCMy \n')
+                    f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP v_rP \n')
             else:
                 if flagPressureFromKineticOnly == True:
-                    if flagVCM == False:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_mP \n')
-                    else:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_mP v_VCMx v_VCMy \n')
+                    f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_mP \n')
                 else:
-                    if flagVCM == False:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP \n')
-                    else:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP v_VCMx v_VCMy \n')
+                    f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP \n')
         else:
             if flagPressureFromKineticOnly == True:
-                if flagVCM == False:
-                    f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress \n')
-                else:
-                    f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_VCMx v_VCMy \n')
+                f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress \n')
             else:
-                if flagVCM == False:
-                    f.write('thermo_style    custom step etotal ke pe c_gasTemp press \n')
-                else:
-                    f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_VCMx v_VCMy \n')
-
+                f.write('thermo_style    custom step etotal ke pe c_gasTemp press \n')
         f.write('\n')
 
                 
@@ -689,7 +589,7 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
         if dumpMovies == True:
             f.write('## Extra dump for movies \n')
             zoom = 50
-            xScaled = 0.525
+            xScaled = 0.52725
             yScaled = 0.5
             zScaled = 0.5
             colorType = ['white', 'blue', 'red', 'yellow', 'green']
@@ -747,7 +647,7 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
     """
     if dumpMovies == False:
         rushCores = 4
-        mem = 6000
+        mem = 512
         rs = open(rushStartName,'w')
         rr = open(rushRestartName,'w')
         rushFiles = [rs, rr]
@@ -758,11 +658,11 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
             r.write('#SBATCH --nodes=1 \n')
             r.write('#SBATCH --ntasks-per-node={0} \n'.format(rushCores))
             r.write('##SBATCH --constraint=IB \n')
-            r.write('#SBATCH --mem-per-cpu={0} \n'.format(mem))
+            r.write('#SBATCH --mem={0} \n'.format(mem))
             r.write('# Memory per node specification is in MB. It is optional. \n')
             r.write('# The default limit is 3000MB per core. \n')
             r.write('#SBATCH --mail-user=kgvansly@buffalo.edu \n')
-            r.write('#SBATCH --mail-type=END \n')
+            r.write('#SBATCH --mail-type=ALL \n')
             r.write('##SBATCH --requeue \n')
             r.write('#Specifies that the job will be requeued after a node failure. \n')
             r.write('#The default is that the job will not be requeued. \n')
@@ -770,7 +670,7 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
         rs.write('#SBATCH --job-name="r0_' + dirName + '" \n')
         rs.write('#SBATCH --output="output_' + dirName + '_restart_0.txt" \n')
         rs.write('#SBATCH --error="error_' + dirName + '_restart_0.txt" \n')
-
+        
         rr.write('#SBATCH --job-name="r1_' + dirName + '" \n')
         rr.write('#SBATCH --output="output_' + dirName + '_restart_1.txt" \n')
         rr.write('#SBATCH --error="error_' + dirName + '_restart_1.txt" \n')
@@ -799,11 +699,6 @@ def LAMMPS_files_generator(randomSeed, poreWidth, impurityDiameter, trialNum, ti
         
             r.write('#The PMI library is necessary for srun \n')
             r.write('export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi.so \n')
-##Added 'source' line in response to CCR error print out:
-#Intel-MPI is in your path. This is adequate for compiling and running most codes. 
-#Source the /util/academic/intel/17.0/compilers_and_libraries_2017/linux/mpi/intel64/bin/mpivars.sh file for more features. 
-
-            r.write('source /util/academic/intel/17.0/compilers_and_libraries_2017/linux/mpi/intel64/bin/mpivars.sh')
         
             r.write('echo "Working directory = $PWD" \n')
         

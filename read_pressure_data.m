@@ -2,115 +2,68 @@ function [ varargout ] = read_pressure_data( varargin )
 %Reads pressure data from thermodynamic output in LAMMPS log files
 %   Catenates pressure data from multiple restarts using the 7th collumn of
 %   LAMMPS log file
-cwd = pwd;
-dirs = strsplit(cwd,'/');
-nDirParts = size(dirs,2);
-cDir = dirs(nDirParts);
-sDir = cDir{1,1};
-files = dir(strcat('log_',sDir,'_restart_0.lmp'));
-fileName = files.name;
-try
-    logData = readlog(fileName);
-catch
-    error('ERROR: readlog.m failed presumably due to improper file termination. Attempting readlog_fix.m');
-    logData = readlog_fix(fileName);
-end
-thermStartStrings = logData.data{1,2};
-sTimes = size(thermStartStrings,1)-1;
-thermData = zeros(sTimes,7);
-for i = 1 : 1 : sTimes
-    thermStartString = strtrim(thermStartStrings(i,:));
-    thermStartWords = strsplit(thermStartString);
-    nWords = size(thermStartWords,2);
-    for j = 1 : 1 : nWords
-        thermStartData(i,j) = str2double(thermStartWords(1,j));
-    end
-end
-ts = thermStartData(:,1);
-Ps = thermStartData(:,7);
 
-files = dir(strcat('log_',sDir,'_restart_1.lmp'));
-if ~isempty(files)
-    fileName = files.name;
+fPath = pwd;
+dirParts = strsplit(fPath,'/');
+nDirParts = size(dirParts,2);
+simDir = dirParts(nDirParts);
+simString = simDir{1,1};
+
+logFileList = dir(fullfile(fPath, strcat('log_',simString,'_restart_*.lmp')));
+nLogFiles = size(logFileList,1); %number of dump files for current pore
+if nLogFiles > 0
+    P = [];
+    t = [];
+end
+
+for n = 1 : 1 : nLogFiles
+    thermLogFile = fullfile(fPath, strcat('log_',simString,'_restart_',num2str(n-1),'.lmp'));
     try
-        logData = readlog(fileName);
+        logData = readlog(thermLogFile);
     catch
+        logData = readlog_fix(thermLogFile);
         error('ERROR: readlog.m failed presumably due to improper file termination. Attempting readlog_fix.m');
-        logData = readlog_fix(fileName);
     end
-    thermRestartStrings = logData.data{1,1};
-    rTimes = size(thermRestartStrings,1)-1;
-    thermRestartData = zeros(rTimes,7);
-    for i = 1 : 1 : rTimes
-        thermRestartString = strtrim(thermRestartStrings(i,:));
-        thermRestartWords = strsplit(thermRestartString);
-        nWords = size(thermRestartWords,2);
+    if n == 1
+        dataIndex = 2;
+    else
+        dataIndex = 1;
+    end
+    thermNameStrings = logData.Chead{1,dataIndex};
+    numThermTypes = max(size(thermNameStrings))-1;
+    thermValueStrings = logData.data{1,dataIndex};
+    nTimes = size(thermValueStrings,1)-1;
+    thermData = zeros(nTimes,numThermTypes);
+    for i = 1 : 1 : nTimes
+        thermValueString = strtrim(thermValueStrings(i,:));
+        thermValueWords = strsplit(thermValueString);
+        nWords = size(thermValueWords,2);
         for j = 1 : 1 : nWords
-            thermRestartData(i,j) = str2double(thermRestartWords(1,j));
+            thermValueData(i,j) = str2double(thermValueWords(1,j));
         end
     end
-    tr = thermRestartData(:,1);
-    Pr = thermRestartData(:,7);
-    
-    rStrtIndx = 1;
-    for i = 1 : 1 : rTimes
-        if tr(i) == ts(sTimes)
-            rStrtIndx = i;
-            break;
-        end
-    end
-    P = Ps;
-    t = ts;
-    for i = 1 : 1 : rTimes-rStrtIndx
-        P(sTimes + i) = Pr(i+rStrtIndx);
-        t(sTimes + i) = tr(i+rStrtIndx);
-    end
-else
-    P = Ps;
-    t = ts;
-end
+    tn = thermValueData(:,1);
+    Pn = thermValueData(:,7);
 
-files = dir(strcat('log_',sDir,'_restart_*.lmp'));
-if ~isempty(files)
-    nDirs = size(files,1);
-    for i = 2 : 1 : nDirs-1
-        fileName = strcat('log_', sDir, '_restart_', num2str(i), '.lmp');
-        try
-            logData = readlog(fileName);
-        catch
-            error('ERROR: readlog.m failed presumably due to improper file termination. Attempting readlog_fix.m');
-            logData = readlog_fix(fileName);
-        end
-        thermRestartStrings = logData.data{1,1};
-        rTimes = size(thermRestartStrings,1)-1;
-        thermRestartData = zeros(rTimes,7);
-        for i = 1 : 1 : rTimes
-            thermRestartString = strtrim(thermRestartStrings(i,:));
-            thermRestartWords = strsplit(thermRestartString);
-            nWords = size(thermRestartWords,2);
-            for j = 1 : 1 : nWords
-                thermRestartData(i,j) = str2double(thermRestartWords(1,j));
-            end
-        end
-        tr = thermRestartData(:,1);
-        Pr = thermRestartData(:,7);
-        
-        pTimes = size(t,1);
-        rStrtIndx = 1;
-        for i = 1 : 1 : rTimes
-            if tr(i) == t(pTimes)
-                rStrtIndx = i;
+    if n == 1 %If restart_0 (start), copy single file output to head of output
+        t = tn;
+        P = Pn;
+    elseif n >= 2 %If actual restart dump, copy find index of matching times and append single file data
+        tIndex = 0;
+        tMaxIndex = max(size(t));
+        tMax = t(tMaxIndex);
+        for i = 1 : 1 : nTimes %For all number of times in current log file
+            if tn(i) == tMax %If time at index i equals final time in output vector
+            	tIndex = i; %Record index of matching time
                 break;
             end
         end
-        
-        for i = 1 : 1 : rTimes-rStrtIndx
-            P(pTimes + i) = Pr(i+rStrtIndx);
-            t(pTimes + i) = tr(i+rStrtIndx);
+        for i = 1 : 1 : nTimes-tIndex %For the difference in matching index to total times in current log file
+            P(tMaxIndex + i) = Pn(i+tIndex); %Append next thermo value to output vectors
+            t(tMaxIndex + i) = tn(i+tIndex);
         end
     end
 end
-
 %----------Outputs-------------
 %OUTPUTS IN SAME VARIABLE STRUCTURE
 varargout{1}.P = P;
