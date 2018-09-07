@@ -30,7 +30,8 @@ for i = 1 : 1 : nParDir
                 cd(directory);
                 tTrialMax = read_log_time_limit();
                 if tTrialMax < nTimeMax
-                    tMaxs(nPar) = tTrialMax;
+                    tCount = (tTrialMax-1)/1000;
+                    tMaxs(nPar) = tCount;
                 end
             end
         end

@@ -18,8 +18,8 @@ timeout = 48 #hours
 #poreWidth = [20, 50, 200]
 #impurityDiamter = [1]
 poreWidth = [100]
-impurityDiamter = [1,5,10,15,20]
-movies = True
+impurityDiamter = [1,2,3,4,5,6,7,8,9,10]
+movies = False
 topDir = os.getcwd()
 ensembleDir = 'Simulation_Ensemble_' + time.strftime("%m_%d_%Y")
 if movies == True:

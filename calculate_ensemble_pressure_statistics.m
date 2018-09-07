@@ -10,10 +10,10 @@ nParDir = size(parStrings,2);
 nPressures = 1;
 
 for nPar = 1 : 1 : nParDir
-    parEnsembleAvgP = zeros(tMaxs(nParDir),nPressures);
-    parEnsembleStdP = zeros(tMaxs(nParDir),nPressures);
+    parEnsembleAvgP = zeros(tMaxs(nPar),nPressures);
+    parEnsembleStdP = zeros(tMaxs(nPar),nPressures);
     parString = parStrings{1,nPar};
-    parPData = zeros(tMaxs(nParDir),nPressures,nTrials(nPar));
+    parPData = zeros(tMaxs(nPar),nPressures,nTrials(nPar));
     trialList = dir(fullfile(baseDir,parString));
     nTrialDirs(nPar) = size(trialList,1);
     nTrial = 0;
@@ -32,7 +32,7 @@ for nPar = 1 : 1 : nParDir
             % press = rawPress(1:tIndexMax);
             rawPData = read_pressure_data();
             P(:,:) = rawPData.P; %LJ Dimensionless
-            parPData(:,:,nTrial) = P(1:tMaxs,:);
+            parPData(:,:,nTrial) = P(1:tMaxs(nPar),:);
         end
     end
     parEnsembleAvgP(:,:,nPar) = mean(parPData,3);
