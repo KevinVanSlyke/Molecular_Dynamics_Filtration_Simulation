@@ -14,8 +14,8 @@ def LAMMPS_sbatch_generator(randomSeed, poreWidth, poreSpacing, impurityDiameter
     sbatchStartName = 'sbatch_' + dirName + '_restart_0.sh'
     sbatchRestartName = 'sbatch_' + dirName + '_restart_1.sh'
 
-    logStartName = 'log_' + dirName + '${SLURM_ARRAY_TASK_ID}T_restart_0.lmp'
-    logRestartName = 'log_' + dirName + '${SLURM_ARRAY_TASK_ID}T_restart_1.lmp'
+    logStartName = 'log_' + dirName + '_${SLURM_ARRAY_TASK_ID}T_restart_0.lmp'
+    logRestartName = 'log_' + dirName + '_${SLURM_ARRAY_TASK_ID}T_restart_1.lmp'
     
     """
         Rush CCR LAMMPS srun start/restart sbatch files
@@ -31,7 +31,7 @@ def LAMMPS_sbatch_generator(randomSeed, poreWidth, poreSpacing, impurityDiameter
         r.write('#SBATCH --time={0}:00:00 \n'.format(timeout))
         r.write('#SBATCH --nodes=1 \n')
         r.write('#SBATCH --ntasks-per-node={0} \n'.format(rushCores))
-        r.write('#SBATCH --array=0-{0} \n'.format(nTrials))
+        r.write('#SBATCH --array=1-{0} \n'.format(nTrials))
         r.write('##SBATCH --constraint=IB \n')
         r.write('##SBATCH --mem-per-cpu={0} \n'.format(mem))
         r.write('# Memory per node specification is in MB. It is optional. \n')
