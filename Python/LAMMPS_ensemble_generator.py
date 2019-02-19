@@ -4,7 +4,8 @@ Created on Fri Aug 18 14:46:50 2017
 
 @author: Kevin Van Slyke
 """
-from LAMMPS_files_generator import LAMMPS_files_generator
+from LAMMPS_input_generator import LAMMPS_input_generator
+from LAMMPS_sbatch_generator import LAMMPS_sbatch_generator
 import random
 import os
 import shutil
@@ -17,12 +18,14 @@ timeout = 48 #hours
 #registryShift = [10,100,200]
 #poreWidth = [20, 50, 200]
 #impurityDiamter = [1]
-poreWidth = [10,20,50,100]
-poreSpacing = [50,250,500,1000]
-impurityDiamter = [1]
+poreWidth = [20]
+poreSpacing = [20, 100, 200, 1000]
+impurityDiamter = [1,5]
 movies = False
 pyDir = os.getcwd()
-simDir = os.path.join(pyDir, 'Simulation_Files/')
+os.chdir('..')
+projDir = os.getcwd()
+simDir = os.path.join(projDir, 'Simulation_Files/')
 os.chdir(simDir)
 ensembleDir = 'Simulation_Ensemble_' + time.strftime("%m_%d_%Y")
 if movies == True:
@@ -47,14 +50,16 @@ for width in poreWidth:
                     randomSeed = []
                     for i in xrange(6):
                         randomSeed.append(random.randint(i+1,(i+1)*100000))
-                    LAMMPS_files_generator(randomSeed, width, spacing, diameter, trial, timeout, movies)
+                    LAMMPS_input_generator(randomSeed, width, spacing, diameter, trial, timeout, movies)
+                LAMMPS_sbatch_generator(randomSeed, width, spacing, diameter, nTrialEnsemble, timeout)
                 os.chdir('..')
             else:
                 seed = random.seed()
                 randomSeed = []
                 for i in xrange(6):
                     randomSeed.append(random.randint(i+1,(i+1)*100000))
-                LAMMPS_files_generator(randomSeed, width, spacing, diameter, -1, timeout, movies)
+                LAMMPS_input_generator(randomSeed, width, spacing, diameter, -1, timeout, movies)
+
                     
                 
 #    for impurityDiameter in [2,10]:
