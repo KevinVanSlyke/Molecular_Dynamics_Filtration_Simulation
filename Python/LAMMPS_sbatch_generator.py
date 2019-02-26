@@ -8,12 +8,12 @@ Created on Tue Feb 19 14:04:54 2019
 def LAMMPS_sbatch_generator(randomSeed, poreWidth, poreSpacing, impurityDiameter, nTrials, timeout):
     
     dirName = '{0}W_{1}D_{2}F'.format(poreWidth, impurityDiameter, poreSpacing)
-    inputStartName = 'input_' + dirName + '_%aT_restart_0.lmp'
-    inputRestartName = 'input_' + dirName + '_%aT_restart_1.lmp'
+    inputStartName = 'input_' + dirName + '_${SLURM_ARRAY_TASK_ID}T_restart_0.lmp'
+    inputRestartName = 'input_' + dirName + '_${SLURM_ARRAY_TASK_ID}T_restart_1.lmp'
 
     sbatchStartName = 'sbatch_' + dirName + '_restart_0.sh'
     sbatchRestartName = 'sbatch_' + dirName + '_restart_1.sh'
-
+    
     logStartName = 'log_' + dirName + '_${SLURM_ARRAY_TASK_ID}T_restart_0.lmp'
     logRestartName = 'log_' + dirName + '_${SLURM_ARRAY_TASK_ID}T_restart_1.lmp'
     
@@ -67,7 +67,7 @@ def LAMMPS_sbatch_generator(randomSeed, poreWidth, poreSpacing, impurityDiameter
         r.write('echo "SLURM_ARRAY_TASK_ID"=$SLURM_ARRAY_TASK_ID \n')
         r.write('echo "Submit directory = "$SLURM_SUBMIT_DIR \n')
     
-        r.write("NPROCS=`srun --nodes=${SLURM_NNODES} bash -c 'hostname' |wc -l` \n")
+        r.write("NPROCS=`srun --nodes=${SLURM_NNODES} bash -c 'hostname' | wc -l` \n")
         r.write('echo "NPROCS=$NPROCS" \n')
         
         r.write('module unload intel-mpi \n')
@@ -84,7 +84,7 @@ def LAMMPS_sbatch_generator(randomSeed, poreWidth, poreSpacing, impurityDiameter
         r.write('echo "Launch MPI LAMMPS air filtration simulation with srun" \n')
     
         r.write('echo "Echo... srun -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + '" \n')
-        r.write('srun -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + '" \n')
+        r.write('srun -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + ' \n')
     
         r.write('echo "All Done!"')
         r.close()
