@@ -10,7 +10,6 @@ N = 0 #restart file number, 0 is initial start, 1 is pre-made, 2+ need to be cre
 ensembleDir = os.getcwd()
 for paramDir in os.listdir(ensembleDir):
     if not (paramDir.endswith('.py') or paramDir.endswith('.pyc')):
-        if not (paramDir.endswith('.py') or paramDir.endswith('.pyc')):
-            os.chdir(os.path.join(ensembleDir, paramDir))
-            script = './sbatch_' + paramDir + '_restart_' + str(N) + '.sh'
-            os.system("sbatch " + script)
+        os.chdir(os.path.join(ensembleDir, paramDir))
+        script = 'sbatch_' + paramDir + '_r' + str(N) + '.sh'
+        os.system("sbatch " + script)

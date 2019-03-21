@@ -11,7 +11,7 @@ import os
 import shutil
 import time
 
-nTrialEnsemble = 50 #number of trials with differing random seed but otherwise identical parameters to create
+nTrialEnsemble = 20 #number of trials with differing random seed but otherwise identical parameters to create
 timeout = 48 #hours
 #filterSpacing = [100]
 
@@ -19,8 +19,10 @@ timeout = 48 #hours
 #poreWidth = [20, 50, 200]
 #impurityDiamter = [1]
 poreWidth = [20]
-poreSpacing = [20, 100, 200, 1000]
-impurityDiamter = [1,5]
+#poreSpacing = [20, 100, 200, 1000]
+poreSpacing = [20]
+#impurityDiameter = [1,5]
+impurityDiameter = [1,10]
 movies = False
 pyDir = os.getcwd()
 os.chdir('..')
@@ -38,27 +40,23 @@ shutil.copy2(os.path.join(pyDir, 'delete_extra_ensemble_files.py'),ensembleDir)
 os.chdir(ensembleDir)
 
 for width in poreWidth:
-    for diameter in impurityDiamter:
+    for diameter in impurityDiameter:
         for spacing in poreSpacing:
             if movies == False:
-                paramDir = '{0}W_{1}D_{2}F'.format(width, diameter,spacing)
+                #paramDir = '{0}W_{1}D_{2}F'.format(width, diameter,spacing)
+                paramDir = '{0}W_{1}D_{2}F'.format(width, diameter, spacing)
                 if not os.path.exists(paramDir):
                     os.makedirs(paramDir)
                 os.chdir(paramDir)
-                for trial in xrange(nTrialEnsemble):
-                    seed = random.seed()
-                    randomSeed = []
-                    for i in xrange(6):
-                        randomSeed.append(random.randint(i+1,(i+1)*100000))
-                    LAMMPS_input_generator(randomSeed, width, spacing, diameter, trial, timeout, movies)
-                LAMMPS_sbatch_generator(randomSeed, width, spacing, diameter, nTrialEnsemble, timeout)
+                LAMMPS_input_generator(width, spacing, diameter, movies)
+                LAMMPS_sbatch_generator(width, spacing, diameter, nTrialEnsemble, timeout)
                 os.chdir('..')
             else:
                 seed = random.seed()
                 randomSeed = []
                 for i in xrange(6):
                     randomSeed.append(random.randint(i+1,(i+1)*100000))
-                LAMMPS_input_generator(randomSeed, width, spacing, diameter, -1, timeout, movies)
+                LAMMPS_input_generator(width, spacing, diameter, movies)
 
                     
                 

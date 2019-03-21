@@ -19,7 +19,7 @@ for paramDir in os.listdir(ensembleDir):
         for trialDir in os.listdir(os.path.join(ensembleDir,paramDir)):
             if not (trialDir.endswith('.py') or trialDir.endswith('.pyc')):
                 os.chdir(os.path.join(ensembleDir,paramDir, trialDir))
-                rushCores = 4
+                rushCores = 8
                 mem = 256
                 newRushRestartName = 'sbatch_' + trialDir + '_restart_' + str(N) + '.sh'
                 r = open(newRushRestartName,'w')
