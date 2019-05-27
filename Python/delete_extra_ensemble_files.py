@@ -4,10 +4,12 @@ Created on Tue Sep 19 15:01:53 2017
 
 @author: kevin
 """
-flagMakeBackups = True
+flagMakeBackups = False
 flagRemoveBackups = False
 flagRemoveIntermediate = True
-copyTarget = str(1000000)
+flagRemoveTerminalOutput = True
+flagRemoveErrorLog = True
+saveStepArchive = str(10000000)
 import os
 import shutil
 
@@ -20,14 +22,15 @@ for paramDir in os.listdir(ensembleDir):
             ##If file IS a restart output and NOT a backup or for a specified timestep, delete said file
             if (fileParts[1] == 'rst'):
                 nameParts = fileParts[0].split('_')
-                if (nameParts[-1] == copyTarget):
+                if (nameParts[-1] == saveStepArchive):
                     continue
                 elif (nameParts[-1] == 'archive') and flagMakeBackups:
                     shutil.copy2(fileParts[0] + '.rst', fileParts[0] + '.bak')
                 elif flagRemoveIntermediate:
                     os.remove(os.path.join('./',aFile))
-                elif flagRemoveIntermediate:
+            if flagRemoveBackups and (fileParts[1].startswith('bak')):
                     os.remove(os.path.join('./',aFile))
-            elif flagRemoveBackups:
-                if (fileParts[1].startswith('bak')):
+            if flagRemoveTerminalOutput and (fileParts[0].startswith('output')):
+                    os.remove(os.path.join('./',aFile))
+            if flagRemoveErrorLog and (fileParts[0].startswith('error')):
                     os.remove(os.path.join('./',aFile))

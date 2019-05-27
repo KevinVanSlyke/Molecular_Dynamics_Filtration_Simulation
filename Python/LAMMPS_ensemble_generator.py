@@ -11,23 +11,23 @@ import os
 import shutil
 import time
 
-nTrialEnsemble = 20 #number of trials with differing random seed but otherwise identical parameters to create
+nTrialEnsemble = 50 #number of trials with differing random seed but otherwise identical parameters to create
 timeout = 48 #hours
 #filterSpacing = [100]
 
 #registryShift = [10,100,200]
 #poreWidth = [20, 50, 200]
 #impurityDiamter = [1]
-poreWidth = [20]
+poreWidth = [100]
 #poreSpacing = [20, 100, 200, 1000]
-poreSpacing = [20]
+#poreSpacing = [40,200]
 #impurityDiameter = [1,5]
-impurityDiameter = [1,10]
+impurityDiameter = [1]
 movies = False
 pyDir = os.getcwd()
-os.chdir('..')
+os.chdir('../../')
 projDir = os.getcwd()
-simDir = os.path.join(projDir, 'Simulation_Files/')
+simDir = os.path.join(projDir, 'LAMMPS_Input_Files/')
 os.chdir(simDir)
 ensembleDir = 'Simulation_Ensemble_' + time.strftime("%m_%d_%Y")
 if movies == True:
@@ -41,22 +41,22 @@ os.chdir(ensembleDir)
 
 for width in poreWidth:
     for diameter in impurityDiameter:
-        for spacing in poreSpacing:
-            if movies == False:
-                #paramDir = '{0}W_{1}D_{2}F'.format(width, diameter,spacing)
-                paramDir = '{0}W_{1}D_{2}F'.format(width, diameter, spacing)
-                if not os.path.exists(paramDir):
-                    os.makedirs(paramDir)
-                os.chdir(paramDir)
-                LAMMPS_input_generator(width, spacing, diameter, movies)
-                LAMMPS_sbatch_generator(width, spacing, diameter, nTrialEnsemble, timeout)
-                os.chdir('..')
-            else:
-                seed = random.seed()
-                randomSeed = []
-                for i in xrange(6):
-                    randomSeed.append(random.randint(i+1,(i+1)*100000))
-                LAMMPS_input_generator(width, spacing, diameter, movies)
+#        for spacing in poreSpacing:
+        if movies == False:
+            #paramDir = '{0}W_{1}D_{2}F'.format(width, diameter,spacing)
+            paramDir = '{0}W_{1}D'.format(width, diameter)
+            if not os.path.exists(paramDir):
+                os.makedirs(paramDir)
+            os.chdir(paramDir)
+            LAMMPS_input_generator(width, diameter, movies)
+            LAMMPS_sbatch_generator(width, diameter, nTrialEnsemble, timeout)
+            os.chdir('..')
+        else:
+            seed = random.seed()
+            randomSeed = []
+            for i in xrange(6):
+                randomSeed.append(random.randint(i+1,(i+1)*100000))
+            LAMMPS_input_generator(width, diameter, movies)
 
                     
                 

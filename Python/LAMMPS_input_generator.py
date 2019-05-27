@@ -8,7 +8,7 @@ Created on Fri Aug 18 14:46:50 2017
 import time
 import os
 import stat
-def LAMMPS_input_generator(poreWidth, poreSpacing, impurityDiameter, dumpMovies):
+def LAMMPS_input_generator(poreWidth, impurityDiameter, dumpMovies):
     #randomSeed = [12461,6426357,32578,1247568,124158,12586]
     ##Frequently changed input variables
         #impurityDiameter, poreWidth, trialNum, poreSpacing, registryShift, filterSpacing, nTotal
@@ -21,10 +21,11 @@ def LAMMPS_input_generator(poreWidth, poreSpacing, impurityDiameter, dumpMovies)
     xMin = 0
     yMax = 2000
     yMin = 0
-    dx = 20
-    dy = 20
+    dx = 100
+    dy = 2000
     
-#    iRange = xMax/dx
+    iRange = xMax/dx
+    jRange = yMax/dy
     if dimensions == 2:
         zMax = 0.01
         zMin = -0.01
@@ -35,13 +36,13 @@ def LAMMPS_input_generator(poreWidth, poreSpacing, impurityDiameter, dumpMovies)
 
     ##Currently filter must span entire z dimension and pore is open along this entire axis
 #    poreWidth = 50
-    flagMultiPore = True
+    flagMultiPore = False
     if poreWidth >= yMax:
         nFilters = 0
     filterDepth = 20
 #    filterHeight = 3
     filterSpacing = 100
-#    poreSpacing = 10
+    poreSpacing = 10
     registryShift = 0
     flagRegistryShift = False
     if registryShift != 0:
@@ -55,10 +56,12 @@ def LAMMPS_input_generator(poreWidth, poreSpacing, impurityDiameter, dumpMovies)
     flagImpurityMom = False
 #    flagPressFilterFaceOnly = True
 #    flagPressVerticalSlicesOnly = True
-    flagRearPressure = False
-    flagPoreSpacing = True
+    flagRearPressure = True
+    flagPoreSpacing = False
+    flagPressureChunks = False
     flagVCM = True
-    vcmChunks = True
+    flagRegionVcm = True
+    flagChunkData = False
     flagPairShift = True
     
     ##Energy minimation parameters/thresholds
@@ -450,7 +453,7 @@ def LAMMPS_input_generator(poreWidth, poreSpacing, impurityDiameter, dumpMovies)
         if flagImpurityMom == True:        
             sf.write('velocity    impurity set {0} 0 0 sum yes units box    #Add initial fluid velocity bias of v_x={0} (towards the filter) to the Impurities \n'.format(float(fluidVelocity)/float(massType[2])))
     
-
+    sf.write('\n')
         
     for f in inputFiles:
         if f == sf:
@@ -464,23 +467,15 @@ def LAMMPS_input_generator(poreWidth, poreSpacing, impurityDiameter, dumpMovies)
         f.write('\n')
         
         
-        if vcmChunks == True:  
+        if flagChunkData == True:  
             if dimensions == 2 and nFilters == 1:
                 f.write('compute chunks gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+filterDepth-1), int(yMin+1), int(yMax)))
                 f.write('compute chunkVCM gas vcm/chunk chunks \n')
-                f.write('fix chunksAvgVCM gas ave/time {0} {1} {2} c_chunkVCM[*] file avg_vcm_chunks_'.format(1000, 1, 1000) + trialName + '_' + dumpStringDiff +'.lmp mode vector \n')
-#        if vcmChunks == True:  
-#            if dimensions == 2 and nFilters == 1:
-#                f.write('compute leftChunks gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax/2-1), int(yMin+1), int(yMax)))
-#                f.write('compute leftChunkVCM gas vcm/chunk leftChunks \n')
-#                f.write('fix leftChunksAvgVCM gas ave/time {0} {1} {2} c_leftChunkVCM[*] file avg_vcm_leftChunks_'.format(1000, 1, 1000) + trialName + '.lmp mode vector \n')
-#                f.write('compute rightChunks gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMax/2)+filterDepth-1, int(dx), int(yMin+1), int(dy), int(xMax/2)+filterDepth-1, int(xMax-1), int(yMin+1), int(yMax)))
-#                f.write('compute rightChunkVCM gas vcm/chunk rightChunks \n')
-#                f.write('fix rightChunksAvgVCM gas ave/time {0} {1} {2} c_rightChunkVCM[*] file avg_vcm_rightChunks_'.format(1000, 1, 1000) + trialName + '.lmp mode vector \n')
-    #            f.write('compute poreChunk gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMax/2), int(filterDepth), int((yMax-poreWidth)/2+1), int(poreWidth), int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax-poreWidth)/2+1), int((yMax+poreWidth)/2)))
-    #            f.write('compute poreChunkVCM gas vcm/chunk poreChunk \n')
-    #            f.write('fix poreChunksAvgVCM gas ave/time {0} {1} {2} c_poreChunkVCM[*] file ave_vcm_poreChunk.lmp mode vector \n'.format(100, 10, 1000))
-    
+                f.write('fix chunksAvgVCM gas ave/time {0} {1} {2} c_chunkVCM[*] file avg_vcm_chunks_'.format(dynamicTime, 1, dynamicTime) + trialName + '_' + dumpStringDiff +'.lmp mode vector \n')
+                f.write('compute chunkTemp gas temp/chunk chunks internal \n')
+                f.write('fix chunksAvgTemp gas ave/time {0} {1} {2} c_chunkVCM[*] file avg_temp_chunks_'.format(dynamicTime, 1, dynamicTime) + trialName + '_' + dumpStringDiff +'.lmp mode vector \n')
+                f.write('compute chunkCount gas property/chunk chunks count \n')
+                f.write('fix chunksAvgCount gas ave/time {0} {1} {2} c_chunkCount[*] file avg_count_chunks_'.format(dynamicTime, 1, dynamicTime) + trialName + '_' + dumpStringDiff +'.lmp mode vector \n')
         f.write('\n')
 
 ##Needs fixing!
@@ -508,7 +503,7 @@ def LAMMPS_input_generator(poreWidth, poreSpacing, impurityDiameter, dumpMovies)
 
         if nFilters >= 1:
             f.write('## Define regions in which Pressure will be calculated and inside of the pore \n')
-            f.write('region    pressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)-dx+1,int(xMax/2),yMin+1+2*filterDepth,yMax,zMin,zMax))
+            f.write('region    pressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)-dx,int(xMax/2)-1,yMin+1,yMax,0,0))
             f.write('group    pressureGroup dynamic gas region pressureRegion every {0} \n'.format(dynamicTime))
             if flagPressureFromKineticOnly == True:
                 f.write('compute    Pp pressureGroup stress/atom gasTemp ke \n')
@@ -527,6 +522,10 @@ def LAMMPS_input_generator(poreWidth, poreSpacing, impurityDiameter, dumpMovies)
                 f.write('variable    P equal (v_Px+v_Py+v_Pz)/3 \n')
             f.write('\n')
             
+            if flagRegionVcm == True:
+                f.write('compute    VcmFront gas reduce/region pressureRegion sum vx vy  \n')
+                f.write('\n')
+          
         if nFilters == 2:
             f.write('## Define regions in which Pressure will be calculated and inside of the pore \n')
             f.write('region    midPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+filterSpacing-1,yMin+1+2*filterDepth,yMax,zMin,zMax))
@@ -550,9 +549,9 @@ def LAMMPS_input_generator(poreWidth, poreSpacing, impurityDiameter, dumpMovies)
             
         if flagRearPressure == True:
             if nFilters == 1:
-                f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+dx-1,yMin+1+2*filterDepth,yMax,zMin,zMax))
+                f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+dx-1,yMin,yMax,0,0))#,zMin,zMax))
             elif nFilters == 2:
-                f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterSpacing+2*filterDepth,int(xMax/2)+filterSpacing+dx+2*filterDepth-1,yMin,yMax,zMin,zMax))
+                f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterSpacing+2*filterDepth,int(xMax/2)+filterSpacing+dx+2*filterDepth-1,yMin,yMax,0,0))#,zMin,zMax))
             
             f.write('group    rearPressureGroup dynamic gas region rearPressureRegion every {0} \n'.format(dynamicTime))
             if flagPressureFromKineticOnly == True:
@@ -580,12 +579,16 @@ def LAMMPS_input_generator(poreWidth, poreSpacing, impurityDiameter, dumpMovies)
         if nFilters == 1:
             if flagRearPressure == True:
                 if flagPressureFromKineticOnly == True:
-                    if flagVCM == False:
-                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_rP \n')
+                    if flagRegionVcm == True:
+                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_rP v_VCMx v_VCMy c_VcmFront[1] c_VcmFront[2] \n')
+                    elif flagVCM == True:
+                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_rP v_VCMx v_VCMy\n')
                     else:
                         f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_rP v_VCMx v_VCMy \n')
                 else:
-                    if flagVCM == False:
+                    if flagRegionVcm == True:
+                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_rP v_VCMx v_VCMy c_VcmAvg[1] c_VcmAvg[2] \n')
+                    elif flagVCM == False:
                         f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_rP \n')
                     else:
                         f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_rP v_VCMx v_VCMy \n')
@@ -636,60 +639,53 @@ def LAMMPS_input_generator(poreWidth, poreSpacing, impurityDiameter, dumpMovies)
                     f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_VCMx v_VCMy \n')
 
         f.write('\n')
-
-                
-##TODO: Note the variable group function vcm would return the center of mass velocity of a group of particles. This could be very useful data and not take up much hard drive space.
-                
-                
-#==============================================================================
-#              for i in xrange(iRange):
-#                  if ((flagPressFilterFaceOnly != True) or (i == iRange-1)):
-#                          xl = i*dx
-#                          xu = (i+1)*dx-1
-#                          f.write('region    block{0} block {1} {2} {3} {4} {5} {6} \n'.format(i,xl,xu,yMin,yMax,zMin,zMax))
-#                          f.write('group    slice{0} dynamic gas region block{0} every {1} \n'.format(i,dynamicTime))
-#                          if flagPressureFromKineticOnly == True:
-#                              f.write('compute    P{0}p slice{0} stress/atom gasTemp ke \n'.format(i))
-#                          else:
-#                              f.write('compute    P{0}p slice{0} stress/atom gasTemp ke pair \n'.format(i))
-#                          if dimensions == 2:
-#                              f.write('compute    P{0}s slice{0} reduce sum c_P{0}p[1] c_P{0}p[2] \n'.format(i))
-#                              f.write('variable    P{0}x equal -(c_P{0}s[1])/({1}*{2}) \n'.format(i,xu-xl+1,yMax-yMin))
-#                              f.write('variable    P{0}y equal -(c_P{0}s[2])/({1}*{2}) \n'.format(i,xu-xl+1,yMax-yMin))
-#                              f.write('variable    P{0} equal (v_P{0}x+v_P{0}y)/2 \n'.format(i))
-#                          elif dimensions == 3:
-#                              f.write('compute    P{0}s slice{0} reduce sum c_P{0}p[1] c_P{0}p[2] c_P{0}p[3] \n'.format(i))
-#                              f.write('variable    P{0}x equal -(c_P{0}s[1])/({1}*{2}*{3}) \n'.format(i,xu-xl+1,yMax-yMin, zMax-zMin))
-#                              f.write('variable    P{0}y equal -(c_P{0}s[2])/({1}*{2}*{3}) \n'.format(i,xu-xl+1,yMax-yMin, zMax-zMin))
-#                              f.write('variable    P{0}z equal -(c_P{0}s[3])/({1}*{2}*{3}) \n'.format(i,xu-xl+1,yMax-yMin, zMax-zMin))
-#                              f.write('variable    P{0} equal (v_P{0}x+v_P{0}y+v_P{0}z)/3 \n'.format(i))
-#                          if velDumpTime > 0:
-#                              if atomTypes < 4:
-#                                  if dimensions == 2:
-#                                      f.write('dump    {0} slice{1} custom {2}  dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp vx vy #Dump pressure slice group slice{0} atom data every N={1} timesteps to file dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp including atom: x velocity, y velocity in that order \n')
-#                                  elif dimensions == 3:
-#                                      f.write('dump    {0} slice{1} custom {2}  dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp vx vy vz #Dump pressure slice group slice{0} atom data every N={1} timesteps to file dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp including atom: x velocity, y velocity, z velocity in that order \n')                 
-#                              else:
-#                                  if dimensions == 2:
-#                                      f.write('dump    {0} slice{1} custom {2}  dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp vx vy mass #Dump pressure slice group slice{0} atom data every N={1} timesteps to file dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp including atom: x velocity, y velocity and mass in that order \n')
-#                                  elif dimensions == 3:
-#                                      f.write('dump    {0} slice{1} custom {2}  dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp vx vy vz mass #Dump pressure slice group slice{0} atom data every N={1} timesteps to file dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp including atom: x velocity, y velocity, z velocity and mass in that order \n')
-#                          f.write('dump_modify {0} flush yes \n'.format(10+i))
-#                          f.write('\n')
-#                     
-#         if flagPressureFromKineticOnly == True:
-#             f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress ')
-#         else:
-#             f.write('thermo_style    custom step etotal ke pe c_gasTemp press ')
+        
+        
+#        ##Gives a "too many groups error" when using 20x20 chunks, and with 20X2000, it looks like aroung 30 groups is the maximum
+#        if flagPressureChunks == True:
+#            for i in xrange(iRange+nFilters):
+#                  for j in xrange(jRange):
+#                              xl = i*dx
+#                              xu = (i+1)*dx-1
+#                              yl = j*dy + 1
+#                              yu = (j+1)*dy
+#                              f.write('region    block{0}i{1}j block {2} {3} {4} {5} {6} {7} \n'.format(i,j,xl,xu,yl,yu,zMin,zMax))
+#                              f.write('group    chunk{0}i{1}j dynamic gas region block{0}i{1}j every {2} \n'.format(i,j,dynamicTime))
+#                              f.write('compute    Pp{0}i{1}j chunk{0}i{1}j stress/atom gasTemp ke pair \n'.format(i,j))
+#                              if dimensions == 2:
+#                                  f.write('compute    Ps{0}i{1}j chunk{0}i{1}j reduce sum c_Pp{0}i{1}j[1] c_Pp{0}i{1}j[2] \n'.format(i,j))
+#                                  f.write('variable    Px{0}i{1}j equal -(c_Ps{0}i{1}j[1])/({2}*{3}) \n'.format(i,j,xu-xl+1,yu-yl+1))
+#                                  f.write('variable    Py{0}i{1}j equal -(c_Ps{0}i{1}j[2])/({2}*{3}) \n'.format(i,j,xu-xl+1,yu-yl+1))
+#                                  f.write('variable    P{0}i{1}j equal (v_Px{0}i{1}j+v_Py{0}i{1}j)/2 \n'.format(i,j))
+#                              elif dimensions == 3:
+#                                  f.write('compute    Ps{0}i{1}j chunk{0}i{1}j reduce sum c_Pp{0}i{1}j[1] c_Pp{0}i{1}j[2] c_Pp{0}i{1}j[3] \n'.format(i,j))
+#                                  f.write('variable    P{0}x equal -(c_Ps{0}i{1}j[1])/({2}*{3}*{4}) \n'.format(i,j,xu-xl+1,yu-yl+1, zMax-zMin))
+#                                  f.write('variable    P{0}y equal -(c_Ps{0}i{1}j[2])/({2}*{3}*{4}) \n'.format(i,j,xu-xl+1,yu-yl+1, zMax-zMin))
+#                                  f.write('variable    P{0}z equal -(c_Ps{0}i{1}j[3])/({2}*{3}*{4}) \n'.format(i,j,xu-xl+1,yu-yl+1, zMax-zMin))
+#                                  f.write('variable    P{0} equal (v_Px{0}i{1}j+v_Py{0}i{1}j+v_Pz{0}i{1}j)/3 \n'.format(i,j))
+##                              if velDumpTime > 0:
+##                                  if atomTypes < 4:
+##                                      if dimensions == 2:
+##                                          f.write('dump    {0} slice{1} custom {2}  dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp vx vy #Dump pressure slice group slice{0} atom data every N={1} timesteps to file dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp including atom: x velocity, y velocity in that order \n')
+##                                      elif dimensions == 3:
+##                                          f.write('dump    {0} slice{1} custom {2}  dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp vx vy vz #Dump pressure slice group slice{0} atom data every N={1} timesteps to file dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp including atom: x velocity, y velocity, z velocity in that order \n')                 
+##                                  else:
+##                                      if dimensions == 2:
+##                                          f.write('dump    {0} slice{1} custom {2}  dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp vx vy mass #Dump pressure slice group slice{0} atom data every N={1} timesteps to file dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp including atom: x velocity, y velocity and mass in that order \n')
+##                                      elif dimensions == 3:
+##                                          f.write('dump    {0} slice{1} custom {2}  dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp vx vy vz mass #Dump pressure slice group slice{0} atom data every N={1} timesteps to file dump_'.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.lmp including atom: x velocity, y velocity, z velocity and mass in that order \n')
+##                              f.write('dump_modify {0} flush yes \n'.format(10+i))
+#                  f.write('\n')
+#                         
+#
+#
+#            f.write('thermo_style    custom step etotal ke pe c_gasTemp press ')
 #             
+#            for i in xrange(0,iRange):
+#                f.write('v_P{0} '.format(i))
+#            f.write('\n')
 #         
-#         for i in xrange(0,iRange):
-#             if ((flagPressFilterFaceOnly != True) or (i == iRange-1)):
-#                 f.write('v_P{0} '.format(i))
-#         f.write('\n')
-#         
-#         f.write('\n')
-#==============================================================================
+#        f.write('\n')
         
         if poreDump == True:  
             if impurityDiameter == 1:

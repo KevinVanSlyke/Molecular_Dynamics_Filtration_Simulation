@@ -5,9 +5,9 @@ Created on Tue Feb 19 14:04:54 2019
 
 @author: Kevin
 """
-def LAMMPS_sbatch_generator(poreWidth, poreSpacing, impurityDiameter, nTrials, timeout):
+def LAMMPS_sbatch_generator(poreWidth, impurityDiameter, nTrials, timeout):
     
-    dirName = '{0}W_{1}D_{2}F'.format(poreWidth, impurityDiameter, poreSpacing)
+    dirName = '{0}W_{1}D'.format(poreWidth, impurityDiameter)
     rushCores = 8
     mem = 1024
        
