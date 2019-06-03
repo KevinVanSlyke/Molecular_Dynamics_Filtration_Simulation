@@ -22,7 +22,7 @@ poreWidth = [100]
 #poreSpacing = [20, 100, 200, 1000]
 #poreSpacing = [40,200]
 #impurityDiameter = [1,5]
-impurityDiameter = [1]
+impurityDiameter = [1,5,10]
 movies = False
 pyDir = os.getcwd()
 os.chdir('../../')
