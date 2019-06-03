@@ -310,8 +310,8 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, dumpMovies):
     elif dimensions == 2 and nFilters == 1 and flagMultiPore == False:
         sf.write('region    topWall block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreWidth)/2+1), int(yMax), 0, 0))
         sf.write('region    botWall block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMin+1), int((yMax-poreWidth)/2), 0, 0))
-        sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + int(diameterType[-1]/2) + 1), int(int(xMax/2)-(int(diameterType[-1]/2) + 1)), int(yMin+diameterType[-1]/2+1), int(yMax-int(diameterType[-1]/2)+1), 0, 0))
-        sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterDepth + int(diameterType[-1]/2) + 1), int(xMax + filterDepth - int(diameterType[-1]/2) + 1), int(yMin+int(diameterType[-1]/2)+1), int(yMax-int(diameterType[-1]/2+1)), 0, 0))
+        sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + int(diameterType[-1]/2) + 2), int(int(xMax/2)-(int(diameterType[-1]/2) + 2)), int(yMin + int(diameterType[-1]/2) + 2), int(yMax - (int(diameterType[-1]/2) + 2)), 0, 0))
+        sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterDepth + int(diameterType[-1]/2) + 2), int(xMax + filterDepth - (int(diameterType[-1]/2) + 2)), int(yMin+int(diameterType[-1]/2) + 2), int(yMax-(int(diameterType[-1]/2) + 2)), 0, 0))
         sf.write('region    vacuum union 2 frontVacuum rearVacuum \n')
         
     elif dimensions == 3 and nFilters == 1 and flagMultiPore == False:
