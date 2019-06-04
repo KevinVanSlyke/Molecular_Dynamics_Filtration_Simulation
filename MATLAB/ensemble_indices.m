@@ -10,11 +10,12 @@ function [nLines, nVars] = ensemble_indices(trialsDir)
 %baseDir = '/home/Kevin/Documents/Simulation_Data/Molecular/May_2018_Width_Statistics/1D_Width';
 
 trialList = dir(trialsDir);
-nTrialDirs = size(trialList,1);
+trialFileList = dir(fullfile(fPath, strcat('log_',simString,'_*T_r0.lmp')));
+nTrialFiles = size(trialFileList,1); %number of dump files for current pore
 nTrials = 0;
 nLines = Inf;
-for n = 1 : 1 : nTrialDirs
-    if (trialList(n).isdir() && not(strcmp(trialList(n).name(),'.')) && not(strcmp(trialList(n).name(),'..')))
+for n = 1 : 1 : nTrialFiles
+    if strcmp(trialFileList(n).name(), strcat('log_',simString,'_*T_r0.lmp'))
         nTrials = nTrials + 1;
         trialString = trialList(n).name();
         directory = fullfile(trialsDir,trialString);

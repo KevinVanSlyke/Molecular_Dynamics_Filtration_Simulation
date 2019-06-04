@@ -7,10 +7,9 @@ dirParts = strsplit(fPath,'/');
 nDirParts = size(dirParts,2);
 simDir = dirParts(nDirParts);
 simString = simDir{1,1};
-
-logFileList = dir(fullfile(fPath, strcat('log_',simString,'_restart_*.lmp')));
+logFileList = dir(fullfile(fPath, strcat('log_',simString,'_0T_r*.lmp')));
 nLogFiles = size(logFileList,1); %number of dump files for current pore
-finalThermLog = fullfile(fPath, strcat('log_',simString,'_restart_',num2str(nLogFiles-1),'.lmp'));
+finalThermLog = fullfile(fPath, strcat('log_',simString,'_0T_r',num2str(nLogFiles-1),'.lmp'));
 
 [sid,chars] = system(['tail -n ',num2str(30),' ',finalThermLog]);
 logTail = convertCharsToStrings(chars);
@@ -31,4 +30,3 @@ end
 nLines = (tMax-1)/1000;
 
 end
-
