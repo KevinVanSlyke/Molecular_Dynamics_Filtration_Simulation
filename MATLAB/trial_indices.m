@@ -1,15 +1,20 @@
-function [ nLines, nVars ] = trial_indices( )
+function [ nLines, nVars ] = trial_dimensions(trialLogFile)
 %Reads pressure data from thermodynamic output in LAMMPS log files
 %   Catenates each data column in the LAMMPS log files from multiple restarts
 
-fPath = pwd;
-dirParts = strsplit(fPath,'/');
-nDirParts = size(dirParts,2);
-simDir = dirParts(nDirParts);
-simString = simDir{1,1};
-logFileList = dir(fullfile(fPath, strcat('log_',simString,'_0T_r*.lmp')));
+fileParts = strsplit(trialLogFile,'_');
+nFileParts = size(fileParts,2);
+trialString = '';
+for i = 2 : 1 : nFileParts-1
+    if i == 2
+        trialString = fileParts{1,i};
+    else
+        trialString = strcat(trialString, '_', fileParts{1,i});
+    end
+end
+logFileList = dir(fullfile(pwd, strcat('log_',trialString,'_r*.lmp')));
 nLogFiles = size(logFileList,1); %number of dump files for current pore
-finalThermLog = fullfile(fPath, strcat('log_',simString,'_0T_r',num2str(nLogFiles-1),'.lmp'));
+finalThermLog = strcat('log_',trialString,'_r',num2str(nLogFiles-1),'.lmp');
 
 [sid,chars] = system(['tail -n ',num2str(30),' ',finalThermLog]);
 logTail = convertCharsToStrings(chars);
