@@ -27,7 +27,7 @@ movies = False
 pyDir = os.getcwd()
 os.chdir('../../')
 projDir = os.getcwd()
-simDir = os.path.join(projDir, 'LAMMPS_Input_Files/')
+simDir = os.path.join(projDir, 'Input_Files/')
 os.chdir(simDir)
 ensembleDir = 'Simulation_Ensemble_' + time.strftime("%m_%d_%Y")
 if movies == True:
