@@ -20,7 +20,7 @@ for i = 1 : 1 : nPars
     elseif parVars(i) == 'H'
         parNames(i) = "Orifice Offset";
     elseif parVars(i) == 'F'
-        parNames(i) = "Filter Spacing";
+        parNames(i) = "Orifice Separation";
     end
 end
 

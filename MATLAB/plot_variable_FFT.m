@@ -14,18 +14,18 @@ function [] = plot_variable_FFT(sampleFreq, fundSampleFreq, powerSpectrum, selec
 % kb = 1.38*10^(-23); %Joules/Kelvin
 
 %Convert from sample frequency to inverse timestep
-freq = sampleFreq/1000; %Units of 1/timestep
-fundFreq = fundSampleFreq/1000; 
+freq = sampleFreq; %Units of 1/timestep
+fundFreq = fundSampleFreq; 
+nMax = size(freq,1);
 
 if strcmp(plotFFT, 'LJ') %Convert to LJ dimensionless time
-    freq = freq/0.005; %1/t* LJ dimensionless Unit
-    fundFreq = fundFreq/0.005;
+    freq = freq(1:nMax); %1/t* LJ dimensionless Unit
+    fundFreq = fundFreq;
 elseif  strcmp(plotFFT, 'real')     %Convert to real time
-	freq = freq/(0.005*2.17*10^(-12)*(1/(10^(-9)))); %GHz (1/ns)
-	fundFreq = fundFreq/(0.005*2.17*10^(-12)*(1/(10^(-9)))); %GHz (1/ns)
+	freq = freq/(2.17*10^(-12)*(1/(10^(-9)))); %GHz (1/ns)
+	fundFreq = fundFreq/(2.17*10^(-12)*(1/(10^(-9)))); %GHz (1/ns)
 end
-
-normPower = powerSpectrum/max(powerSpectrum);
+normPower = powerSpectrum(1:nMax);
 
 figFFT = figure('Visible','off');
 ax = axes('Visible','off');
@@ -45,7 +45,7 @@ if strcmp(plotFFT, 'LJ')
 elseif  strcmp(plotFFT, 'real')
     xlabel("Frequency, $f ~ (GHz)$",'Interpreter','Latex');
 end
-axis([0 5*fundFreq 0 1]);
+axis([0 0.01 0 1]);
 print(strcat("FFT_",parString,"_",plotFFT), '-dpng');
 close(figFFT);
 end

@@ -3,7 +3,7 @@ function [varTitle, varSym] = format_variable_name(selectedVar)
 %   Detailed explanation goes here
 if selectedVar == 'v_P'
     varTitle = 'Pressure';
-    varSym = 'P*';
+    varSym = '$P^*$';
 end
 
 end

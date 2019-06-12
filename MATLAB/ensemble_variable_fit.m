@@ -1,4 +1,4 @@
-function [ tauAvg, tauStd, expFitLine, tPeaks, varPeaks, varPeakStds, expRSquare, expAdjRSquare, expRMSE ] = ensemble_variable_fit( steps, varAvg, varStd, fundSampleFreq )
+function [ tauAvg, tauStd, expFitLine, tPeaks, varPeaks, varPeakStds, expRSquare, expAdjRSquare, expRMSE ] = ensemble_variable_fit( time, varAvg, varStd, fundSampleFreq )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -10,8 +10,6 @@ function [ tauAvg, tauStd, expFitLine, tPeaks, varPeaks, varPeakStds, expRSquare
 % timestep = tau/200; %seconds
 % kb = 1.38*10^(-23); %Joules/Kelvin
 
-t = steps; %time in units of simulation timesteps
-
 %    P(:,1) = P_avg(:,j,i); %LJ Dimensionless
 %    P_plot = P*epsilon/sigma^(3)*10^(-6); %kJoules/meter^3
 %    P_plot_dev(:,1) = P_std(:,j,i)*epsilon/sigma^(3)*10^(-6); %kJoules/meter^3
@@ -19,24 +17,25 @@ t = steps; %time in units of simulation timesteps
 
 %varWeights = varStd.^(-2); %LJ Dimensionless
 
-[equibVal, varAvgDiff, thermalValStd] = equilibrium_difference(steps, varAvg);
+[equibVal, varAvgDiff, thermalValStd] = equilibrium_difference(time, varAvg);
 
-minPeakDistance = round(1/2*(1/fundSampleFreq),0);
+minPeakDistance = round(1/8*(1/fundSampleFreq),0);
 
 tPeaks = [];
 varPeakStds = [];
 varPeakWeights = [];
+%[varPeakDiff, peakInd] = findpeaks(varAvgDiff);
 [varPeakDiff, peakInd] = findpeaks(varAvgDiff,'MinPeakDistance',minPeakDistance);
 nPeaks = max(size(varPeakDiff));
 for k = 1 : 1 : nPeaks
-    tPeaks(k,1) = t(peakInd(k)); 
+    tPeaks(k,1) = time(peakInd(k)); 
     varPeaks(k,1) = varAvg(peakInd(k));
     varPeakStds(k,1) = varStd(peakInd(k));
     varPeakWeights(k,1) = varStd(peakInd(k))^(-2);
 end
 
-[expFitCurve, expFitGoodness, expFitOutput] = fit(tPeaks,varPeakDiff,'exp1','Weights',varPeakWeights);
-%[expFitCurve, expFitGoodness, expFitOutput] = fit(tPeaks,varPeakDiff,'exp1');
+%[expFitCurve, expFitGoodness, expFitOutput] = fit(tPeaks,varPeakDiff,'exp1','Weights',varPeakWeights);
+[expFitCurve, expFitGoodness, ~] = fit(tPeaks,varPeakDiff,'exp1');
 
 expFitCoef = coeffvalues(expFitCurve);
 expCoefConfInt = confint(expFitCurve);
@@ -56,7 +55,7 @@ expRSquare = expFitGoodness.rsquare;
 expAdjRSquare = expFitGoodness.adjrsquare;
 expRMSE = expFitGoodness.rmse;
 
-expFitLine = feval(expFitCurve, t) + equibVal; %LJ Dimensionless
+expFitLine = feval(expFitCurve, time) + equibVal; %LJ Dimensionless
 
 % [pow_fit_curve, pow_fit_goodness, pow_fit_output] = amplitudeAvg(tPeaks,varPeakDiff,'power1','Weights', varPeakWeights);
 % 
