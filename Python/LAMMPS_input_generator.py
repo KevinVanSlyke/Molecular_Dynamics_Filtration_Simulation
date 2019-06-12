@@ -8,7 +8,7 @@ Created on Fri Aug 18 14:46:50 2017
 import time
 import os
 import stat
-def LAMMPS_input_generator(poreWidth, impurityDiameter, dumpMovies):
+def LAMMPS_input_generator(poreWidth, impurityDiameter, poreSpacing, dumpMovies):
     #randomSeed = [12461,6426357,32578,1247568,124158,12586]
     ##Frequently changed input variables
         #impurityDiameter, poreWidth, trialNum, poreSpacing, registryShift, filterSpacing, nTotal
@@ -21,8 +21,8 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, dumpMovies):
     xMin = 0
     yMax = 2000
     yMin = 0
-    dx = 100
-    dy = 2000
+    dx = 20
+    dy = 20
     
     iRange = xMax/dx
     jRange = yMax/dy
@@ -36,33 +36,37 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, dumpMovies):
 
     ##Currently filter must span entire z dimension and pore is open along this entire axis
 #    poreWidth = 50
-    flagMultiPore = False
+    flagMultiPore = True
     if poreWidth >= yMax:
         nFilters = 0
     filterDepth = 20
 #    filterHeight = 3
     filterSpacing = 100
-    poreSpacing = 10
+#    poreSpacing = 10
     registryShift = 0
     flagRegistryShift = False
     if registryShift != 0:
         flagRegistryShift = True
-        
+    flagPoreSpacing = True
+    
     ##Initialization temperature and velocity parameters
     fluidVelocity = 1
     fluidTemperature = 1
+    
     flagPressureFromKineticOnly = False
     flagImpurityVel = False
     flagImpurityMom = False
+    flagPairShift = True
+    
 #    flagPressFilterFaceOnly = True
 #    flagPressVerticalSlicesOnly = True
-    flagRearPressure = True
-    flagPoreSpacing = False
-    flagPressureChunks = False
-    flagVCM = True
-    flagRegionVcm = True
-    flagChunkData = False
-    flagPairShift = True
+    
+    flagFrontPress = True
+    flagRearPressure = False
+    flagVCM = False
+    
+    flagRegionVcm = False
+    flagChunkData = True
     
     ##Energy minimation parameters/thresholds
     eMin = 10**(-4)
@@ -468,7 +472,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, dumpMovies):
         
         if flagChunkData == True:  
             if dimensions == 2 and nFilters == 1:
-                f.write('compute chunks gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+filterDepth-1), int(yMin+1), int(yMax)))
+                f.write('compute chunks gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx-1), int(yMin+1), int(dy), int(xMin), int(xMax+filterDepth-1), int(yMin+1), int(yMax)))
                 f.write('compute chunkVCM gas vcm/chunk chunks \n')
                 f.write('fix chunksAvgVCM gas ave/time {0} {1} {2} c_chunkVCM[*] file avg_vcm_chunks_'.format(dynamicTime, 1, dynamicTime) + trialName + '_' + dumpStringDiff +'.lmp mode vector \n')
                 f.write('compute chunkTemp gas temp/chunk chunks internal \n')
@@ -504,119 +508,123 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, dumpMovies):
             f.write('\n')
             
 #Temporary hardcoded
-        f.write('## Define regions in which Pressure will be calculated and inside of the pore \n')
-        f.write('region    pressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)-dx,int(xMax/2)-1,yMin+1,yMax,0,0))
-        f.write('group    pressureGroup dynamic gas region pressureRegion every {0} \n'.format(dynamicTime))
-        f.write('compute    Pp pressureGroup stress/atom gasTemp ke pair \n')
-        f.write('compute    Ps pressureGroup reduce sum c_Pp[1] c_Pp[2] \n')
-        f.write('variable    Px equal -(c_Ps[1])/({0}*{1}) \n'.format(dx,yMax-yMin))
-        f.write('variable    Py equal -(c_Ps[2])/({0}*{1}) \n'.format(dx,yMax-yMin))
-        f.write('variable    P equal (v_Px+v_Py)/2 \n')
-        f.write('variable    fVCMx equal vcm(pressureGroup,x) \n')
+#        f.write('## Define regions in which Pressure will be calculated and inside of the pore \n')
+#        f.write('region    pressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)-dx,int(xMax/2)-1,yMin+1,yMax,0,0))
+#        f.write('group    pressureGroup dynamic gas region pressureRegion every {0} \n'.format(dynamicTime))
+#        f.write('compute    Pp pressureGroup stress/atom gasTemp ke pair \n')
+#        f.write('compute    Ps pressureGroup reduce sum c_Pp[1] c_Pp[2] \n')
+#        f.write('variable    Px equal -(c_Ps[1])/({0}*{1}) \n'.format(dx,yMax-yMin))
+#        f.write('variable    Py equal -(c_Ps[2])/({0}*{1}) \n'.format(dx,yMax-yMin))
+#        f.write('variable    P equal (v_Px+v_Py)/2 \n')
+#        f.write('variable    fVCMx equal vcm(pressureGroup,x) \n')
+#        f.write('\n')
+#        
+#        f.write('region    halfPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMin),int(xMin)+dx-1,yMin+1,yMax,0,0))
+#        f.write('group    halfPressureGroup dynamic gas region halfPressureRegion every {0} \n'.format(dynamicTime))
+#        f.write('compute    hPp halfPressureGroup stress/atom gasTemp ke pair \n')
+#        f.write('compute    hPs halfPressureGroup reduce sum c_hPp[1] c_hPp[2] \n')
+#        f.write('variable    hPx equal -(c_hPs[1])/({0}*{1}) \n'.format(dx,yMax-yMin))
+#        f.write('variable    hPy equal -(c_hPs[2])/({0}*{1}) \n'.format(dx,yMax-yMin))
+#        f.write('variable    hP equal (v_hPx+v_hPy)/2 \n')
+#        f.write('variable    hVCMx equal vcm(halfPressureGroup,x) \n')
+#        f.write('\n')
+#        
+#        f.write('region    midPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/4)-dx,int(xMax/4)-1,yMin+1,yMax,0,0))
+#        f.write('group    midPressureGroup dynamic gas region midPressureRegion every {0} \n'.format(dynamicTime))
+#        f.write('compute    mPp midPressureGroup stress/atom gasTemp ke pair \n')
+#        f.write('compute    mPs midPressureGroup reduce sum c_mPp[1] c_mPp[2] \n')
+#        f.write('variable    mPx equal -(c_mPs[1])/({0}*{1}) \n'.format(dx,yMax-yMin))
+#        f.write('variable    mPy equal -(c_mPs[2])/({0}*{1}) \n'.format(dx,yMax-yMin))
+#        f.write('variable    mP equal (v_mPx+v_mPy)/2 \n')
+#        f.write('variable    mVCMx equal vcm(midPressureGroup,x) \n')
+#        f.write('\n')
+#        
+#        f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+dx-1,yMin,yMax,0,0))
+#        f.write('group    rearPressureGroup dynamic gas region rearPressureRegion every {0} \n'.format(dynamicTime))
+#        f.write('compute    rPp rearPressureGroup stress/atom gasTemp ke pair \n')
+#        f.write('compute    rPs rearPressureGroup reduce sum c_rPp[1] c_rPp[2] \n')
+#        f.write('variable    rPx equal -(c_rPs[1])/({0}*{1}) \n'.format(dx,yMax-yMin))
+#        f.write('variable    rPy equal -(c_rPs[2])/({0}*{1}) \n'.format(dx,yMax-yMin))
+#        f.write('variable    rP equal (v_rPx+v_rPy)/2 \n')
+#        f.write('variable    rVCMx equal vcm(rearPressureGroup,x) \n')
+#        f.write('\n')
+#
+#        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP v_hP v_rP v_VCMx v_fVCMx v_mVCMx v_hVCMx v_rVCMx \n')
         f.write('\n')
-        
-        f.write('region    halfPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMin),int(xMin)+dx-1,yMin+1,yMax,0,0))
-        f.write('group    halfPressureGroup dynamic gas region halfPressureRegion every {0} \n'.format(dynamicTime))
-        f.write('compute    hPp halfPressureGroup stress/atom gasTemp ke pair \n')
-        f.write('compute    hPs halfPressureGroup reduce sum c_hPp[1] c_hPp[2] \n')
-        f.write('variable    hPx equal -(c_hPs[1])/({0}*{1}) \n'.format(dx,yMax-yMin))
-        f.write('variable    hPy equal -(c_hPs[2])/({0}*{1}) \n'.format(dx,yMax-yMin))
-        f.write('variable    hP equal (v_hPx+v_hPy)/2 \n')
-        f.write('variable    hVCMx equal vcm(halfPressureGroup,x) \n')
-        f.write('\n')
-        
-        f.write('region    midPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/4)-dx,int(xMax/4)-1,yMin+1,yMax,0,0))
-        f.write('group    midPressureGroup dynamic gas region midPressureRegion every {0} \n'.format(dynamicTime))
-        f.write('compute    mPp midPressureGroup stress/atom gasTemp ke pair \n')
-        f.write('compute    mPs midPressureGroup reduce sum c_mPp[1] c_mPp[2] \n')
-        f.write('variable    mPx equal -(c_mPs[1])/({0}*{1}) \n'.format(dx,yMax-yMin))
-        f.write('variable    mPy equal -(c_mPs[2])/({0}*{1}) \n'.format(dx,yMax-yMin))
-        f.write('variable    mP equal (v_mPx+v_mPy)/2 \n')
-        f.write('variable    mVCMx equal vcm(midPressureGroup,x) \n')
-        f.write('\n')
-        
-        f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+dx-1,yMin,yMax,0,0))
-        f.write('group    rearPressureGroup dynamic gas region rearPressureRegion every {0} \n'.format(dynamicTime))
-        f.write('compute    rPp rearPressureGroup stress/atom gasTemp ke pair \n')
-        f.write('compute    rPs rearPressureGroup reduce sum c_rPp[1] c_rPp[2] \n')
-        f.write('variable    rPx equal -(c_rPs[1])/({0}*{1}) \n'.format(dx,yMax-yMin))
-        f.write('variable    rPy equal -(c_rPs[2])/({0}*{1}) \n'.format(dx,yMax-yMin))
-        f.write('variable    rP equal (v_rPx+v_rPy)/2 \n')
-        f.write('variable    rVCMx equal vcm(rearPressureGroup,x) \n')
-        f.write('\n')
-
-        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP v_hP v_rP v_VCMx v_fVCMx v_mVCMx v_hVCMx v_rVCMx \n')
-        f.write('\n')
-#        if nFilters >= 1:
-#            f.write('## Define regions in which Pressure will be calculated and inside of the pore \n')
-#            f.write('region    pressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)-dx,int(xMax/2)-1,yMin+1,yMax,0,0))
-#            f.write('group    pressureGroup dynamic gas region pressureRegion every {0} \n'.format(dynamicTime))
-#            if flagPressureFromKineticOnly == True:
-#                f.write('compute    Pp pressureGroup stress/atom gasTemp ke \n')
-#            else:
-#                f.write('compute    Pp pressureGroup stress/atom gasTemp ke pair \n')
-#            if dimensions == 2:
-#                f.write('compute    Ps pressureGroup reduce sum c_Pp[1] c_Pp[2] \n')
-#                f.write('variable    Px equal -(c_Ps[1])/({0}*{1}) \n'.format(dx,yMax-yMin))
-#                f.write('variable    Py equal -(c_Ps[2])/({0}*{1}) \n'.format(dx,yMax-yMin))
-#                f.write('variable    P equal (v_Px+v_Py)/2 \n')
-#            elif dimensions == 3:
-#                f.write('compute    Ps pressureGroup reduce sum c_Pp[1] c_Pp[2] c_Pp[3] \n')
-#                f.write('variable    Px equal -(c_Ps[1])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
-#                f.write('variable    Py equal -(c_Ps[2])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
-#                f.write('variable    Pz equal -(c_Ps[3])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
-#                f.write('variable    P equal (v_Px+v_Py+v_Pz)/3 \n')
-#            f.write('\n')
-#            
-#            if flagRegionVcm == True:
-#                f.write('compute    VcmFront gas reduce/region pressureRegion sum vx vy  \n')
-#                f.write('\n')
-#          
-#        if nFilters == 2:
-#            f.write('## Define regions in which Pressure will be calculated and inside of the pore \n')
-#            f.write('region    midPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+filterSpacing-1,yMin+1+2*filterDepth,yMax,zMin,zMax))
-#            f.write('group    midPressureGroup dynamic gas region midPressureRegion every {0} \n'.format(dynamicTime))
-#            if flagPressureFromKineticOnly == True:
-#                f.write('compute    mPp midPressureGroup stress/atom gasTemp ke \n')
-#            else:
-#                f.write('compute    mPp midPressureGroup stress/atom gasTemp ke pair \n')
-#            if dimensions == 2:
-#                f.write('compute    mPs midPressureGroup reduce sum c_mPp[1] c_mPp[2] \n')
-#                f.write('variable    mPx equal -(c_mPs[1])/({0}*{1}) \n'.format(filterSpacing,yMax-yMin))
-#                f.write('variable    mPy equal -(c_mPs[2])/({0}*{1}) \n'.format(filterSpacing,yMax-yMin))
-#                f.write('variable    mP equal (v_mPx+v_mPy)/2 \n')
-#            elif dimensions == 3:
-#                f.write('compute    mPs midPressureGroup reduce sum c_mPp[1] c_mPp[2] c_mPp[3] \n')
-#                f.write('variable    mPx equal -(c_mPs[1])/({0}*{1}*{2}) \n'.format(filterSpacing,yMax-yMin, zMax-zMin))
-#                f.write('variable    mPy equal -(c_mPs[2])/({0}*{1}*{2}) \n'.format(filterSpacing,yMax-yMin, zMax-zMin))
-#                f.write('variable    mPz equal -(c_mPs[3])/({0}*{1}*{2}) \n'.format(filterSpacing,yMax-yMin, zMax-zMin))
-#                f.write('variable    mP equal (v_mPx+v_mPy+v_mPz)/3 \n')
-#            f.write('\n')
-#            
-#        if flagRearPressure == True:
-#            if nFilters == 1:
-#                f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+dx-1,yMin,yMax,0,0))#,zMin,zMax))
-#            elif nFilters == 2:
-#                f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterSpacing+2*filterDepth,int(xMax/2)+filterSpacing+dx+2*filterDepth-1,yMin,yMax,0,0))#,zMin,zMax))
-#            
-#            f.write('group    rearPressureGroup dynamic gas region rearPressureRegion every {0} \n'.format(dynamicTime))
-#            if flagPressureFromKineticOnly == True:
-#                f.write('compute    rPp rearPressureGroup stress/atom gasTemp ke \n')
-#            else:
-#                f.write('compute    rPp rearPressureGroup stress/atom gasTemp ke pair \n')
-#            if dimensions == 2:
-#                f.write('compute    rPs rearPressureGroup reduce sum c_rPp[1] c_rPp[2] \n')
-#                f.write('variable    rPx equal -(c_rPs[1])/({0}*{1}) \n'.format(dx,yMax-yMin))
-#                f.write('variable    rPy equal -(c_rPs[2])/({0}*{1}) \n'.format(dx,yMax-yMin))
-#                f.write('variable    rP equal (v_rPx+v_rPy)/2 \n')
-#            elif dimensions == 3:
-#                f.write('compute    rPs rearPressureGroup reduce sum c_rPp[1] c_rPp[2] c_rPp[3] \n')
-#                f.write('variable    rPx equal -(c_rPs[1])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
-#                f.write('variable    rPy equal -(c_rPs[2])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
-#                f.write('variable    rPz equal -(c_rPs[3])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
-#                f.write('variable    rP equal (v_rPx+v_rPy+v_rPz)/3 \n')
-#            f.write('\n')
-#            
+        if nFilters >= 1:
+            if flagFrontPress == True:
+                f.write('## Define regions in which Pressure will be calculated and inside of the pore \n')
+                f.write('region    pressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)-dx,int(xMax/2)-1,yMin+1,yMax,0,0))
+                f.write('group    pressureGroup dynamic gas region pressureRegion every {0} \n'.format(dynamicTime))
+                if flagPressureFromKineticOnly == True:
+                    f.write('compute    Pp pressureGroup stress/atom gasTemp ke \n')
+                else:
+                    f.write('compute    Pp pressureGroup stress/atom gasTemp ke pair \n')
+                if dimensions == 2:
+                    f.write('compute    Ps pressureGroup reduce sum c_Pp[1] c_Pp[2] \n')
+                    f.write('variable    Px equal -(c_Ps[1])/({0}*{1}) \n'.format(dx,yMax-yMin))
+                    f.write('variable    Py equal -(c_Ps[2])/({0}*{1}) \n'.format(dx,yMax-yMin))
+                    f.write('variable    P equal (v_Px+v_Py)/2 \n')
+                elif dimensions == 3:
+                    f.write('compute    Ps pressureGroup reduce sum c_Pp[1] c_Pp[2] c_Pp[3] \n')
+                    f.write('variable    Px equal -(c_Ps[1])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
+                    f.write('variable    Py equal -(c_Ps[2])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
+                    f.write('variable    Pz equal -(c_Ps[3])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
+                    f.write('variable    P equal (v_Px+v_Py+v_Pz)/3 \n')
+                f.write('\n')
+                
+                if flagRegionVcm == True:
+                    f.write('compute    VcmFront gas reduce/region pressureRegion sum vx vy  \n')
+                    f.write('\n')
+          
+        if nFilters == 2:
+            f.write('## Define regions in which Pressure will be calculated and inside of the pore \n')
+            f.write('region    midPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+filterSpacing-1,yMin+1+2*filterDepth,yMax,zMin,zMax))
+            f.write('group    midPressureGroup dynamic gas region midPressureRegion every {0} \n'.format(dynamicTime))
+            if flagPressureFromKineticOnly == True:
+                f.write('compute    mPp midPressureGroup stress/atom gasTemp ke \n')
+            else:
+                f.write('compute    mPp midPressureGroup stress/atom gasTemp ke pair \n')
+            if dimensions == 2:
+                f.write('compute    mPs midPressureGroup reduce sum c_mPp[1] c_mPp[2] \n')
+                f.write('variable    mPx equal -(c_mPs[1])/({0}*{1}) \n'.format(filterSpacing,yMax-yMin))
+                f.write('variable    mPy equal -(c_mPs[2])/({0}*{1}) \n'.format(filterSpacing,yMax-yMin))
+                f.write('variable    mP equal (v_mPx+v_mPy)/2 \n')
+            elif dimensions == 3:
+                f.write('compute    mPs midPressureGroup reduce sum c_mPp[1] c_mPp[2] c_mPp[3] \n')
+                f.write('variable    mPx equal -(c_mPs[1])/({0}*{1}*{2}) \n'.format(filterSpacing,yMax-yMin, zMax-zMin))
+                f.write('variable    mPy equal -(c_mPs[2])/({0}*{1}*{2}) \n'.format(filterSpacing,yMax-yMin, zMax-zMin))
+                f.write('variable    mPz equal -(c_mPs[3])/({0}*{1}*{2}) \n'.format(filterSpacing,yMax-yMin, zMax-zMin))
+                f.write('variable    mP equal (v_mPx+v_mPy+v_mPz)/3 \n')
+            f.write('\n')
+            
+        if flagRearPressure == True:
+            if nFilters == 1:
+                f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+dx-1,yMin,yMax,0,0))#,zMin,zMax))
+            elif nFilters == 2:
+                f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterSpacing+2*filterDepth,int(xMax/2)+filterSpacing+dx+2*filterDepth-1,yMin,yMax,0,0))#,zMin,zMax))
+            
+            f.write('group    rearPressureGroup dynamic gas region rearPressureRegion every {0} \n'.format(dynamicTime))
+            if flagPressureFromKineticOnly == True:
+                f.write('compute    rPp rearPressureGroup stress/atom gasTemp ke \n')
+            else:
+                f.write('compute    rPp rearPressureGroup stress/atom gasTemp ke pair \n')
+            if dimensions == 2:
+                f.write('compute    rPs rearPressureGroup reduce sum c_rPp[1] c_rPp[2] \n')
+                f.write('variable    rPx equal -(c_rPs[1])/({0}*{1}) \n'.format(dx,yMax-yMin))
+                f.write('variable    rPy equal -(c_rPs[2])/({0}*{1}) \n'.format(dx,yMax-yMin))
+                f.write('variable    rP equal (v_rPx+v_rPy)/2 \n')
+            elif dimensions == 3:
+                f.write('compute    rPs rearPressureGroup reduce sum c_rPp[1] c_rPp[2] c_rPp[3] \n')
+                f.write('variable    rPx equal -(c_rPs[1])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
+                f.write('variable    rPy equal -(c_rPs[2])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
+                f.write('variable    rPz equal -(c_rPs[3])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
+                f.write('variable    rP equal (v_rPx+v_rPy+v_rPz)/3 \n')
+            f.write('\n')
+            
+#########Hardcoded
+            f.write('thermo_style    custom step etotal ke pe c_gasTemp v_P\n')
+            
 #        if nFilters == 1:
 #            if flagRearPressure == True:
 #                if flagPressureFromKineticOnly == True:
@@ -644,42 +652,42 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, dumpMovies):
 #                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P \n')
 #                    else:
 #                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_VCMx v_VCMy \n')
-#        elif nFilters == 2:
-#            if flagRearPressure == True:
-#                if flagPressureFromKineticOnly == True:
-#                    if flagVCM == False:
-#                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_mP v_rP \n')
-#                    else:
-#                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_mP v_rP v_VCMx v_VCMy \n')
-#                else:
-#                    if flagVCM == False:
-#                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP v_rP \n')
-#                    else:
-#                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP v_rP v_VCMx v_VCMy \n')
-#            else:
-#                if flagPressureFromKineticOnly == True:
-#                    if flagVCM == False:
-#                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_mP \n')
-#                    else:
-#                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_mP v_VCMx v_VCMy \n')
-#                else:
-#                    if flagVCM == False:
-#                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP \n')
-#                    else:
-#                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP v_VCMx v_VCMy \n')
-#        else:
-#            if flagPressureFromKineticOnly == True:
-#                if flagVCM == False:
-#                    f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress \n')
-#                else:
-#                    f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_VCMx v_VCMy \n')
-#            else:
-#                if flagVCM == False:
-#                    f.write('thermo_style    custom step etotal ke pe c_gasTemp press \n')
-#                else:
-#                    f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_VCMx v_VCMy \n')
-#
-#        f.write('\n')
+        elif nFilters == 2:
+            if flagRearPressure == True:
+                if flagPressureFromKineticOnly == True:
+                    if flagVCM == False:
+                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_mP v_rP \n')
+                    else:
+                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_mP v_rP v_VCMx v_VCMy \n')
+                else:
+                    if flagVCM == False:
+                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP v_rP \n')
+                    else:
+                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP v_rP v_VCMx v_VCMy \n')
+            else:
+                if flagPressureFromKineticOnly == True:
+                    if flagVCM == False:
+                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_mP \n')
+                    else:
+                        f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_mP v_VCMx v_VCMy \n')
+                else:
+                    if flagVCM == False:
+                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP \n')
+                    else:
+                        f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP v_VCMx v_VCMy \n')
+        else:
+            if flagPressureFromKineticOnly == True:
+                if flagVCM == False:
+                    f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress \n')
+                else:
+                    f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_VCMx v_VCMy \n')
+            else:
+                if flagVCM == False:
+                    f.write('thermo_style    custom step etotal ke pe c_gasTemp press \n')
+                else:
+                    f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_VCMx v_VCMy \n')
+
+        f.write('\n')
         
         
 #        ##Gives a "too many groups error" when using 20x20 chunks, and with 20X2000, it looks like aroung 30 groups is the maximum
