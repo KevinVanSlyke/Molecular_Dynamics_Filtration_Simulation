@@ -14,18 +14,18 @@ headStrings = strsplit(chunkHead,'\n');
 for i=3:1:4
     headWords = strsplit(headStrings(i),' ');
     if i == 3
-        nVars = size(headWords,2)-1;
+        nVars = size(headWords,2)-2;
     elseif i == 4
         nChunks = str2double(headWords{1,2});
     end
 end
-clear chars headStrings chunkHead headWords
+clear chars headStrings chunkHead headWords;
 
 [~,chars] = system(['tail -n ',num2str(nChunks+1),' ',chunkFile]);
 chunkTail = convertCharsToStrings(chars);
 tailWords = strsplit(chunkTail,' ');
 nSteps = str2double(tailWords{1,1})/1000;
-clear chars chunkTail tailWords
+clear chars chunkTail tailWords;
 
 chunkData = zeros(nSteps,nChunks,nVars);
 while feof(fid) == 0
@@ -39,14 +39,14 @@ while feof(fid) == 0
         else
             chunkID = str2double(chunkWords{1,1});
             varWords = chunkWords(2:end);
-            for i=1:1:nVars-1
+            for i=1:1:nVars
                 var = varWords{1,i};
                 chunkData(index,chunkID,i) = str2double(var);
             end
         end
     end
-        
 end
-
+fclose(fid);
+clear chunkLine chunkWords isNum step index chunkID varWords var;
 end
 
