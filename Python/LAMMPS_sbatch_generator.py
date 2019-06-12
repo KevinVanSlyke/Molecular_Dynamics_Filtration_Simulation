@@ -5,11 +5,13 @@ Created on Tue Feb 19 14:04:54 2019
 
 @author: Kevin
 """
-#def LAMMPS_sbatch_generator(poreWidth, impurityDiameter, poreSpacing, nTrials, timeout):
-def LAMMPS_sbatch_generator(poreWidth, impurityDiameter, nTrials, timeout):
-    #dirName = '{0}W_{1}D_{2}F'.format(poreWidth, impurityDiameter, poreSpacing)
-    dirName = '{0}W_{1}D'.format(poreWidth, impurityDiameter)
-    rushCores = 8
+def LAMMPS_sbatch_generator(poreWidth, impurityDiameter, poreSpacing, nTrials, timeout):
+#def LAMMPS_sbatch_generator(poreWidth, impurityDiameter, nTrials, timeout):
+    if poreSpacing == 0:
+        dirName = '{0}W_{1}D'.format(poreWidth, impurityDiameter)
+    else:
+        dirName = '{0}W_{1}D_{2}F'.format(poreWidth, impurityDiameter, poreSpacing)
+    rushCores = 16
     mem = 1024
        
     """
