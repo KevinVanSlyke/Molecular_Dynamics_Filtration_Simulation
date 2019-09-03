@@ -11,11 +11,15 @@ for n = 1 : 1 : nEnsembleDirs
         parString = ensembleDirList(n).name();
         trialsDir = fullfile(ensemblesDir,parString);
         cd(trialsDir);
-        %[tauAvg(nEnsemble), tauStd(nEnsemble), parNames, parVars, parVals(nEnsemble)] = analyze_ensemble_variable(trialsDir, selectedVar, outputDir, plotFit, plotFFT);
-        [parNames, parVars, parVals] = ensemble_parameters(trialsDir);
+        [parNames, parVars, parVals(nEnsemble)] = ensemble_parameters(trialsDir);
         [tauAvgs(nEnsemble), tauStds(nEnsemble)] = analyze_ensemble_variable(trialsDir, selectedVar, outputDir, plotFit, plotFFT);
     end
 end
+
+clear ensembleDirList nEnsembleDirs n;
+
+cd(outputDir);
+save(strcat(parString,'_tau_data.mat'));
 cd(ensemblesDir);
 
 end

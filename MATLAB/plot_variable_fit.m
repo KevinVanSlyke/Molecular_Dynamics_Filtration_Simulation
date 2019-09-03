@@ -1,4 +1,4 @@
-function [] = plot_variable_fit(time, varAvg, tPeaks, varPeaks, varPeakStds, expFitLine, varName, parNames, parVars, parVals, plotFit)
+function [] = plot_variable_fit(t, varAvg, tPeaks, varPeaks, varPeakStds, expFitLine, varName, parNames, parVars, parVals, plotFit)
 %UNTITLED5 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -11,11 +11,6 @@ function [] = plot_variable_fit(time, varAvg, tPeaks, varPeaks, varPeakStds, exp
 % t* = timestep
 % kb = 1.38*10^(-23); %Joules/Kelvin
 
-if strcmp(plotFit, 'real') == 1
-    time = time*2.17*10^(-12)*10^9; %convert to ns
-    tPeaks = tPeaks*2.17*10^(-12)*10^9; %convert to ns
-end
-
 [varTitle, varSym] = format_variable_name(varName);
 [parString] = catenate_parameters(parVars,parVals);
 titleString = strcat(varTitle, " adjoining Filter with ");
@@ -26,24 +21,26 @@ for i = 1 : 1 : size(parVars,2)
     end
 end
 
-fitFig = figure('Visible','off');
+fitFig = figure('Visible','on');
 ax = axes('Visible','off');
-plot(time, varAvg, '.');
+plot(t, varAvg, '.');
 hold on;
 errorbar(tPeaks, varPeaks, varPeakStds, 'o');
-hold on;
-plot(time, expFitLine);
+plot(t, expFitLine);
 title(titleString, 'Interpreter', 'LaTex', 'FontSize', 8 );
 ylabel(strcat('Pressure (', varSym,')'),'Interpreter','Latex');
-legend("Raw Data", "Peak Values", "Exponential Fit");
-%axis([0 t_cutoff 0.9*min(P) 1.1*max(P)]);
-axis([0 max(time)/3 0.9*min(varAvg) 1.1*max(varAvg)]);
+%legend("Data", "Exp. Decay Fit");
+legend("Avg. $P_{front}$", "Std. Dev.", "Exponential Fit",'Interpreter','Latex');
+%axis([0 max(t) 0.9*min(P) 1.1*max(P)]);
+axis([0 max(t) 0.9*min(varAvg) 1.1*max(varAvg)]);
 if strcmp(plotFit, 'LJ') == 1
     xlabel("Time ($t^*$)",'Interpreter','Latex');
 elseif strcmp(plotFit, 'real') == 1
     xlabel("$t (ns)$",'Interpreter','Latex');
 end 
-print(strcat("Statistical_",varTitle,"_vs_Time_Fit_",parString,"_",plotFit), '-dpng');
+print(strcat("Fit_Statistical_",varTitle,"_vs_Time_",parString,"_",plotFit), '-dpng');
+%savefig(fitFig, strcat("Fit_Statistical_",varTitle,"_vs_Time_",parString,"_",plotFit,".fig"));
+
 close(fitFig);
 
 end

@@ -1,4 +1,4 @@
-function [ f, fund, norm ] = ensemble_variable_FFT( time, varAvg )
+function [ sampleFreq, fundSampleFreq, normSpectrum ] = ensemble_variable_FFT( steps, varAvg )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -9,16 +9,35 @@ function [ f, fund, norm ] = ensemble_variable_FFT( time, varAvg )
 % tau = 2.17*10^(-12); %seconds
 % timestep = tau/200; %seconds
 % kb = 1.38*10^(-23); %Joules/Kelvin
+% 
+% T=time(2,1)-time(1,1);
+% Fs=1/T;
+% L=length(time);
+% f = Fs*(1:L)'/L;
+% Y = fft(varAvg);
+% P = abs(Y/L);
+% [maxP, fundIndx] = max(P(2:end));
+% fund = P(fundIndx+1);
+% norm = P/maxP;
 
-T=time(2,1)-time(1,1);
-Fs=1/T;
-L=length(time);
-f = Fs*(1:L)'/L;
-Y = fft(varAvg);
-P = abs(Y/L);
-[maxP, fundIndx] = max(P(2:end));
-fund = P(fundIndx);
-norm = P/maxP;
+skip = 2;
+
+%[equibVal, varAvgDiff, thermalValStd] = equilibrium_difference(steps, varAvg);
+
+nMax = size(steps,1);
+n = (1 : 1 : nMax)';
+sampleFreq = n/(nMax);
+mag = fft(varAvg);
+powerSpectrum = (abs(mag)).^2;
+[~, fundIndex] = max(powerSpectrum(1+skip:nMax-skip));
+normSpectrum = powerSpectrum/max(powerSpectrum);
+fundSampleFreq = sampleFreq(fundIndex + skip);
+
+% figure();
+% plot(n, normSpectrum);
+% axis([0 750 0 1]);
+% ylabel("Power Spectrum");
+% close();
 
 % [equibVal, varAvgDiff, thermalValStd] = equilibrium_difference(steps, varAvg);
 % nMax = size(steps,1);

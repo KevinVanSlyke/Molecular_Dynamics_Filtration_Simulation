@@ -3,6 +3,7 @@ function [varNames, ensembleData] = collate_ensemble_data(trialsDir)
 %   Detailed explanation goes here
 [nLines, nVars] = ensemble_indices(trialsDir);
 nTrials = num_trials(trialsDir);
+nLines = round(nLines);
 ensembleData = zeros(nLines, nVars, nTrials);
 trialList = dir(fullfile(trialsDir));
 nTrialDirs = size(trialList,1);

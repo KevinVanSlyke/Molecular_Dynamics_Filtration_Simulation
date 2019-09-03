@@ -14,23 +14,22 @@ function [] = plot_variable_FFT(sampleFreq, fundSampleFreq, powerSpectrum, selec
 % kb = 1.38*10^(-23); %Joules/Kelvin
 
 %Convert from sample frequency to inverse timestep
-freq = sampleFreq; %Units of 1/timestep
-fundFreq = fundSampleFreq; 
+freq = sampleFreq/1000; %Units of 1/timestep
+fundFreq = fundSampleFreq/1000; %Units of 1/timestep
 nMax = size(freq,1);
 
 if strcmp(plotFFT, 'LJ') %Convert to LJ dimensionless time
-    freq = freq(1:nMax); %1/t* LJ dimensionless Unit
-    fundFreq = fundFreq;
+    freq = freq*200; %1/t* LJ dimensionless Unit
+    fundFreq = fundFreq*200;
 elseif  strcmp(plotFFT, 'real')     %Convert to real time
-	freq = freq/(2.17*10^(-12)*(1/(10^(-9)))); %GHz (1/ns)
-	fundFreq = fundFreq/(2.17*10^(-12)*(1/(10^(-9)))); %GHz (1/ns)
+	freq = freq*200/(2.17*10^(-12)*(10^(9))); %GHz (1/ns)
+	fundFreq = fundFreq*200/(2.17*10^(-12)*(10^(9))); %GHz (1/ns)
 end
 normPower = powerSpectrum(1:nMax);
 
-figFFT = figure('Visible','off');
+figFT = figure('Visible','on');
 ax = axes('Visible','off');
 plot(freq, normPower);
-%        title(strcat('FT of Gas Pressure at~', region, ' of Filter with Pore Width W=', num2str(W), 'd, Impurity Diameter D=', num2str(D), 'd and Shift H=', num2str(H),'d'), 'Interpreter', 'LaTex', 'FontSize', 8 );
 titleString = strcat("FT of", " ", varTitle, " ", "adjoining Filter with");
 for i = 1 : 1 : size(parVars,2)
     titleString = strcat(titleString, " ", parNames(1,i), " ", parVars(1,i), "=", num2str(parVals(1,i)), "r*");
@@ -45,8 +44,10 @@ if strcmp(plotFFT, 'LJ')
 elseif  strcmp(plotFFT, 'real')
     xlabel("Frequency, $f ~ (GHz)$",'Interpreter','Latex');
 end
-axis([0 0.01 0 1]);
-print(strcat("FFT_",parString,"_",plotFFT), '-dpng');
-close(figFFT);
+axis([0 5*fundFreq 0 1]);
+print(strcat("FT_",parString,"_",plotFFT), '-dpng');
+%savefig(figFT, strcat("FT_",parString,"_",plotFFT,".fig"));
+
+close(figFT);
 end
 
