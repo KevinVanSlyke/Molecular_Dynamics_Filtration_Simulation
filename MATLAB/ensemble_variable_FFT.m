@@ -30,7 +30,7 @@ sampleFreq = n/(nMax);
 mag = fft(varAvg);
 powerSpectrum = (abs(mag)).^2;
 [~, fundIndex] = max(powerSpectrum(1+skip:nMax-skip));
-normSpectrum = powerSpectrum/max(powerSpectrum);
+normSpectrum = powerSpectrum/powerSpectrum(fundIndex+skip);
 fundSampleFreq = sampleFreq(fundIndex + skip);
 
 % figure();

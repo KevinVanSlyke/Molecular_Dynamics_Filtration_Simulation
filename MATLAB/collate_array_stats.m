@@ -1,4 +1,4 @@
-function [tauAvgs, tauStds, parNames, parVars, parVals, nEnsemble] = collate_tau_values(ensemblesDir, selectedVar, outputDir, plotFit, plotFFT)
+function [tauAvgs, tauStds, parNames, parVars, parVals, nEnsemble] = collate_array_tau_values(ensemblesDir, selectedVar, outputDir, plotFit, plotFFT)
 %UNTITLED7 Summary of this function goes here
 %   Detailed explanation goes here
 cwd = ensemblesDir;
@@ -11,8 +11,7 @@ for n = 1 : 1 : nEnsembleDirs
         parString = ensembleDirList(n).name();
         trialsDir = fullfile(ensemblesDir,parString);
         cd(trialsDir);
-        [parNames, parVars, parVals(nEnsemble,:)] = ensemble_parameters(trialsDir);
-        [tauAvgs(nEnsemble), tauStds(nEnsemble)] = analyze_ensemble_variable(trialsDir, selectedVar, outputDir, plotFit, plotFFT);
+        [parNames, parVars, parVals(nEnsemble,:), tauAvgs(nEnsemble), tauStds(nEnsemble)] = analyze_array_ensemble_variable(trialsDir, selectedVar, outputDir, plotFit, plotFFT);
     end
 end
 

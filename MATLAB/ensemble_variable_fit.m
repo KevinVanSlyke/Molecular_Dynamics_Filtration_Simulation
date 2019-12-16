@@ -61,9 +61,9 @@ ampUpConf = expCoefConfInt(1,2);
 ampLowConf = expCoefConfInt(2,2);
 ampStd = abs((ampUpConf - ampLowConf))/3.92;
 
-tauAvg = -1/expFitCoef(3); 
-tauUpConf = -1/expCoefConfInt(1,3); 
-tauLowConf = -1/expCoefConfInt(2,3); 
+tauAvg = 1/expFitCoef(3); 
+tauUpConf = 1/expCoefConfInt(1,3); 
+tauLowConf = 1/expCoefConfInt(2,3); 
 tauStd = abs((tauUpConf - tauLowConf))/3.92;
 
 expRSquare = expFitGoodness.rsquare;

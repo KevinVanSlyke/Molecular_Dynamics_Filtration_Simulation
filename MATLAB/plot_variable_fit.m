@@ -21,12 +21,12 @@ for i = 1 : 1 : size(parVars,2)
     end
 end
 
-fitFig = figure('Visible','on');
+fitFig = figure('Visible','off');
 ax = axes('Visible','off');
 plot(t, varAvg, '.');
 hold on;
 errorbar(tPeaks, varPeaks, varPeakStds, 'o');
-plot(t, expFitLine);
+plot(expFitLine);
 title(titleString, 'Interpreter', 'LaTex', 'FontSize', 8 );
 ylabel(strcat('Pressure (', varSym,')'),'Interpreter','Latex');
 %legend("Data", "Exp. Decay Fit");

@@ -35,10 +35,10 @@ def LAMMPS_input_generator(randomSeed, poreWidth, poreSpacing, impurityDiameter,
 
     ##Currently filter must span entire z dimension and pore is open along this entire axis
 #    poreWidth = 50
-    flagMultiPore = False
+    flagMultiPore = True
     if poreWidth >= yMax:
         nFilters = 0
-    filterDepth = 20
+    filterDepth = 5
 #    filterHeight = 3
     filterSpacing = 100
 #    poreSpacing = 10
@@ -58,7 +58,7 @@ def LAMMPS_input_generator(randomSeed, poreWidth, poreSpacing, impurityDiameter,
     flagRearPressure = False
     flagPoreSpacing = True
     flagVCM = True
-    vcmChunks = True
+    vcmChunks = False
     flagPairShift = True
     
     ##Energy minimation parameters/thresholds
@@ -74,13 +74,13 @@ def LAMMPS_input_generator(randomSeed, poreWidth, poreSpacing, impurityDiameter,
     dynamicTime = 10**(3)
     restartTime = 10**(5)
     archiveRestartTime = 10**(6)
-#    totalTime = int(0.1*10**(7))
-    ##Reduced for 3D
     totalTime = int(10**(7))
+    ##Reduced for 3D
+#    totalTime = int(0.1*10**(7))
 
     ##Optional Temporal parameters and flags for extra analysis print outs
     ##Set times below to 0 to exclude print out
-    poreDump = True
+    poreDump = False
     
     tracerDump = False
     tracerTime = 10
