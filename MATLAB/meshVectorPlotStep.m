@@ -17,9 +17,14 @@ tempAMax = max(tempA,[],'all');
 countIMax = max(countI,[],'all');
 tempIMax = max(tempI,[],'all');
 kinetic = countA.*tempA+countI.*tempI;
-kineticMax = max(kinetic,[],'all');
-kineticMin = min(kinetic,[],'all');
-kinTickSpace = round(kineticMax/10,2,'significant');
+% logKinetic = log((countA.*tempA+countI.*tempI)+1);
+logKinetic = log10((countA.*tempA+countI.*tempI)+1);
+% logKinetic = log((countA.*tempA)+1);
+logKinetic(isinf(logKinetic)|isnan(logKinetic)) = 0;
+kineticMax = max(logKinetic,[],'all');
+kineticMin = min(logKinetic,[],'all');
+% kinLogMax = max(logKinetic,[],'all');
+% kinTickSpace = round((kineticMax-kineticMin)/10,1);
 maxAMag = max((uA.^2+vA.^2).^(1/2),[],'all');
 maxIMag = max((uI.^2+vI.^2).^(1/2),[],'all');
 maxMag = max(maxAMag,maxIMag);
@@ -36,36 +41,55 @@ for i = 1:1:size(t,1)
     set(qFig,'position',[pos(1:2)/4 pos(3:4)*2])    
     hold on;
     
-%     surf(x,y,kinetic(:,:,i));
+%     surf(x,y,logKinetic(:,:,i));
 %     axis([xLow xUp yLow yUp kineticMin kineticMax]);
-%     caxis([kineticMin kineticMax]);
+%     caxis([kineticMin kineticMax]);    
+%     colorbar('TickLabels', num2cell(-10:10:80));
+
+    surf(x-10,y-10,logKinetic(:,:,i)-kineticMax);
+%     surf(x,y,logKinetic(:,:,i)-kineticMax);
+
+%     axis([xLow xUp yLow yUp -8 0]);
+%     caxis([-8 0]);
 %     colorbar;
 
-%     surf(x,y,kinetic(:,:,i)-kineticMax);
-%     axis([xLow xUp yLow yUp -kineticMax 0]);
-%     colormap(parula(10));
-%     colorbar;
-% %     colorbar('TickLabels', num2cell(0:kinTickSpace:round(kineticMax,2,'significant')+100));
-%     caxis([-kineticMax 0]);
+%     colormap(parula(7));
+%     colorbar('TickLabels', num2cell(0:1:8));
+%     colorbar('TickLabels', num2cell(0:1:kinTickSpace+1));
+
+     axis([xLow xUp yLow yUp -kineticMax 0]);
+     caxis([-kineticMax 0]);
+     hcolorBar = colorbar('Ticks',linspace(-kineticMax,0,8),'TickLabels', num2cell(0:0.5:3.5));
+     ylabel(hcolorBar, '$log(P+1)$', 'Interpreter', 'latex') ;
+
+%     colorbar('Ticks', (0:1:4));
+%     colorbar('TickLabels', num2cell(0:1:4));
 
 
-    surf(x,y,countI(:,:,i)-countIMax);
-    axis([xLow xUp yLow yUp -countIMax 0]);
-    colormap(parula(countIMax));
-    colorbar('TickLabels', num2cell(0:countIMax));
-    caxis([-countIMax 0]);
 
-%     quiver(x+10, y+10, uANorm(:,:,i)*50, vANorm(:,:,i)*50, 'AutoScale', 'off', 'Color' ,'w');%, 'LineWidth',2);%,'MaxHeadSize',5);
-    quiver(x+10, y+10, uINorm(:,:,i)*50, vINorm(:,:,i)*50, 'AutoScale', 'off', 'Color' ,'w');%, 'LineWidth',2,'MaxHeadSize',5);
+
+%     surf(x-10,y-10,countI(:,:,i)-countIMax);
+% %     surf(x,y,countI(:,:,i)-countIMax);
+% 
+%     axis([xLow xUp yLow yUp -countIMax 0]);
+%     colormap(parula(countIMax));
+%     colorbar('TickLabels', num2cell(0:countIMax));
+%     caxis([-countIMax 0]);
+    
+    quiver(x, y, uANorm(:,:,i)*50, vANorm(:,:,i)*50, 'AutoScale', 'off', 'Color' ,'w');%, 'LineWidth',2);%,'MaxHeadSize',5);
+%     quiver(x, y, uINorm(:,:,i)*100, vINorm(:,:,i)*100, 'AutoScale', 'off', 'Color' ,'w');%, 'LineWidth',2,'MaxHeadSize',5);
+
+%     quiver(x+10, y+10, uANorm(:,:,i)*50, vANorm(:,:,i)*50, 'AutoScale', 'off', 'Color' ,'k');%, 'LineWidth',2);%,'MaxHeadSize',5);
+%     quiver(x+10, y+10, uINorm(:,:,i)*100, vINorm(:,:,i)*100, 'AutoScale', 'off', 'Color' ,'w');%, 'LineWidth',2,'MaxHeadSize',5);
 %     axis([xLow xUp yLow yUp 0 0]);
 
     zCut = 0;
-    patch( [1000 1000 1020 1020], [0 940 940 0], [zCut zCut zCut zCut], 'k');
-    patch( [1000 1000 1020 1020], [1060 2000 2000 1060], [zCut zCut zCut zCut], 'k');
+    patch( [1000 1000 1020 1020], [0 940 940 0], [zCut zCut zCut zCut], 'w');
+    patch( [1000 1000 1020 1020], [1060 2000 2000 1060], [zCut zCut zCut zCut], 'w');
 
-    patch( [1120 1120 1140 1140], [0 820 820 0], [zCut zCut zCut zCut], 'k');
-    patch( [1120 1120 1140 1140], [940 1060 1060 940], [zCut zCut zCut zCut], 'k');
-    patch( [1120 1120 1140 1140], [1180 2000 2000 1180], [zCut zCut zCut zCut], 'k');
+    patch( [1220 1220 1240 1240], [0 820 820 0], [zCut zCut zCut zCut], 'w');
+    patch( [1220 1220 1240 1240], [940 1060 1060 940], [zCut zCut zCut zCut], 'w');
+    patch( [1220 1220 1240 1240], [1180 2000 2000 1180], [zCut zCut zCut zCut], 'w');
     
 %     zCut = 0;
 %     patch( [10000 10000 10020 10020], [0 940 940 0], [zCut zCut zCut zCut], 'k');
@@ -75,15 +99,18 @@ for i = 1:1:size(t,1)
 %     patch( [10120 10120 10140 10140], [940 1060 1060 940], [zCut zCut zCut zCut], 'k');
 %     patch( [10120 10120 10140 10140], [1180 2000 2000 1180], [zCut zCut zCut zCut], 'k');
     
-    title(strcat("Impurity Velocity Vector Field, Impurity Count Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
+%     title(strcat("Argon Velocity Vector Field, Log KE Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
+%     title(strcat("Impurity Velocity Vector Field, Impurity Count Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Impurity Velocity Vector Field at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Kinetic Energy Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
     
-    xlabel("x, $r*$",'Interpreter','Latex');
-    ylabel("y, $r*$",'Interpreter','Latex');
+    xlabel("x $(r*)$",'Interpreter','Latex');
+    ylabel("y $(r*)$",'Interpreter','Latex');
     view(0,90);
 
-    print(strcat("ImpurityVelocity_ImpurityCount_Timestep_",num2str(t(i)*200)), '-dpng');
+%     print(strcat("ImpurityVelocityCount_Timestep_",num2str(t(i)*200)), '-dpng');
+    print(strcat("ArgonVelocity_LogP_Timestep_",num2str(t(i)*200)), '-dpng');
+
     close(qFig);
     
 end

@@ -9,10 +9,10 @@ cwd = pwd;
 %steps = steps(1:2000);
 %varAvg = varAvg(1:2000);
 %varStd = varStd(1:2000);
-[ sampleFreq, fundSampleFreq, powerSpectrum ] = ensemble_variable_FFT( steps, varAvg );
+[ sampleFreq, fundSampleFreq, normSpectrum ] = ensemble_variable_FFT( steps, varAvg );
 if strcmp(plotFFT, 'off') == 0
     cd(outputDir);
-    plot_variable_FFT(sampleFreq, fundSampleFreq, powerSpectrum, selectedVar, parNames, parVars, parVals, plotFFT);
+    plot_variable_FFT(sampleFreq, fundSampleFreq, normSpectrum, selectedVar, parNames, parVars, parVals, plotFFT);
     cd(cwd);
 end
 

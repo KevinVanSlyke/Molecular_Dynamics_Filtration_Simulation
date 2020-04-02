@@ -33,7 +33,7 @@ clear chars headStrings chunkHead headWords;
 chunkTail = convertCharsToStrings(chars);
 tailWords = strsplit(chunkTail,' ');
 nSteps = str2double(tailWords{1,1})/1000;
-%nSteps = 100;
+% nSteps = 101;
 clear chars chunkTail tailWords;
 
 chunkData = zeros(nSteps,nChunks,nVars);
@@ -45,9 +45,10 @@ while feof(fid) == 0
         if strcmp(chunkWords{1,2},num2str(nChunks))
             step = str2double(chunkWords{1,1});
             index = step/1000+1;
-%            if index == 101
-%                break;
-%            end
+            %Shorten read for debugging
+%             if index == 101
+%                 break;
+%             end
         else
             chunkID = str2double(chunkWords{1,1});
             varWords = chunkWords(2:end);

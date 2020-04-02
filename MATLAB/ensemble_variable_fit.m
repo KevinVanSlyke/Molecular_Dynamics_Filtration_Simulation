@@ -43,14 +43,21 @@ for k = 1 : 1 : nPeaks
 end
 
 expFit = fittype('expShiftLine(x,a,b,c)');
-[expFitCurve, expFitGoodness, expFitOutput] = fit(tPeaks,varPeaks,expFit,'Weights',varPeakWeights,'StartPoint', [equibVal, pMax-equibVal, 0.0005], 'DiffMaxChange', 1, 'DiffMinChange', 10^(-8), 'MaxFunEvals', 10000, 'MaxIter', 10000, 'TolFun', 10^(-20), 'TolX', 10^(-20) );
-
+if varPeakWeights ~= Inf
+    [expFitCurve, expFitGoodness, expFitOutput] = fit(tPeaks,varPeaks,expFit,'Weights',varPeakWeights,'StartPoint', [equibVal, pMax-equibVal, 0.0005], 'DiffMaxChange', 1, 'DiffMinChange', 10^(-8), 'MaxFunEvals', 10000, 'MaxIter', 10000, 'TolFun', 10^(-20), 'TolX', 10^(-20) );
+else
+    [expFitCurve, expFitGoodness, expFitOutput] = fit(tPeaks,varPeaks,expFit,'StartPoint', [equibVal, pMax-equibVal, 0.0005], 'DiffMaxChange', 1, 'DiffMinChange', 10^(-8), 'MaxFunEvals', 10000, 'MaxIter', 10000, 'TolFun', 10^(-20), 'TolX', 10^(-20) );
+end
 %[expFitCurve, expFitGoodness, ~] = fit(tPeaks,varPeakDiff,'exp1');
 %[expFitCurve, expFitGoodness, expFitOutput] = fit(tPeaks,varPeakDiff,'exp1','Weights',varPeakWeights, 'DiffMaxChange', 1, 'DiffMinChange', 10^(-8), 'MaxFunEvals', 10000, 'MaxIter', 10000, 'TolFun', 10^(-20), 'TolX', 10^(-20) );
 
+expShiftFit = fittype('expShiftLine(x,a,b,c)');
 %[expShiftFitCurve, expShiftFitGoodness, expShiftFitOutput] = fit(tPeaks,varPeaks,expshiftFit,'Weights',varPeakWeights,'StartPoint', [equibVal, pMax-equibVal, -0.0005, 2000], 'DiffMaxChange', 1, 'DiffMinChange', 10^(-8), 'MaxFunEvals', 10000, 'MaxIter', 10000, 'TolFun', 10^(-20), 'TolX', 10^(-20) );
+genExpFit = fittype('genExpLine(x,a,b,c,d)');
 %[genExpFitCurve, genExpFitGoodness, genExpFitOutput] = fit(tPeaks,varPeaks,genExpFit,'Weights',varPeakWeights, 'StartPoint', [equibVal, pMax-equibVal, -0.0005, 2000],'DiffMaxChange', 1, 'DiffMinChange', 10^(-8), 'MaxFunEvals', 10000, 'MaxIter', 10000, 'TolFun', 10^(-20), 'TolX', 10^(-20) );
-%[sigFitCurve, sigFitGoodness, sigFitOutput] = fit(tPeaks,varPeaks,sigFit,'Weights',varPeakWeights, 'StartPoint', [equibVal, pMax-equibVal, -0.0005, 2000], 'DiffMaxChange', 1, 'DiffMinChange', 10^(-8), 'MaxFunEvals', 10000, 'MaxIter', 10000, 'TolFun', 10^(-20), 'TolX', 10^(-20) );
+sigFit = fittype('sigmoidLine(x,a,b,c)');
+
+[sigFitCurve, sigFitGoodness, sigFitOutput] = fit(tPeaks,varPeaks,sigFit,'Weights',varPeakWeights, 'StartPoint', [equibVal, pMax-equibVal, -0.0005, 2000], 'DiffMaxChange', 1, 'DiffMinChange', 10^(-8), 'MaxFunEvals', 10000, 'MaxIter', 10000, 'TolFun', 10^(-20), 'TolX', 10^(-20) );
 
 expFitCoef = coeffvalues(expFitCurve);
 expCoefConfInt = confint(expFitCurve);

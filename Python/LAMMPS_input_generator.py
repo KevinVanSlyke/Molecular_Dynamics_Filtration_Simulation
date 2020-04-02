@@ -17,7 +17,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     dimensions = 2
     nFilters = 2
     
-    xMax = 2000*10
+    xMax = 2000
     xMin = 0
     yMax = 2000
     yMin = 0
@@ -62,8 +62,8 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         
     
     ##Initialization temperature and velocity parameters
-    fluidVelocity = 0.5
-    fluidTemperature = 0.5
+    fluidVelocity = 1
+    fluidTemperature = 1
     
     flagPressureFromKineticOnly = False
     flagImpurityVel = False
@@ -113,13 +113,13 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     dumpRawMovies = False
     rawHalfWidth = 125
     movieStartTime = 0
-    movieDuration = 10**(5)
+    movieDuration = 10**(4)
     movieFrameDelta = 100
     
 #    velDumpTime = 0
     
     ##Default for 2D simulation of L_x = 2000, L_y = 2000
-    nTotal = 100000*10
+    nTotal = 100000
     ##Equal volume density to default 2D area density with L_x = 200, L_y= 200, L_z = 25
     #nTotal = 1000
     ##Equal volume density to default 2D area density with L_x = 500, L_y= 500, L_z = 25
@@ -534,13 +534,38 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         f.write('thermo_style    custom step etotal ke pe c_gasTemp v_P\n')
         f.write('\n')
         
+#        #Domain Single Layer
+#        xChunkLow=int(xMin)
+#        xChunkHigh=int(xMax+filterDepth-1)
+#        yChunkLow=int(yMin+1)
+#        yChunkHigh=int(yMax)
+#        
+#        #Domain Dual Layer
+#        xChunkLow=int(xMin)
+#        xChunkHigh=int(xMax+2*filterDepth-1)
+#        yChunkLow=int(yMin+1)
+#        yChunkHigh=int(yMax)
+        
+        #Orifice Focus
+        xChunkLow=800
+        xChunkHigh=1299+filterSpacing
+        yChunkLow=701
+        yChunkHigh=1300
+         
+        
         if flagChunkData == True and impurityDiameter != 1:  
+#            if dimensions == 2 and nFilters == 1:
+#                f.write('compute argonChunks argon chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+filterDepth-1), int(yMin+1), int(yMax)))
+#                f.write('compute impurityChunks impurity chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+filterDepth-1), int(yMin+1), int(yMax)))
+#            elif dimensions == 2 and nFilters == 2:
+#                f.write('compute argonChunks argon chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+2*filterDepth-1), int(yMin+1), int(yMax)))
+#                f.write('compute impurityChunks impurity chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+2*filterDepth-1), int(yMin+1), int(yMax)))
             if dimensions == 2 and nFilters == 1:
-                f.write('compute argonChunks argon chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+filterDepth-1), int(yMin+1), int(yMax)))
-                f.write('compute impurityChunks impurity chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+filterDepth-1), int(yMin+1), int(yMax)))
+                f.write('compute argonChunks argon chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(xChunkLow, int(dx), yChunkLow, int(dy), xChunkLow, xChunkHigh, yChunkLow, yChunkHigh))
+                f.write('compute impurityChunks impurity chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(xChunkLow, int(dx), yChunkLow, int(dy), xChunkLow, xChunkHigh, yChunkLow, yChunkHigh))
             elif dimensions == 2 and nFilters == 2:
-                f.write('compute argonChunks argon chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+2*filterDepth-1), int(yMin+1), int(yMax)))
-                f.write('compute impurityChunks impurity chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+2*filterDepth-1), int(yMin+1), int(yMax)))
+                f.write('compute argonChunks argon chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(xChunkLow, int(dx), yChunkLow, int(dy), xChunkLow, xChunkHigh, yChunkLow, yChunkHigh))
+                f.write('compute impurityChunks impurity chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(xChunkLow, int(dx), yChunkLow, int(dy), xChunkLow, xChunkHigh, yChunkLow, yChunkHigh))
 
             f.write('compute argonChunkVCM argon vcm/chunk argonChunks \n')
             f.write('fix argonChunksAvgVCM argon ave/time {0} {1} {2} c_argonChunkVCM[*] file argon_vcm_'.format(dynamicTime, 1, dynamicTime) + trialName + '_' + dumpStringDiff +'.chunk mode vector \n')
@@ -559,7 +584,8 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
             f.write('\n')
         else:
             if dimensions == 2 and nFilters == 1:
-                 f.write('compute chunks gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+filterDepth-1), int(yMin+1), int(yMax)))
+#                 f.write('compute chunks gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+filterDepth-1), int(yMin+1), int(yMax)))
+                 f.write('compute chunks gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(xChunkLow, int(dx), yChunkLow, int(dy), xChunkLow, xChunkHigh, yChunkLow, yChunkHigh))
                  f.write('compute chunkVCM gas vcm/chunk chunks \n')
                  f.write('fix chunksAvgVCM gas ave/time {0} {1} {2} c_chunkVCM[*] file vcm_'.format(dynamicTime, 1, dynamicTime) + trialName + '_' + dumpStringDiff +'.chunk mode vector \n')
                  f.write('compute chunkTemp gas temp/chunk chunks internal \n')
@@ -567,7 +593,8 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
                  f.write('compute chunkCount gas property/chunk chunks count \n')
                  f.write('fix chunksAvgCount gas ave/time {0} {1} {2} c_chunkCount[*] file count_'.format(dynamicTime, 1, dynamicTime) + trialName + '_' + dumpStringDiff +'.chunk mode vector \n')
             elif dimensions == 2 and nFilters == 2:
-                 f.write('compute chunks gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+2*filterDepth-1), int(yMin+1), int(yMax)))
+#                 f.write('compute chunks gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+2*filterDepth-1), int(yMin+1), int(yMax)))
+                 f.write('compute chunks gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(xChunkLow, int(dx), yChunkLow, int(dy), xChunkLow, xChunkHigh, yChunkLow, yChunkHigh))
                  f.write('compute chunkVCM gas vcm/chunk chunks \n')
                  f.write('fix chunksAvgVCM gas ave/time {0} {1} {2} c_chunkVCM[*] file vcm_'.format(dynamicTime, 1, dynamicTime) + trialName + '_' + dumpStringDiff +'.chunk mode vector \n')
                  f.write('compute chunkTemp gas temp/chunk chunks internal \n')

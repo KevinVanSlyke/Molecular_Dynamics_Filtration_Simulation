@@ -21,6 +21,8 @@ for i = 1 : 1 : nPars
         parNames(i) = "Orifice Offset";
     elseif parVars(i) == 'F'
         parNames(i) = "Orifice Separation";
+    elseif parVars(i) == 'S'
+        parNames(i) = "Filter Spacing";
     end
 end
 

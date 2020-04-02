@@ -20,7 +20,7 @@ function [ sampleFreq, fundSampleFreq, normSpectrum ] = ensemble_variable_FFT( s
 % fund = P(fundIndx+1);
 % norm = P/maxP;
 
-skip = 2;
+skip = 50;
 
 %[equibVal, varAvgDiff, thermalValStd] = equilibrium_difference(steps, varAvg);
 
@@ -28,10 +28,19 @@ nMax = size(steps,1);
 n = (1 : 1 : nMax)';
 sampleFreq = n/(nMax);
 mag = fft(varAvg);
+
 powerSpectrum = (abs(mag)).^2;
-[~, fundIndex] = max(powerSpectrum(1+skip:nMax-skip));
-normSpectrum = powerSpectrum/powerSpectrum(fundIndex+skip);
-fundSampleFreq = sampleFreq(fundIndex + skip);
+for i=1:1:size(powerSpectrum)
+    if powerSpectrum(i) >= 1
+        powerSpectrum(i) = 1;
+    end
+end
+[~, skipToIndex] = max(powerSpectrum(1+skip:nMax-skip));
+fundIndex = skipToIndex + skip;
+normSpectrum = powerSpectrum/powerSpectrum(fundIndex);
+% normSpectrum = powerSpectrum/max(powerSpectrum);
+
+fundSampleFreq = sampleFreq(fundIndex);
 
 % figure();
 % plot(n, normSpectrum);

@@ -12,12 +12,12 @@ for n = 0 : 1 : nRestarts-1
 %    thermLogFile = fullfile(fPath, strcat('log_',simString,'_restart_',num2str(n-1),'.lmp'));
     nRestartLogString = strcat('thermo_',paramString,'_',num2str(trialIndex),'T_r',num2str(n),'.log');
     try
-        logData = readlog(nRestartLogString);
+        logData = readlog_fix(nRestartLogString);
     catch
         error(strcat('ERROR: readlog.m failed to read ', nRestartLogString, ' presumably due to improper file format.'));
     end
     if n == 0
-        dataIndex = 2;
+        dataIndex = ;
     else
         dataIndex = 1;
     end

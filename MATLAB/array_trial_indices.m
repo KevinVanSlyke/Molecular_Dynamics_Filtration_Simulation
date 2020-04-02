@@ -19,12 +19,12 @@ tailStrings = strsplit(logTail,'\n');
 nStrings = size(tailStrings,2);
 for i = 1 : 1 : nStrings
     if startsWith(tailStrings(i), 'Loop')
-        finalThermLine = tailStrings(i-2);
+        finalThermLine = tailStrings(i-1);
         words = strsplit(finalThermLine, ' ');
         %Log files contain '\n' at the end of the variable line which is
         %counted as an additional word, hence:
         nVars = size(words,2)-1;
-        tMax = str2double(words(1,1));
+        tMax = str2double(words(1,2));
     end
 end
 %Typical simulations have thermo output ever 1000 timesteps and are run for

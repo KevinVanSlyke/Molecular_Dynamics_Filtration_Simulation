@@ -1,6 +1,6 @@
 function [] = png2avi(fRate)
 
-writerObj = VideoWriter('ImpurityVelocity_ImpurityCount.avi');
+writerObj = VideoWriter('ArgonVelocity_LogKE.avi');
 
 %writerObj = VideoWriter('Impurity_Velocity_Quiver.avi');
 %writerObj = VideoWriter('Impurity_Count.avi');
@@ -19,9 +19,9 @@ writerObj = VideoWriter('ImpurityVelocity_ImpurityCount.avi');
 
 writerObj.FrameRate=fRate;
 open(writerObj);
-for K = 0 : 1000 : 300000
+for K = 0 : 1000 : 1000000
     
-    filename = sprintf('ImpurityVelocity_ImpurityCount_Timestep_%d.png', K);
+    filename = sprintf('ArgonVelocity_LogKE_Timestep_%d.png', K);
 
 %    filename = sprintf('Impurity_Quiver_Timestep_%d.png', K);
 %    filename = sprintf('Impurity_Count_Timestep_%d.png', K);

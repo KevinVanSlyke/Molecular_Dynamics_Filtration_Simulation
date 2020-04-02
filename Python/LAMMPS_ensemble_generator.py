@@ -17,11 +17,11 @@ timeout = 48 #hours
 
 poreWidth = [120]
 poreSpacing = [120]
-impurityDiameter = [1]
-filterSpacing = [100]
+impurityDiameter = [1,5,10,15]
+filterSpacing = [100,200,300,400,500]
 registryShift = [0]
 
-movies = False
+movies = True
 pyDir = os.getcwd()
 os.chdir('../../')
 projDir = os.getcwd()

@@ -25,6 +25,8 @@ if strcmp(plotFFT, 'off') == 0
     cd(cwd);
 end
 
+plot_variable(steps, varAvg, selectedVar, parNames, parVars, parVals, plotFit);
+
 [ tauAvg, tauStd, expFitLine, tPeaks, varPeaks, varPeakStds, expRSquare, expAdjRSquare, expRMSE ] = ensemble_variable_fit( steps, varAvg, varStd, fundSampleFreq );
 if strcmp(plotFit, 'off') == 0
     cd(outputDir);

@@ -27,7 +27,7 @@ elseif  strcmp(plotFFT, 'real')     %Convert to real time
 end
 normPower = powerSpectrum(1:nMax);
 
-figFT = figure('Visible','off');
+figFT = figure('Visible','on');
 ax = axes('Visible','off');
 plot(freq, normPower);
 titleString = strcat("FT of", " ", varTitle, " ", "adjoining Filter with");
