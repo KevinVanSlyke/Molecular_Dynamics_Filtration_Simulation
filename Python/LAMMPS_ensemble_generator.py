@@ -64,13 +64,13 @@ for width in poreWidth:
                         LAMMPS_input_generator(width, diameter, separation, spacing, shift, movies)
                         os.chdir('..')
 
-                    
-                
+
+
 #    for impurityDiameter in [2,10]:
 #        for poreWidth in [20, 50, 200]:
 #            LAMMPS_files_generator(randomSeed, impurityDiameter, poreWidth, filterSpacing)
-#    os.chdir(trialsDir)    
-    
+#    os.chdir(trialsDir)
+
     #for firstVar in range(2,42):
         #for secondVar in [2, 5, 10]:
             #LAMMPS_files_generator(randomSeed, firstVar, secondVar)

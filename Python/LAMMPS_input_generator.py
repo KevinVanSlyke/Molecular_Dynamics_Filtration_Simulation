@@ -12,18 +12,18 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     #randomSeed = [12461,6426357,32578,1247568,124158,12586]
     ##Frequently changed input variables
         #impurityDiameter, poreWidth, trialNum, poreSpacing, registryShift, filterSpacing, nTotal
-    
+
     ##Spatial input parameters
     dimensions = 2
     nFilters = 2
-    
+
     xMax = 2000
     xMin = 0
     yMax = 2000
     yMin = 0
     dx = 20
     dy = 20
-    
+
     iRange = xMax/dx
     jRange = yMax/dy
     if dimensions == 2:
@@ -49,38 +49,38 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     if poreWidth >= yMax:
         nFilters = 0
     filterDepth = 20
-    
+
 #    filterHeight = 3
 #    filterSpacing = 100
 #    poreSpacing = 10
 #    registryShift = 0
-    
+
     if registryShift != 0:
         flagRegistryShift = True
     else:
         flagRegistryShift = False
-        
-    
+
+
     ##Initialization temperature and velocity parameters
     fluidVelocity = 1
     fluidTemperature = 1
-    
+
     flagPressureFromKineticOnly = False
     flagImpurityVel = False
     flagImpurityMom = False
     flagPairShift = True
-    
+
 #    flagPressFilterFaceOnly = True
 #    flagPressVerticalSlicesOnly = True
-    
+
     flagFrontPress = True
     flagChunkData = True
 
 #    flagRearPressure = False
 #    flagVCM = True
 #    flagRegionVcm = False
-    
-    
+
+
     ##Energy minimation parameters/thresholds
     eMin = 10**(-6)
     fMin = 10**(-6)
@@ -101,13 +101,13 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     ##Optional Temporal parameters and flags for extra analysis print outs
     ##Set times below to 0 to exclude print out
     poreDump = True
-    
+
     tracerDump = False
     tracerTime = 10
     nTracers = 10
-    
+
     makeRestarts = False
-    
+
 #    dumpMovies = True
     dumpImages = False
     dumpRawMovies = False
@@ -115,9 +115,9 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     movieStartTime = 0
     movieDuration = 10**(4)
     movieFrameDelta = 100
-    
+
 #    velDumpTime = 0
-    
+
     ##Default for 2D simulation of L_x = 2000, L_y = 2000
     nTotal = 100000
     ##Equal volume density to default 2D area density with L_x = 200, L_y= 200, L_z = 25
@@ -126,7 +126,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     #nTotal = 57200
     nImpurities = int(nTotal*0.05)
 #    impurityDiameter = 1
-    
+
     idType = []
     nType = []
     diameterType = []
@@ -137,7 +137,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     diameterType.append(1.)
     massType.append(1000)
 
-    if tracerDump == False:       
+    if tracerDump == False:
         ##idType[1] is Atom Type 2, Argon Molecules
         idType.append(2)
         diameterType.append(1.)
@@ -156,7 +156,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
                 massType.append(impurityDiameter**2)
 #                massType.append(0.5)
             elif dimensions == 3:
-                massType.append(impurityDiameter**3)                
+                massType.append(impurityDiameter**3)
     else:
         if impurityDiameter == 1:
             atomTypes = 3
@@ -184,7 +184,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
             if dimensions == 2:
                 massType.append(impurityDiameter**2)
             elif dimensions == 3:
-                massType.append(impurityDiameter**3)   
+                massType.append(impurityDiameter**3)
             ##idType[3] is Atom Type 4, Argon Tracer Molecules
             idType.append(4)
             nType.append(nTracers)
@@ -198,7 +198,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
                 massType.append(impurityDiameter**2)
             elif dimensions == 3:
                 massType.append(impurityDiameter**3)
-            
+
 
     ##Create a unique file name
     #    dirName = '{0}W_{1}D_{2}F'.format(poreWidth, impurityDiameter, filterSpacing)
@@ -212,18 +212,18 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     #    else:
     #        if flagRegistryShift:
     #            dirName = '{0}W_{1}D_{2}H'.format(poreWidth, impurityDiameter, registryShift)
-    #        elif flagPoreSpacing:   
+    #        elif flagPoreSpacing:
     #            dirName = '{0}W_{1}D_{2}F'.format(poreWidth, impurityDiameter, poreSpacing)
     #        else:
     #            dirName = '{0}W_{1}D'.format(poreWidth, impurityDiameter)
-        
+
     #    if flagImpurityVel == True:
     #        dirName = dirName + '_IV'
     #    elif flagImpurityMom== True:
     #        dirName = dirName + '_IM'
     #    if flagVCM == True:
     #        dirName = dirName + '_VCM'
-    
+
     dirName = '{0}W_{1}D'.format(poreWidth, impurityDiameter)
     if flagPoreSpacing:
         dirName = dirName + '_{0}F'.format(poreSpacing)
@@ -235,11 +235,11 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 
 #    if flagRegistryShift:
 #        dirName = '{0}W_{1}D_{2}H'.format(poreWidth, impurityDiameter, registryShift)
-#    elif flagPoreSpacing:   
+#    elif flagPoreSpacing:
 #        dirName = '{0}W_{1}D_{2}F'.format(poreWidth, impurityDiameter, poreSpacing)
 #    else:
 #        dirName = '{0}W_{1}D'.format(poreWidth, impurityDiameter)
-        
+
 #    if dumpMovies == False:
 #    else:
 #        trialName = dirName
@@ -253,13 +253,13 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     else:
         trialName = dirName + '_${id}T'
         startName = 'input_' + dirName + '_r0.lmp'
-#        restartName = 'input_' + dirName + '_r1.input'        
+#        restartName = 'input_' + dirName + '_r1.input'
 
 #    trialDir = os.getcwd()
 #    if not os.path.exists(dirName):
 #        os.makedirs(dirName)
 #    os.chdir(dirName)
-    
+
     """
         Primary LAMMPS start/restart files
     """
@@ -276,11 +276,11 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         f.write('## Written by Kevin Van Slyke  \n')
         f.write('## Dated: ' + time.strftime("%m_%d_%Y") + '\n')
         f.write('\n')
-        
+
 #        f.write('print "starting run: id ${id}, ran0 = ${ran0}, ran1 = ${ran1}, ran2 = ${ran2}, ran3 = ${ran3}" \n')
     if makeRestarts == True:
         rf.write('read_restart {0}_archive.rst \n'.format(trialName))
-    
+
     for f in inputFiles:
         f.write('## Multi neighbor and comm for efficiency \n')
         f.write('neighbor    1 multi \n')
@@ -289,7 +289,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         f.write('\n')
         f.write('thermo    {0}    #Print thermo vars every {0} timesteps \n'.format(thermoTime))
         f.write('\n')
-    
+
     sf.write('## Set simulation unit and atom style to dimensionless LJ particles \n')
     sf.write('units    lj    #Simple Lennard-Jones cut-off potential \n')
     sf.write('atom_style     atomic     #Particles have mass \n')
@@ -298,7 +298,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         sf.write('boundary    p f p    #Set boundaries such that x_axis=fixed, y_axis=periodic, z_axis=periodic \n')
         sf.write('lattice    sq 1    #Simple square lattice with one basis atom per cell, lattice_spacing=1/1=1, reduced density rho = 1 \n')
         if nFilters == 0:
-            sf.write('region    box block {0} {1} {2} {3} {4} {5}    #Create extruded rectangular simulation volume in units of lattice sites, {0}<=x<{1}, {2}<=y<{3}, {4}<=z<{5} \n'.format(int(xMin), int(xMax), int(yMin), int(yMax+1), zMin, zMax))            
+            sf.write('region    box block {0} {1} {2} {3} {4} {5}    #Create extruded rectangular simulation volume in units of lattice sites, {0}<=x<{1}, {2}<=y<{3}, {4}<=z<{5} \n'.format(int(xMin), int(xMax), int(yMin), int(yMax+1), zMin, zMax))
         elif nFilters == 1:
             sf.write('region    box block {0} {1} {2} {3} {4} {5}    #Create extruded rectangular simulation volume in units of lattice sites, {0}<=x<{1}, {2}<=y<{3}, {4}<=z<{5} \n'.format(int(xMin), int(xMax+filterDepth), int(yMin), int(yMax+1), zMin, zMax))
         elif nFilters ==2:
@@ -314,7 +314,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     sf.write('create_box    {0} box    #Create simulation volume in region box with {0} atom types \n'.format(atomTypes))
     sf.write('timestep    {0}    #One timestep={0}*tau, tau=2.17*10^(-12)s for Argon \n'.format(timeStep))
     sf.write('\n')
-    
+
     sf.write('## LJ potential: atom type 1, atom type 2, epsilon, sigma \n')
     sf.write('pair_style    lj/cut 1.122462    #Lennard-Jones global cut-off=1.122462 \n')
 #    sf.write('pair_style    lj/cut 1.1    #Lennard-Jones global cut-off=1.122462 \n')
@@ -333,37 +333,37 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
                 ###
 #                cutOff = sigma #1.122462 = 2**(1/6)
 #                cutOff = sigma*1.1 #1.122462 = 2**(1/6)
-                
+
                 sf.write('pair_coeff     {0} {1} {2} {3} {4}     #Pairwise {0}-{1} interaction, epsilon={2}, sigma={3}, cut-off={4} \n'.format(idType[i], idType[j], epsilon, sigma, cutOff))
     for i in xrange(atomTypes):
         sf.write('mass    {0} {1}    #Sets mass of particle type {0} to {1} \n'.format(idType[i], massType[i]))
     if flagPairShift == True:
         sf.write('pair_modify    shift yes    #Shifts LJ potential to 0.0 at the cut-off \n')
     sf.write('\n')
-    
-    
+
+
 ##Update so that vacuum region is not excluding horizontal displacement at PBC
     sf.write('## Define the filter area and fill it with atoms fixed to lattice sites \n')
     if dimensions == 2 and nFilters == 0:
         sf.write('region    vacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(xMin + diameterType[-1] + 1), int(xMax + filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1), int(yMax-(diameterType[-1]/2+1)), 0, 0))
-   
+
     elif dimensions == 3 and nFilters == 0:
         sf.write('region    vacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(xMin + diameterType[-1] + 1), int(xMax + filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1), int(yMax-(diameterType[-1]+1)), int(zMin+diameterType[-1]/2+1), int(zMax-(diameterType[-1]/2+1))))
-    
+
     elif dimensions == 2 and nFilters == 1 and flagMultiPore == False:
         sf.write('region    topWall block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreWidth)/2+1), int(yMax), 0, 0))
         sf.write('region    botWall block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMin+1), int((yMax-poreWidth)/2), 0, 0))
         sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + 1), int(int(xMax/2)-(int(diameterType[-1]/2) + 1)), int(yMin + 1 + int(diameterType[-1]/2) + 1), int(yMax - (int(diameterType[-1]/2) + 1)), 0, 0))
         sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterDepth + int(diameterType[-1]/2) + 1), int(xMax + filterDepth - 1), int(yMin+1+int(diameterType[-1]/2) + 1), int(yMax-(int(diameterType[-1]/2) + 1)), 0, 0))
         sf.write('region    vacuum union 2 frontVacuum rearVacuum \n')
-        
+
     elif dimensions == 3 and nFilters == 1 and flagMultiPore == False:
         sf.write('region    topWall block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreWidth)/2+1), int(yMax), int(zMin), int(zMax)))
         sf.write('region    botWall block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMin+1), int((yMax-poreWidth)/2), int(zMin), int(zMax)))
         sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + 1), int(int(xMax/2)-(int(diameterType[-1]/2) + 1)), int(yMin+1+diameterType[-1]/2+1), int(yMax-(diameterType[-1]/2+1)), int(zMin+diameterType[-1]/2+1), int(zMax-(diameterType[-1]/2+1))))
         sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterDepth + diameterType[-1]/2 + 1), int(xMax + filterDepth - 1), int(yMin+1+int(diameterType[-1]/2+1)), int(yMax-(diameterType[-1]/2+1)), int(zMin+diameterType[-1]/2+1), int(zMax-(diameterType[-1]/2+1))))
         sf.write('region    vacuum union 2 frontVacuum rearVacuum \n')
-    
+
     elif dimensions == 2 and nFilters == 1 and flagMultiPore == True:
         sf.write('region    topWall block {0} {1} {2} {3} {4} {5}    #Top half of dual pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreSpacing)/2+poreWidth+1+registryShift), int(yMax), 0, 0))
         sf.write('region    midWall block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMax-poreSpacing)/2+1+registryShift, int((yMax+poreSpacing)/2+registryShift), 0, 0))
@@ -371,7 +371,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + diameterType[-1] + 1), int(int(xMax/2)-(diameterType[-1] + 1)), int(yMin+diameterType[-1]/2+1), int(yMax-(diameterType[-1]/2+1)), 0, 0))
         sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterDepth + diameterType[-1] + 1), int(xMax + filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1), int(yMax-(diameterType[-1]/2+1)), 0, 0))
         sf.write('region    vacuum union 2 frontVacuum rearVacuum \n')
-        
+
     elif dimensions == 3 and nFilters == 1 and flagMultiPore == True:
         sf.write('region    topWall2 block {0} {1} {2} {3} {4} {5}    #Top half of dual pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreSpacing)/2+poreWidth+1), int(yMax), int(zMin), int(zMax)))
         sf.write('region    midWall2 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMax-poreSpacing)/2+1, int((yMax+poreSpacing)/2-1), int(zMin), int(zMax)))
@@ -379,7 +379,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + diameterType[-1] + 1), int(int(xMax/2) - (diameterType[-1]/2  + 1)), int(yMin+diameterType[-1]/2+1), int(yMax-(diameterType[-1]/2+1)), int(zMin+diameterType[-1]/2+1), int(zMax-(diameterType[-1]/2+1))))
         sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterDepth + diameterType[-1] + 1), int(xMax + filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1), int(yMax-(diameterType[-1]/2+1)), int(zMin+diameterType[-1]/2+1), int(zMax-(diameterType[-1]/2+1))))
         sf.write('region    vacuum union 2 frontVacuum rearVacuum \n')
-        
+
     elif dimensions == 2 and nFilters == 2:
         sf.write('region    topWall1 block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreWidth)/2+1), int(yMax), 0, 0))
         sf.write('region    botWall1 block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMin+1), int((yMax-poreWidth)/2), 0, 0))
@@ -387,10 +387,10 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         sf.write('region    midWall2 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int(yMax-poreSpacing)/2+1+registryShift, int((yMax+poreSpacing)/2+registryShift), 0, 0))
         sf.write('region    botWall2 block {0} {1} {2} {3} {4} {5}    #Bottom half of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int(yMin+1), int((yMax-poreSpacing)/2-poreWidth)+registryShift, 0, 0))
         sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + diameterType[-1]/2 + 1), int(int(xMax/2) - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1), int(yMax-(diameterType[-1]/2)+1), 0, 0))
-        sf.write('region    midVacuum block {0} {1} {2} {3} {4} {5}    #Middle Region to be filled by gas \n'.format(int(int(xMax/2)+(diameterType[-1]/2 + filterDepth + 1)), int(int(xMax/2) + filterSpacing + filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1), int(yMax-(diameterType[-1]/2+1)), 0, 0))        
+        sf.write('region    midVacuum block {0} {1} {2} {3} {4} {5}    #Middle Region to be filled by gas \n'.format(int(int(xMax/2)+(diameterType[-1]/2 + filterDepth + 1)), int(int(xMax/2) + filterSpacing + filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1), int(yMax-(diameterType[-1]/2+1)), 0, 0))
         sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterSpacing + 2*filterDepth + diameterType[-1]/2 + 1), int(xMax + 2*filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1), int(yMax-(diameterType[-1]/2+1)), 0, 0))
         sf.write('region    vacuum union 3 frontVacuum midVacuum rearVacuum \n')
-        
+
     elif dimensions == 3 and nFilters == 2:
         sf.write('region    topWall1 block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax+poreWidth)/2+1), int(yMax), int(zMin), int(zMax)))
         sf.write('region    botWall1 block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int(yMin+1+2*filterDepth), int((yMax-poreWidth)/2), int(zMin), int(zMax)))
@@ -401,7 +401,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         sf.write('region    midVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(int(xMax/2)+(diameterType[-1]/2 + filterDepth + 1)), int(int(xMax/2) + filterSpacing + filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1+2*filterDepth), int(yMax-(diameterType[-1]/2+1)), int(zMax-(diameterType[-1]/2+1))))
         sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterSpacing + 2*filterDepth + diameterType[-1]/2 + 1), int(xMax + 2*filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1+2*filterDepth), int(yMax-(diameterType[-1]/2+1)), int(zMin+diameterType[-1]/2+1), int(zMax-(diameterType[-1]/2+1))))
         sf.write('region    vacuum union 3 frontVacuum midVacuum rearVacuum \n')
-    
+
 
     if nFilters == 1 and flagMultiPore == False:
         sf.write('create_atoms    {0} region topWall \n'.format(idType[0]))
@@ -436,7 +436,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     sf.write('## Define the flow area and populate with gas molecules \n')
     for i in xrange(1,atomTypes):
         sf.write('create_atoms    {0} random {1} $'.format(idType[i], nType[i]) + '{ran' + str(i-1) + '} ' + 'vacuum    #Create atoms: type={0}, placement=random, N={1}, seed=$'.format(idType[i], nType[i]) + '{ran' + str(i-1) + '}, region=vacuum \n')
-    
+
     if atomTypes == 2:
         sf.write('group    gas type {0}    #Create group of freely moving Argon gas particles \n'.format(idType[1]))
     #elif (atomTypes == 3) and (impurityDiameter != 1):
@@ -454,11 +454,11 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         sf.write('group    tracer type {0} {1}   #Create group of the less common Argon and impurity tracer particles \n'.format(idType[3], idType[5]))
         sf.write('group    impurity type {0} {1}   #Create group of the less common impurity particles \n'.format(idType[3], idType[5]))
     sf.write('\n')
-    
+
     for f in inputFiles:
         f.write('## Thermodynamic calculation method and dynamics \n')
         f.write('fix    1 gas nve    #Fix microcanonical ensemble \n')
-        if nFilters > 0:    
+        if nFilters > 0:
             f.write('fix    2 filter setforce 0.0 0.0 0.0  #Fix force on filter to zero \n')
         if dimensions == 2:
             f.write('fix    3 gas wall/reflect ylo {0} yhi {1}    #Fix walls parallel to xz plane at y={0} and y={1} to reflect particles \n'.format(int(yMin+1), int(yMax)))
@@ -467,7 +467,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
             f.write('fix    3 gas wall/reflect ylo {0} yhi {1} zlo {2} zhi {3}    #Fix walls parallel to xz plane at y={0} and y={1} and xy plane at z={2} and z={3} to reflect particles \n'.format(int(yMin+1), int(yMax), int(zMin), int(zMax)))
 
         f.write('\n')
-    
+
 #==============================================================================
 #     ## Leaving out for now until first paper is out and we start to look at forcing
 #     region push block 5000 7500 0 10000 0 0  #Defines region as the far half of the length of simulation area in which atoms will experience a linear added force
@@ -475,13 +475,13 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #     variable addforce_energy atom "10^(-12)*(x^2/2 - 7499*x)" #Defines the energy of the added vector force field, must satisfy E = -del dot F for energy minimization to converge properly
 #     fix     4 gas addforce v_addforce_x 0 0 region push energy v_addforce_energy    #Fixes an added vector force field in region push with the above defined fx and energy
 #==============================================================================
-    
+
     sf.write('## All parameters but filter and velocities are set so we minize energy to prevent overlap of particles \n')
     sf.write('minimize    {0} {1} {2} {3}  #Stopping tolerances: energy={0}, force={1}, max iterations={2}, max evaluations={3} \n'.format(eMin, fMin, maxIterations, maxEvaluations))
     sf.write('reset_timestep    0 \n')
-    
+
     sf.write('\n')
-    
+
     sf.write('## Define velocity for initialization of gas and fixing filter \n')
     if nFilters > 0:
         sf.write('velocity	filter set 0.0 0.0 0.0     #Set initial velocity of walls to zero \n')
@@ -492,13 +492,13 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         sf.write('velocity    argon create {0} $'.format(fluidTemperature) + '{ran3} dist gaussian ' + '#Create velocity of gas particles from a Gaussian distribution at ' + 'temperature={0}'.format(fluidTemperature) +  ' with random seed=${ran3} \n')
         sf.write('velocity    argon set {0} 0 0 sum yes units box    #Add initial fluid velocity bias of v_x={0} (towards the filter) to the Argon \n'.format(fluidVelocity))
         sf.write('velocity    impurity create {0} $'.format(fluidTemperature) + '{ran2} dist gaussian ' +' #Create velocity of large particles from a Gaussian distribution at temperature={0}'.format(fluidTemperature) + ' with random seed=${ran2} \n')
-        if flagImpurityVel == True:        
+        if flagImpurityVel == True:
             sf.write('velocity    impurity set {0} 0 0 sum yes units box    #Add initial fluid velocity bias of v_x={0} (towards the filter) to the Impurities \n'.format(float(fluidVelocity)))
-        if flagImpurityMom == True:        
+        if flagImpurityMom == True:
             sf.write('velocity    impurity set {0} 0 0 sum yes units box    #Add initial fluid velocity bias of v_x={0} (towards the filter) to the Impurities \n'.format(float(fluidVelocity)/float(massType[2])))
     sf.write('\n')
-    
-#########Hardcoded output        
+
+#########Hardcoded output
     for f in inputFiles:
         if f == sf:
             dumpStringDiff = 'r0'
@@ -509,7 +509,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         if flagPressureFromKineticOnly == True:
             f.write('compute    kePress all pressure gasTemp ke \n')
         f.write('\n')
-        
+
         if flagFrontPress == True:
             f.write('## Define regions in which Pressure will be calculated and inside of the pore \n')
             f.write('region    pressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)-100,int(xMax/2)-1,yMin+1,yMax,0,0))
@@ -530,30 +530,30 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
                 f.write('variable    Pz equal -(c_Ps[3])/({0}*{1}*{2}) \n'.format(100,yMax-yMin, zMax-zMin))
                 f.write('variable    P equal (v_Px+v_Py+v_Pz)/3 \n')
             f.write('\n')
-                    
+
         f.write('thermo_style    custom step etotal ke pe c_gasTemp v_P\n')
         f.write('\n')
-        
+
 #        #Domain Single Layer
 #        xChunkLow=int(xMin)
 #        xChunkHigh=int(xMax+filterDepth-1)
 #        yChunkLow=int(yMin+1)
 #        yChunkHigh=int(yMax)
-#        
+#
 #        #Domain Dual Layer
 #        xChunkLow=int(xMin)
 #        xChunkHigh=int(xMax+2*filterDepth-1)
 #        yChunkLow=int(yMin+1)
 #        yChunkHigh=int(yMax)
-        
+
         #Orifice Focus
         xChunkLow=800
         xChunkHigh=1299+filterSpacing
         yChunkLow=701
         yChunkHigh=1300
-         
-        
-        if flagChunkData == True and impurityDiameter != 1:  
+
+
+        if flagChunkData == True and impurityDiameter != 1:
 #            if dimensions == 2 and nFilters == 1:
 #                f.write('compute argonChunks argon chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+filterDepth-1), int(yMin+1), int(yMax)))
 #                f.write('compute impurityChunks impurity chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx), int(yMin+1), int(dy), int(xMin), int(xMax+filterDepth-1), int(yMin+1), int(yMax)))
@@ -574,7 +574,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
             f.write('compute argonChunkCount argon property/chunk argonChunks count \n')
             f.write('fix argonChunksAvgCount argon ave/time {0} {1} {2} c_argonChunkCount[*] file argon_count_'.format(dynamicTime, 1, dynamicTime) + trialName + '_' + dumpStringDiff +'.chunk mode vector \n')
             f.write('\n')
-           
+
             f.write('compute impurityChunkVCM impurity vcm/chunk impurityChunks \n')
             f.write('fix impurityChunksAvgVCM impurity ave/time {0} {1} {2} c_impurityChunkVCM[*] file impurity_vcm_'.format(dynamicTime, 1, dynamicTime) + trialName + '_' + dumpStringDiff +'.chunk mode vector \n')
             f.write('compute impurityChunkTemp impurity temp/chunk impurityChunks internal \n')
@@ -622,7 +622,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
             elif nFilters == 2:
                 f.write('region    orifice block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore to use for dumping atom data \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax-poreWidth)/2+1), int((yMax+poreWidth)/2), 0, 0))
                 f.write('region    orifice1 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore1 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax+poreSpacing)/2)+registryShift+1, int((yMax+poreSpacing)/2+poreWidth)+registryShift, 0, 0))
-                f.write('region    orifice2 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore2 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax-poreSpacing)/2-poreWidth)+registryShift+1, int((yMax+1-poreSpacing)/2)+registryShift, 0, 0))        
+                f.write('region    orifice2 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore2 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax-poreSpacing)/2-poreWidth)+registryShift+1, int((yMax+1-poreSpacing)/2)+registryShift, 0, 0))
                 f.write('group    pore dynamic gas region orifice every {0}    #Make a dynamic group of particles in pore region every N={0} timesteps \n'.format(dynamicTime))
                 f.write('group    pore1 dynamic gas region orifice1 every {0}    #Make a dynamic group of particles in pore1 region every N={0} timesteps \n'.format(dynamicTime))
                 f.write('group    pore2 dynamic gas region orifice2 every {0}    #Make a dynamic group of particles in pore2 region every N={0} timesteps \n'.format(dynamicTime))
@@ -633,7 +633,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
                 f.write('dump_modify 11 flush yes \n')
                 f.write('dump_modify 12 flush yes \n')
             f.write('\n')
-                              
+
 # =============================================================================
 # #Hardcoded pressure slice calculation
 #         f.write('## Define regions in which Pressure will be calculated and inside of the pore \n')
@@ -646,7 +646,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #         f.write('variable    P equal (v_Px+v_Py)/2 \n')
 #         f.write('variable    fVCMx equal vcm(pressureGroup,x) \n')
 #         f.write('\n')
-#         
+#
 #         f.write('region    halfPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMin),int(xMin)+dx-1,yMin+1,yMax,0,0))
 #         f.write('group    halfPressureGroup dynamic gas region halfPressureRegion every {0} \n'.format(dynamicTime))
 #         f.write('compute    hPp halfPressureGroup stress/atom gasTemp ke pair \n')
@@ -656,7 +656,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #         f.write('variable    hP equal (v_hPx+v_hPy)/2 \n')
 #         f.write('variable    hVCMx equal vcm(halfPressureGroup,x) \n')
 #         f.write('\n')
-#         
+#
 #         f.write('region    midPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/4)-dx,int(xMax/4)-1,yMin+1,yMax,0,0))
 #         f.write('group    midPressureGroup dynamic gas region midPressureRegion every {0} \n'.format(dynamicTime))
 #         f.write('compute    mPp midPressureGroup stress/atom gasTemp ke pair \n')
@@ -666,7 +666,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #         f.write('variable    mP equal (v_mPx+v_mPy)/2 \n')
 #         f.write('variable    mVCMx equal vcm(midPressureGroup,x) \n')
 #         f.write('\n')
-#         
+#
 #         f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+dx-1,yMin,yMax,0,0))
 #         f.write('group    rearPressureGroup dynamic gas region rearPressureRegion every {0} \n'.format(dynamicTime))
 #         f.write('compute    rPp rearPressureGroup stress/atom gasTemp ke pair \n')
@@ -676,7 +676,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #         f.write('variable    rP equal (v_rPx+v_rPy)/2 \n')
 #         f.write('variable    rVCMx equal vcm(rearPressureGroup,x) \n')
 #         f.write('\n')
-# 
+#
 #         f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P v_mP v_hP v_rP v_VCMx v_fVCMx v_mVCMx v_hVCMx v_rVCMx \n')
 # =============================================================================
 
@@ -693,8 +693,8 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #         if flagPressureFromKineticOnly == True:
 #             f.write('compute    kePress all pressure gasTemp ke \n')
 #         f.write('\n')
-#         
-#         if flagChunkData == True:  
+#
+#         if flagChunkData == True:
 #             if dimensions == 2 and nFilters == 1:
 #                 f.write('compute chunks gas chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(int(xMin), int(dx-1), int(yMin+1), int(dy), int(xMin), int(xMax+filterDepth-1), int(yMin+1), int(yMax)))
 #                 f.write('compute chunkVCM gas vcm/chunk chunks \n')
@@ -704,7 +704,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #                 f.write('compute chunkCount gas property/chunk chunks count \n')
 #                 f.write('fix chunksAvgCount gas ave/time {0} {1} {2} c_chunkCount[*] file avg_count_chunks_'.format(dynamicTime, 1, dynamicTime) + trialName + '_' + dumpStringDiff +'.dump mode vector \n')
 #             f.write('\n')
-#         
+#
 #         if poreDump == True:
 #             f.write('## Define region inside pore as dynamic \n')
 #             if dimensions == 2:
@@ -712,24 +712,24 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #                 if nFilters == 2:
 #                     f.write('region    orifice1 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore1 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax+poreSpacing)/2)+registryShift+1+2*filterDepth, int((yMax+poreSpacing)/2+poreWidth)+registryShift, 0, 0))
 #                     f.write('region    orifice2 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore2 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax-poreSpacing)/2-poreWidth)+1+2*filterDepth+registryShift, int((yMax+1+2*filterDepth-poreSpacing)/2)+registryShift, 0, 0))
-#             
+#
 #             elif dimensions == 3:
 #                 f.write('region    orifice block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore to use for dumping atom data \n'.format(int(xMax/2), int(xMax/2)+filterDepth-1, int((yMax-poreWidth)/2+1+2*filterDepth), int((yMax+poreWidth)/2), int(zMin), int(zMax)))
 #                 if nFilters == 2:
 #                     f.write('region    orifice1 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore1 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax+poreSpacing)/2)+1+2*filterDepth+registryShift, int((yMax+poreSpacing)/2+poreWidth)+registryShift, int(zMin), int(zMax)))
 #                     f.write('region    orifice2 block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore2 to use for dumping atom data \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int((yMax-poreSpacing)/2)-poreWidth+1+2*filterDepth+registryShift, int((yMax+1+2*filterDepth-poreSpacing)/2)+registryShift, int(zMin), int(zMax)))
-#             
+#
 #             f.write('group    pore dynamic gas region orifice every {0}    #Make a dynamic group of particles in pore region every N={0} timesteps \n'.format(dynamicTime))
 #             if nFilters == 2:
 #                 f.write('group    pore1 dynamic gas region orifice1 every {0}    #Make a dynamic group of particles in pore1 region every N={0} timesteps \n'.format(dynamicTime))
 #                 f.write('group    pore2 dynamic gas region orifice2 every {0}    #Make a dynamic group of particles in pore2 region every N={0} timesteps \n'.format(dynamicTime))
 #             f.write('\n')
-#         
+#
 #         if flagVCM == True:
 #             f.write('variable    VCMx equal vcm(gas,x) \n')
 #             f.write('variable    VCMy equal vcm(gas,y) \n')
 #             f.write('\n')
-# 
+#
 #         if nFilters == 2:
 #             f.write('## Define regions in which Pressure will be calculated and inside of the pore \n')
 #             f.write('region    midPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+filterSpacing-1,yMin+1+2*filterDepth,yMax,zMin,zMax))
@@ -750,12 +750,12 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #                 f.write('variable    mPz equal -(c_mPs[3])/({0}*{1}*{2}) \n'.format(filterSpacing,yMax-yMin, zMax-zMin))
 #                 f.write('variable    mP equal (v_mPx+v_mPy+v_mPz)/3 \n')
 #             f.write('\n')
-#             
+#
 #         if flagRearPressure == True:
 #             if nFilters == 1:
 #                 f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterDepth,int(xMax/2)+filterDepth+dx-1,yMin,yMax,0,0))#,zMin,zMax))
 #             elif nFilters == 2:
-#                 f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterSpacing+2*filterDepth,int(xMax/2)+filterSpacing+dx+2*filterDepth-1,yMin,yMax,0,0))#,zMin,zMax))          
+#                 f.write('region    rearPressureRegion block {0} {1} {2} {3} {4} {5} \n'.format(int(xMax/2)+filterSpacing+2*filterDepth,int(xMax/2)+filterSpacing+dx+2*filterDepth-1,yMin,yMax,0,0))#,zMin,zMax))
 #             f.write('group    rearPressureGroup dynamic gas region rearPressureRegion every {0} \n'.format(dynamicTime))
 #             if flagPressureFromKineticOnly == True:
 #                 f.write('compute    rPp rearPressureGroup stress/atom gasTemp ke \n')
@@ -773,7 +773,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #                 f.write('variable    rPz equal -(c_rPs[3])/({0}*{1}*{2}) \n'.format(dx,yMax-yMin, zMax-zMin))
 #                 f.write('variable    rP equal (v_rPx+v_rPy+v_rPz)/3 \n')
 #             f.write('\n')
-#                         
+#
 #         if nFilters == 1:
 #             if flagRearPressure == True:
 #                 if flagPressureFromKineticOnly == True:
@@ -795,7 +795,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #                     if flagVCM == False:
 #                         f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P \n')
 #                     else:
-#                         f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_VCMx v_VCMy \n')                        
+#                         f.write('thermo_style    custom step etotal ke pe c_gasTemp c_kePress v_P v_VCMx v_VCMy \n')
 #                 else:
 #                     if flagVCM == False:
 #                         f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_P \n')
@@ -835,11 +835,11 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #                     f.write('thermo_style    custom step etotal ke pe c_gasTemp press \n')
 #                 else:
 #                     f.write('thermo_style    custom step etotal ke pe c_gasTemp press v_VCMx v_VCMy \n')
-# 
+#
 #         f.write('\n')
 # =============================================================================
-        
-        
+
+
 # =============================================================================
 # ##Gives a "too many groups error" when using 20x20 chunks, and with 20X2000, it looks like aroung 30 groups is the maximum
 #         if flagPressureChunks == True:
@@ -868,7 +868,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 # #                                      if dimensions == 2:
 # #                                          f.write('dump    {0} slice{1} custom {2}  '.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.dump vx vy #Dump pressure slice group slice{0} atom data every N={1} timesteps to file '.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.dump including atom: x velocity, y velocity in that order \n')
 # #                                      elif dimensions == 3:
-# #                                          f.write('dump    {0} slice{1} custom {2}  '.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.dump vx vy vz #Dump pressure slice group slice{0} atom data every N={1} timesteps to file '.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.dump including atom: x velocity, y velocity, z velocity in that order \n')                 
+# #                                          f.write('dump    {0} slice{1} custom {2}  '.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.dump vx vy vz #Dump pressure slice group slice{0} atom data every N={1} timesteps to file '.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.dump including atom: x velocity, y velocity, z velocity in that order \n')
 # #                                  else:
 # #                                      if dimensions == 2:
 # #                                          f.write('dump    {0} slice{1} custom {2}  '.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.dump vx vy mass #Dump pressure slice group slice{0} atom data every N={1} timesteps to file '.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.dump including atom: x velocity, y velocity and mass in that order \n')
@@ -876,18 +876,18 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 # #                                          f.write('dump    {0} slice{1} custom {2}  '.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.dump vx vy vz mass #Dump pressure slice group slice{0} atom data every N={1} timesteps to file '.format(10+i, i, velDumpTime) + trialName + '_slice{0}_'.format(i) + dumpStringDiff + '.dump including atom: x velocity, y velocity, z velocity and mass in that order \n')
 # #                              f.write('dump_modify {0} flush yes \n'.format(10+i))
 #                   f.write('\n')
-#                          
-# 
-# 
+#
+#
+#
 #             f.write('thermo_style    custom step etotal ke pe c_gasTemp press ')
-#              
+#
 #             for i in xrange(0,iRange):
 #                 f.write('v_P{0} '.format(i))
 #             f.write('\n')
-#          
+#
 #         f.write('\n')
-#             
-#         if poreDump == True:  
+#
+#         if poreDump == True:
 #             if impurityDiameter == 1:
 #                 f.write('dump    10 pore custom {0} '.format(dynamicTime) + trialName + '_pore_' + dumpStringDiff + '.dump id vx    #Dump pore group atom data every N={0} timesteps to file '.format(dynamicTime) + trialName + '_pore_' + dumpStringDiff + '.dump including atom: id, x velocity in that order \n')
 #                 if nFilters == 2:
@@ -898,13 +898,13 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #                 if nFilters == 2:
 #                     f.write('dump    5 pore1 custom {0} '.format(dynamicTime) + trialName + '_pore1_' + dumpStringDiff + '.dump id mass vx    #Dump pore1 group atom data every N={0} timesteps to file '.format(dynamicTime) + trialName + '_pore_' + dumpStringDiff + '.dump including atom: id, mass, x velocity in that order \n')
 #                     f.write('dump    12 pore2 custom {0} '.format(dynamicTime) + trialName + '_pore2_' + dumpStringDiff + '.dump id mass vx    #Dump pore2 group atom data every N={0} timesteps to file '.format(dynamicTime) + trialName + '_pore_' + dumpStringDiff + '.dump including atom: id, mass, x velocity in that order \n')
-#             
+#
 #             f.write('dump_modify 10 flush yes \n')
 #             if nFilters == 2:
 #                 f.write('dump_modify 11 flush yes \n')
 #                 f.write('dump_modify 12 flush yes \n')
 #             f.write('\n')
-#             
+#
 #         if tracerDump == True:
 #             if impurityDiameter == 1:
 #                 if dimensions == 2:
@@ -919,21 +919,21 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #             f.write('dump_modify 2 flush yes \n')
 #             f.write('\n')
 # =============================================================================
-            
+
         ##This is meant to be used to write data in format readable by VMD, but futher reading seems to indicate that VMD only works with a combination of write_data and dump dcd methods.
         if dumpRawMovies == True:
             if f == sf:
                 f.write('variable movieTimes equal stride2({0},{1},{2},{3},{4},{5}) \n'.format(movieStartTime, 2*totalTime + 100, totalTime + 100, movieStartTime, movieDuration, movieFrameDelta))
             else:
                 f.write('variable movieTimes equal stride2({0},{1},{2},{3},{4},{5}) \n'.format(totalTime, 3*totalTime + 100, totalTime + 100, totalTime + movieStartTime, totalTime + movieDuration, movieFrameDelta))
-    
+
             f.write('## Extra dump of mass and position in the region around the pore for making movies \n')
             f.write('region    rawPore block {0} {1} {2} {3} {4} {5}    #Define region immediately inside pore to use for dumping atom data \n'.format(int(xMax/2)-rawHalfWidth, int(xMax/2)+rawHalfWidth, int(yMax/2)-rawHalfWidth, int(yMax)/2+rawHalfWidth, int(zMin), int(zMax)))
             f.write('group    rawMovie dynamic all region rawPore every {0}    #Make a dynamic group of particles in pore region every N={0} timesteps \n'.format(movieFrameDelta))
             f.write('dump    100 rawMovie atom {0} '.format(movieFrameDelta) + trialName + dumpStringDiff + '_raw.mpg    #Dump pore group atom data every N={0} timesteps to file '.format(movieFrameDelta) + trialName + '_rawMovie_' + dumpStringDiff + '_raw.mpg including atom: id, type, x position, y position, z position in that order \n')
             f.write('dump_modify 100 flush yes scale no every v_movieTimes \n')
             f.write('\n')
-            
+
         if dumpMovies == True:
             f.write('## Extra dump for movies \n')
             zoom = 20
@@ -948,7 +948,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
             f.write('\n')
             f.write('dump_modify    {0} flush yes \n'.format(1000))
             f.write('\n')
-            
+
         if dumpImages == True:
             f.write('dump    {0} all image {1} *_'.format(1001, movieFrameDelta) + trialName + dumpStringDiff + '.jpg type type zoom {0} center s {1} {2} {3} size 1024 768 box yes 0.0001    #Dump movie of all atoms every N={4} timesteps, centered at scaled coordinates x={1} y={2} z={3} \n'.format(zoom, xScaled, yScaled, zScaled, movieFrameDelta))
             f.write('dump_modify    {0} '.format(1001))
@@ -957,16 +957,16 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
             f.write('\n')
             f.write('dump_modify    {0} flush yes \n'.format(1001))
             f.write('\n')
-    
+
         f.write('thermo_modify flush yes \n')
-    
+
         if dumpMovies == True:
             f.write('run {0} pre yes post yes \n'.format(movieDuration+1))
         else:
             f.write('restart {0} {1}_backup.rst {1}_archive.rst \n'.format(restartTime, trialName))
 #            f.write('restart {0} {1}_*.rst \n'.format(archiveRestartTime, trialName))
             f.write('run {0} pre yes post yes \n'.format(totalTime+1))
-    
+
         f.close()
     """
         Local LAMMPS run start/restart shell files
@@ -980,7 +980,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         else:
             ls = open(localStartName, 'w')
             localFiles = [ls]
-            
+
         for l in localFiles:
             if l == ls:
                 fName = startName
@@ -995,11 +995,11 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
             l.write('mpirun -n {0} /usr/local/LAMMPS/src/lmp_auto -nocite -in '.format(localCores) + fName + ' -log thermo_movie_' + trialName + '_' + dumpStringDiff + '.log -var ran0 235625 -var ran1 60924386 -var ran2 93561784 -var ran3 4512349 \n')
             l.write('echo "All Done!" \n')
             l.close()
-            
+
         st = os.stat(os.path.join('.',localStartName))
         os.chmod(os.path.join('.',localStartName), st.st_mode | stat.S_IEXEC)
     if makeRestarts == True:
         st = os.stat(os.path.join('.',localRestartName))
         os.chmod(os.path.join('.',localRestartName), st.st_mode | stat.S_IEXEC)
-    
+
     return

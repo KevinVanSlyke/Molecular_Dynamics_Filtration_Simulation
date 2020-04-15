@@ -1,21 +1,16 @@
-function [chunkData] = read_chunk(varargin)
+function [] = read_temp_chunk()
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-chunkFile = varargin{1};
+dirParts = strsplit(pwd,'/');
+simDir = dirParts(end);
+parString = simDir{1,1};
+chunkFile = strcat('avg_temp_chunks_',parString,'_0T_r0.lmp');
+outputFile = strcat('temp_data_',parString,'_0T_r0.mat');
 try
     fid = fopen(chunkFile,'r');
 catch
     error('Log file not found!');
 end
-
-fileParts = strsplit(chunkFile, '.');
-nameParts = strsplit(fileParts{1,1}, '_');
-dataName = nameParts{1,1};
-
-for i=2:1:size(nameParts,2)-1
-    dataName = strcat(dataName, '_', nameParts{1,i});
-end
-
 [~,chars] = system(['head -n ',num2str(4),' ',chunkFile]);
 chunkHead = convertCharsToStrings(chars);
 headStrings = strsplit(chunkHead,'\n');
@@ -32,11 +27,10 @@ clear chars headStrings chunkHead headWords;
 [~,chars] = system(['tail -n ',num2str(nChunks+1),' ',chunkFile]);
 chunkTail = convertCharsToStrings(chars);
 tailWords = strsplit(chunkTail,' ');
-nSteps = str2double(tailWords{1,1})/1000;
-% nSteps = 101;
+nSteps = str2double(tailWords{1,1})/1000+1;
 clear chars chunkTail tailWords;
 
-chunkData = zeros(nSteps,nChunks,nVars);
+tempChunkData = zeros(nSteps,nChunks,nVars);
 while feof(fid) == 0
     chunkLine = fgetl(fid);
     chunkWords = strsplit(chunkLine,' ');
@@ -45,22 +39,17 @@ while feof(fid) == 0
         if strcmp(chunkWords{1,2},num2str(nChunks))
             step = str2double(chunkWords{1,1});
             index = step/1000+1;
-            %Shorten read for debugging
-%             if index == 101
-%                 break;
-%             end
         else
             chunkID = str2double(chunkWords{1,1});
             varWords = chunkWords(2:end);
             for i=1:1:nVars
                 var = varWords{1,i};
-                chunkData(index,chunkID,i) = str2double(var);
+                tempChunkData(index,chunkID,i) = str2double(var);
             end
         end
     end
-
 end
 fclose(fid);
 clear chunkLine chunkWords isNum step index chunkID varWords var;
-% save(strcat(dataName, '.mat'), 'chunkFile', 'chunkData');
+save(outputFile, 'tempChunkData');
 end

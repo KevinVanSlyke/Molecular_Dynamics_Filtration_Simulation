@@ -6,7 +6,7 @@ Created on Tue Feb 19 14:04:54 2019
 """
 def LAMMPS_sbatch_generator(dirName, nTrials, timeout):
 #def LAMMPS_sbatch_generator(poreWidth, impurityDiameter, nTrials, timeout):
-    
+
 #    if poreSpacing == 0:
 #        dirName = '{0}W_{1}D'.format(poreWidth, impurityDiameter)
 #    else:
@@ -15,7 +15,7 @@ def LAMMPS_sbatch_generator(dirName, nTrials, timeout):
     mem = 1024
     N=0
 
-       
+
     """
         Rush CCR LAMMPS srun start/restart sbatch files
     """
@@ -25,10 +25,9 @@ def LAMMPS_sbatch_generator(dirName, nTrials, timeout):
     jobName = dirName + '_r' + str(N)
     outputName = dirName + '_%aT_r' + str(N) + '.out'
     errorName =  dirName + '_%aT_r' + str(N) + '.err'
-    scratchDir = '/scratch/kgvansly/{0}'.format(dirName)
-    
+
     r =open(sbatchName,'w')
-   
+
     r.write('#!/bin/sh \n')
 
     r.write('#SBATCH --partition=general-compute \n')
@@ -44,9 +43,9 @@ def LAMMPS_sbatch_generator(dirName, nTrials, timeout):
     r.write('#SBATCH --job-name="' + jobName + '" \n')
     r.write('#SBATCH --output="' + outputName + '" \n')
     r.write('#SBATCH --error="' + errorName + '" \n')
-            
+
     r.write('\n')
-    
+
     r.write('echo "SLURM_JOBID="$SLURM_JOBID \n')
     r.write('echo "SLURM_JOB_NODELIST"=$SLURM_JOB_NODELIST \n')
     r.write('echo "SLURM_NNODES"=$SLURM_NNODES \n')
@@ -57,18 +56,18 @@ def LAMMPS_sbatch_generator(dirName, nTrials, timeout):
     r.write('echo "Submit directory = "$SLURM_SUBMIT_DIR \n')
     r.write("NPROCS=`srun --nodes=${SLURM_NNODES} bash -c 'hostname' | wc -l` \n")
     r.write('echo "NPROCS=$NPROCS" \n')
-    
+
     r.write('\n')
-    
+
     r.write('#The openmpi module is necessary for lammps \n')
     r.write('module load openmpi/gcc-4.8.x/1.8.4 \n')
     r.write('module load lammps/7Dec15 \n')
-    
+
     r.write('module list \n')
     r.write('ulimit -s unlimited \n')
 
     r.write('echo "Working directory = $PWD" \n')
-    
+
     r.write('\n')
 
     r.write('random0=(32034 187340 111868 337650 322015 409460 604421 604389 360922 987764 361639 885505 318349 51238 185029 95693 1019097 1050500 1389878 1329148 1694023 450738 649587 1576767 687526 2448777 2267603 872114 1571442 510802 586044 2500056 2114133 701920 2576267 149604 2993347 3125615 1012478 1830849 2937697 1199530 1969080 1711041 534919 1774685 4535223 3487080 3921163 4732515 2522628 2038247 4864228 1239573 1564371 4000178 2165924 3624490 462794 3256784 3049488 828959 4082006 2176741 2038039 1927583 5491595 2039744 5181117 2255768 5209815 4164412 3504296 604443 6983105 3166878 3917997 7465642 1624192 129897 7997949 3658318 6941506 6048431 1714364 3840052 3644303 4768254 4505595 3485950 7377183 6623784 5512823 551945 4875190 1688655 6828804 8592166 1426838 8198655) \n')
@@ -81,7 +80,7 @@ def LAMMPS_sbatch_generator(dirName, nTrials, timeout):
     r.write('echo "Launch ' + str(N) + 'th restart of MPI LAMMPS air filtration simulation with srun" \n')
     r.write('echo "srun --mpi=pmi2 -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + ' -var id ${SLURM_ARRAY_TASK_ID} -var ran0 ${random0[${SLURM_ARRAY_TASK_ID}]} -var ran1 ${random1[${SLURM_ARRAY_TASK_ID}]} -var ran2 ${random2[${SLURM_ARRAY_TASK_ID}]} -var ran3 ${random3[${SLURM_ARRAY_TASK_ID}]}" \n')
     r.write('srun --mpi=pmi2 -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + ' -var id ${SLURM_ARRAY_TASK_ID} -var ran0 ${random0[${SLURM_ARRAY_TASK_ID}]} -var ran1 ${random1[${SLURM_ARRAY_TASK_ID}]} -var ran2 ${random2[${SLURM_ARRAY_TASK_ID}]} -var ran3 ${random3[${SLURM_ARRAY_TASK_ID}]} \n')
-  
+
 
 
 #        r.write('echo "Echo... srun -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + '" \n')
