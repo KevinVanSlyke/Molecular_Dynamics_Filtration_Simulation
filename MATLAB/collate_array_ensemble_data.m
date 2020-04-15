@@ -9,7 +9,7 @@ nFiles = size(trialList,1);
 nTrial = 0;
 for n = 1 : 1 : nFiles
     if (startsWith(trialList(n).name(), 'thermo') && endsWith(trialList(n).name(), '.log'))
-        [varNames, fullThermData] = catenate_array_thermo_data(parString,nTrial,nLines,nVars, nRestarts);
+        [varNames, fullThermData] = catenate_array_thermo_data(parString,nTrial,nLines,nVars,nRestarts);
         nTrial = nTrial + 1;
         ensembleData(:,:,nTrial) = fullThermData(1:nLines,:); %LJ Dimensionless
         clear fullThermData varData;
