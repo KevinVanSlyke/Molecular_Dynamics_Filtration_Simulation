@@ -34,7 +34,8 @@ while feof(dump) == 0
      if (strcmpi(id,'ITEM: NUMBER OF ATOMS'))
             Natoms(i) = str2num(fgetl(dump));
      else
-      if (strcmpi(id,'ITEM: BOX BOUNDS pp ff pp'))
+%         if (strcmpi(id,'ITEM: BOX BOUNDS pp ff pp'))
+        if (strcmpi(id,'ITEM: BOX BOUNDS ff ff pp'))
             x_bound(i,:) = str2num(fgetl(dump));
             y_bound(i,:) = str2num(fgetl(dump));
             z_bound(i,:) = str2num(fgetl(dump));

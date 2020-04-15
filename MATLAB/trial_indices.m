@@ -1,16 +1,20 @@
-function [ nLines, nVars ] = trial_indices( )
+function [ nLines, nVars ] = trial_dimensions(trialLogFile)
 %Reads pressure data from thermodynamic output in LAMMPS log files
 %   Catenates each data column in the LAMMPS log files from multiple restarts
 
-fPath = pwd;
-dirParts = strsplit(fPath,'/');
-nDirParts = size(dirParts,2);
-simDir = dirParts(nDirParts);
-simString = simDir{1,1};
-
-logFileList = dir(fullfile(fPath, strcat('log_',simString,'_restart_*.lmp')));
+fileParts = strsplit(trialLogFile,'_');
+nFileParts = size(fileParts,2);
+trialString = '';
+for i = 2 : 1 : nFileParts-1
+    if i == 2
+        trialString = fileParts{1,i};
+    else
+        trialString = strcat(trialString, '_', fileParts{1,i});
+    end
+end
+logFileList = dir(fullfile(pwd, strcat('log_',trialString,'_r*.lmp')));
 nLogFiles = size(logFileList,1); %number of dump files for current pore
-finalThermLog = fullfile(fPath, strcat('log_',simString,'_restart_',num2str(nLogFiles-1),'.lmp'));
+finalThermLog = strcat('log_',trialString,'_r',num2str(nLogFiles-1),'.lmp');
 
 [sid,chars] = system(['tail -n ',num2str(30),' ',finalThermLog]);
 logTail = convertCharsToStrings(chars);
@@ -18,7 +22,7 @@ tailStrings = strsplit(logTail,'\n');
 nStrings = size(tailStrings,2);
 for i = 1 : 1 : nStrings
     if startsWith(tailStrings(i), 'Loop')
-        finalThermLine = tailStrings(i-1);
+        finalThermLine = tailStrings(i-2);
         words = strsplit(finalThermLine, ' ');
         %Log files contain '\n' at the end of the variable line which is
         %counted as an additional word, hence:
@@ -31,4 +35,3 @@ end
 nLines = (tMax-1)/1000;
 
 end
-

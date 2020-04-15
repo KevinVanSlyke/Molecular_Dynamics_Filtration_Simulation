@@ -1,4 +1,4 @@
-function [ sampleFreq, fundSampleFreq, powerSpectrum ] = ensemble_variable_FFT( steps, varAvg )
+function [ sampleFreq, fundSampleFreq, normSpectrum ] = ensemble_variable_FFT( steps, varAvg )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -9,19 +9,52 @@ function [ sampleFreq, fundSampleFreq, powerSpectrum ] = ensemble_variable_FFT( 
 % tau = 2.17*10^(-12); %seconds
 % timestep = tau/200; %seconds
 % kb = 1.38*10^(-23); %Joules/Kelvin
-skip = 10;
+% 
+% T=time(2,1)-time(1,1);
+% Fs=1/T;
+% L=length(time);
+% f = Fs*(1:L)'/L;
+% Y = fft(varAvg);
+% P = abs(Y/L);
+% [maxP, fundIndx] = max(P(2:end));
+% fund = P(fundIndx+1);
+% norm = P/maxP;
 
-[equibVal, varAvgDiff, thermalValStd] = equilibrium_difference(steps, varAvg);
+skip = 50;
+
+%[equibVal, varAvgDiff, thermalValStd] = equilibrium_difference(steps, varAvg);
 
 nMax = size(steps,1);
 n = (1 : 1 : nMax)';
 sampleFreq = n/(nMax);
-mag = fft(varAvgDiff);
-powerSpectrum = (abs(mag)).^2;
-[powerMax, fundIndx] = max(powerSpectrum(skip:nMax));
+mag = fft(varAvg);
 
-fundSampleFreq = sampleFreq(fundIndx);
-%peakDistance = 1/fundSampleFreq;
+powerSpectrum = (abs(mag)).^2;
+for i=1:1:size(powerSpectrum)
+    if powerSpectrum(i) >= 1
+        powerSpectrum(i) = 1;
+    end
+end
+[~, skipToIndex] = max(powerSpectrum(1+skip:nMax-skip));
+fundIndex = skipToIndex + skip;
+normSpectrum = powerSpectrum/powerSpectrum(fundIndex);
+% normSpectrum = powerSpectrum/max(powerSpectrum);
+
+fundSampleFreq = sampleFreq(fundIndex);
+
+% figure();
+% plot(n, normSpectrum);
+% axis([0 750 0 1]);
+% ylabel("Power Spectrum");
+% close();
+
+% [equibVal, varAvgDiff, thermalValStd] = equilibrium_difference(steps, varAvg);
+% nMax = size(steps,1);
+% tMax = steps(nMax,1)/200;
+% t=steps/200;
+% sampleFreq = t/(tMax);
+% mag = fft(varAvgDiff);
+
 
 %Convert to LJ dimensionless time
 % freq = sampleFreq/(1000*200); %1/t* LJ dimensionless Unit

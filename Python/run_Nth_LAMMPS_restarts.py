@@ -11,5 +11,5 @@ ensembleDir = os.getcwd()
 for paramDir in os.listdir(ensembleDir):
     if not (paramDir.endswith('.py') or paramDir.endswith('.pyc')):
         os.chdir(os.path.join(ensembleDir, paramDir))
-        script = 'sbatch_' + paramDir + '_r' + str(N) + '.sh'
+        script = 'run_' + paramDir + '_r' + str(N) + '.sbatch'
         os.system("sbatch " + script)

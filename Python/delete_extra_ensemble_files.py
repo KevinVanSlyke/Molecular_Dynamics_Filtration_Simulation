@@ -30,7 +30,7 @@ for paramDir in os.listdir(ensembleDir):
                     os.remove(os.path.join('./',aFile))
             if flagRemoveBackups and (fileParts[1].startswith('bak')):
                     os.remove(os.path.join('./',aFile))
-            if flagRemoveTerminalOutput and (fileParts[0].startswith('output')):
+            if flagRemoveTerminalOutput and (fileParts[0].startswith('out')):
                     os.remove(os.path.join('./',aFile))
-            if flagRemoveErrorLog and (fileParts[0].startswith('error')):
+            if flagRemoveErrorLog and (fileParts[0].startswith('err')):
                     os.remove(os.path.join('./',aFile))
