@@ -295,4 +295,3 @@ legend('Below Orifices', 'Between Orifices', 'Above Orifices');
 print('Internal_Impurity', '-dpng');
 close(qFig);
 end
-
