@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
@@ -60,8 +61,8 @@ def LAMMPS_sbatch_generator(dirName, nTrials, timeout):
     r.write('\n')
 
     r.write('#The openmpi module is necessary for lammps \n')
-    r.write('module load openmpi/gcc-4.8.x/1.8.4 \n')
-    r.write('module load lammps/7Dec15 \n')
+    r.write('module load intel-mpi/2018.3 \n')
+    r.write('module load lammps/7Aug19 \n')
 
     r.write('module list \n')
     r.write('ulimit -s unlimited \n')

@@ -36,17 +36,23 @@ vINorm = vI./maxMag;
 
 % for i = 1:1:301
 for i = 1:1:size(t,1)
-    qFig = figure('Visible','off');
+    qFig = figure('Visible','on');
     pos = get(qFig,'position');
     set(qFig,'position',[pos(1:2)/4 pos(3:4)*2])    
     hold on;
+    
+    flowEng = 1/2.*uA.^2;
+    logFlowEng = log10(flowEng+1);
+    logFlowEng(isinf(logFlowEng)|isnan(logFlowEng)) = 0;
 
-    logKin = kinetic;
+    flowEngMax = max(logFlowEng,[],'all');
+%     logKin = kinetic-1/2*(uA.^2+vA.^2).^(1/2);
+    logKin = kinetic-flowEng;
     logKin(logKin<=1)=1;
     logKin = log(logKin);
     surf(x,y,logKin(:,:,i));
-    axis([xLow xUp yLow yUp 0 log(kineticMax)+1]);
-    caxis([0 log(kineticMax)]);
+    axis([xLow xUp yLow yUp 0 max(logKin,[],'all')]);
+    caxis([0 log(kineticMax-flowEngMax)]);
     %     surf(x,y,kinetic(:,:,i));
 %     axis([xLow xUp yLow yUp kineticMin kineticMax]);
 %     caxis([kineticMin kineticMax]);
@@ -99,7 +105,7 @@ for i = 1:1:size(t,1)
 %     title(strcat("Argon Velocity Vector Field, Log KE Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Impurity Velocity Vector Field, Impurity Count Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Impurity Velocity Vector Field at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
-    title(strcat("Kinetic Energy Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
+    title(strcat("Pressure at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
     
     xlabel("x $(r*)$",'Interpreter','Latex');
     ylabel("y $(r*)$",'Interpreter','Latex');
@@ -108,7 +114,7 @@ for i = 1:1:size(t,1)
 %     print(strcat("ImpurityVelocityCount_Timestep_",num2str(t(i)*200)), '-dpng');
 %    print(strcat("ArgonVelocity_LogP_Timestep_",num2str(t(i)*200)), '-dpng');
 
-    print(strcat("GasKE_Timestep_",num2str(t(i)*200)), '-dpng');
+    print(strcat("Bernoulli_Timestep_",num2str(t(i)*200)), '-dpng');
     close(qFig);
     
 end
