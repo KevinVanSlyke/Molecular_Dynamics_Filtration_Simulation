@@ -51,11 +51,11 @@ for paramDir in os.listdir(ensembleDir):
                 if line.startswith('dump'):
                     dumpParts = line.split(' ')
                     newLine = dumpParts[0]
-                    for i in xrange(len(dumpParts)):
+                    for i in range(len(dumpParts)):
                         if ((i > 0) and dumpParts[i].startswith('dump')):
                             fileParts = dumpParts[i]
                             parts = fileParts.split('_')
-                            for j in xrange(len(parts)):
+                            for j in range(len(parts)):
                                 if j == 0:
                                     newFileName = parts[0] + '_'
                                 elif parts[j].endswith('.lmp'):

@@ -25,7 +25,7 @@ rootDir = '.'
 for dirName, subdirList, fileList in os.walk(rootDir):
     for fName in fileList:
         if (not removeArchiveRestart and (fName.endswith('archive.restart') or fName.endswith('archive.rst'))): 
-            print 'Keeping ' + os.path.join(dirName,fName) 
+            print('Keeping ' + os.path.join(dirName,fName))
         elif (removeRestartFiles and (fName.endswith('.restart') or fName.endswith('.rst'))) \
         or (removeErrorFiles and (fName.endswith('.error') or fName.endswith('.err'))) \
         or (removeOutputFiles and (fName.endswith('.output') or fName.endswith('.out'))) \
@@ -34,17 +34,17 @@ for dirName, subdirList, fileList in os.walk(rootDir):
         or (removeChunkFiles and (fName.endswith('.chunk'))):
             if permanentlyDelete:
                 if listChanges:
-                    print 'Removing ' + os.path.join(dirName,fName)
+                    print('Removing ' + os.path.join(dirName,fName))
                 if executeChanges:
                     os.remove(os.path.join(dirName,fName))
             elif localMachine:
                 if listChanges:
-                    print 'Moving ' + os.path.join(dirName,fName) + ' to ~/.local/share/Trash/files'
+                    print('Moving ' + os.path.join(dirName,fName) + ' to ~/.local/share/Trash/files')
                 if executeChanges:
                     os.system('gio trash ' + os.path.join(dirName,fName))
             else:
                 if listChanges:
-                    print 'Moving ' + os.path.join(dirName,fName) + ' to /scratch/kgvansly/trash'
+                    print('Moving ' + os.path.join(dirName,fName) + ' to /scratch/kgvansly/trash')
                 if executeChanges:
                     os.rename(os.path.join(dirName,fName), os.path.join('/scratch/kgvansly/trash',fName))
 

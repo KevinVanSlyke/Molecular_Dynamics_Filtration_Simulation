@@ -24,8 +24,8 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     dx = 20
     dy = 20
 
-    iRange = xMax/dx
-    jRange = yMax/dy
+#    iRange = xMax/dx
+#    jRange = yMax/dy
     if dimensions == 2:
         zMax = 0.01
         zMin = -0.01
@@ -93,7 +93,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     thermoTime = 10**(3)
     dynamicTime = 10**(3)
     restartTime = 10**(3)
-    archiveRestartTime = 10**(6)
+#    archiveRestartTime = 10**(6)
     totalTime = 10**(6)
     ##Reduced for 3D
 #    totalTime = int(10**(6))
@@ -103,7 +103,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     poreDump = True
 
     tracerDump = False
-    tracerTime = 10
+#    tracerTime = 10
     nTracers = 10
 
     makeRestarts = False
@@ -248,7 +248,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         startName = 'input_movie_' + dirName + '_r0.lmp'
         restartName = 'input_movie_' + dirName + '_r1.lmp'
         localStartName = 'input_movie_' + dirName + '_r0.sh'
-#        localRestartName = 'movie_' + dirName + '_r1.sh'
+        localRestartName = 'movie_' + dirName + '_r1.sh'
         trialName = dirName
     else:
         trialName = dirName + '_${id}T'
@@ -319,8 +319,8 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
     sf.write('pair_style    lj/cut 1.122462    #Lennard-Jones global cut-off=1.122462 \n')
 #    sf.write('pair_style    lj/cut 1.1    #Lennard-Jones global cut-off=1.122462 \n')
     epsilon = 1.0
-    for i in xrange(atomTypes):
-        for j in xrange(atomTypes):
+    for i in range(atomTypes):
+        for j in range(atomTypes):
             if i <= j:
                 sigma = diameterType[i]/2. + diameterType[j]/2.
                 if ((idType[i] == 1) and (idType[j] == 1)): #Wall self interaction
@@ -335,7 +335,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #                cutOff = sigma*1.1 #1.122462 = 2**(1/6)
 
                 sf.write('pair_coeff     {0} {1} {2} {3} {4}     #Pairwise {0}-{1} interaction, epsilon={2}, sigma={3}, cut-off={4} \n'.format(idType[i], idType[j], epsilon, sigma, cutOff))
-    for i in xrange(atomTypes):
+    for i in range(atomTypes):
         sf.write('mass    {0} {1}    #Sets mass of particle type {0} to {1} \n'.format(idType[i], massType[i]))
     if flagPairShift == True:
         sf.write('pair_modify    shift yes    #Shifts LJ potential to 0.0 at the cut-off \n')
@@ -398,7 +398,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
         sf.write('region    midWall2 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int(yMax-poreSpacing)/2+1+2*filterDepth, int((yMax+poreSpacing)/2-1), int(zMin), int(zMax)))
         sf.write('region    botWall2 block {0} {1} {2} {3} {4} {5}    #Bottom half of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int(yMin+1+2*filterDepth), int((yMax-poreSpacing)/2-1+2*filterDepth), int(zMin), int(zMax)))
         sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + diameterType[-1]/2 + 1), int(int(xMax/2)-(diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1), int(yMax-(diameterType[-1]/2+1)), int(zMin+diameterType[-1]/2+1), int(zMax-(diameterType[-1]/2+1))))
-        sf.write('region    midVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(int(xMax/2)+(diameterType[-1]/2 + filterDepth + 1)), int(int(xMax/2) + filterSpacing + filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1+2*filterDepth), int(yMax-(diameterType[-1]/2+1)), int(zMax-(diameterType[-1]/2+1))))
+        sf.write('region    midVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(int(xMax/2)+(diameterType[-1]/2 + filterDepth + 1)), int(int(xMax/2) + filterSpacing + filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1+2*filterDepth), int(yMax-(diameterType[-1]/2+1)), int(zMin+diameterType[-1]/2+1), int(zMax-(diameterType[-1]/2+1))))
         sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterSpacing + 2*filterDepth + diameterType[-1]/2 + 1), int(xMax + 2*filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1+2*filterDepth), int(yMax-(diameterType[-1]/2+1)), int(zMin+diameterType[-1]/2+1), int(zMax-(diameterType[-1]/2+1))))
         sf.write('region    vacuum union 3 frontVacuum midVacuum rearVacuum \n')
 
@@ -434,7 +434,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 
 
     sf.write('## Define the flow area and populate with gas molecules \n')
-    for i in xrange(1,atomTypes):
+    for i in range(1,atomTypes):
         sf.write('create_atoms    {0} random {1} $'.format(idType[i], nType[i]) + '{ran' + str(i-1) + '} ' + 'vacuum    #Create atoms: type={0}, placement=random, N={1}, seed=$'.format(idType[i], nType[i]) + '{ran' + str(i-1) + '}, region=vacuum \n')
 
     if atomTypes == 2:
@@ -843,8 +843,8 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 # =============================================================================
 # ##Gives a "too many groups error" when using 20x20 chunks, and with 20X2000, it looks like aroung 30 groups is the maximum
 #         if flagPressureChunks == True:
-#             for i in xrange(iRange+nFilters):
-#                   for j in xrange(jRange):
+#             for i in range(iRange+nFilters):
+#                   for j in range(jRange):
 #                               xl = i*dx
 #                               xu = (i+1)*dx-1
 #                               yl = j*dy + 1
@@ -881,7 +881,7 @@ def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpaci
 #
 #             f.write('thermo_style    custom step etotal ke pe c_gasTemp press ')
 #
-#             for i in xrange(0,iRange):
+#             for i in range(0,iRange):
 #                 f.write('v_P{0} '.format(i))
 #             f.write('\n')
 #

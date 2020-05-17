@@ -12,6 +12,6 @@ for paramDir in os.listdir(ensembleDir):
     if not (paramDir.endswith('.py') or paramDir.endswith('.pyc')):
         os.chdir(os.path.join(ensembleDir, paramDir))
         os.system("sbatch slurm_MATLAB_vcm.sh")
-	os.system("sbatch slurm_MATLAB_count.sh")
-	os.system("sbatch slurm_MATLAB_temp.sh")
+    os.system("sbatch slurm_MATLAB_count.sh")
+    os.system("sbatch slurm_MATLAB_temp.sh")
 

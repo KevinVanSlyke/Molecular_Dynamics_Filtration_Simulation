@@ -23,7 +23,7 @@ registryShift = [0]
 
 movies = True
 pyDir = os.getcwd()
-os.chdir('../../')
+os.chdir('../')
 projDir = os.getcwd()
 simDir = os.path.join(projDir, 'Input_Files/')
 os.chdir(simDir)

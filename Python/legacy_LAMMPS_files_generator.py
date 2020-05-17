@@ -284,8 +284,8 @@ def LAMMPS_input_generator(randomSeed, poreWidth, poreSpacing, impurityDiameter,
     sf.write('pair_style    lj/cut 1.1225    #Lennard-Jones global cut-off=1.1225 \n')
 #    sf.write('pair_style    lj/cut 1.1    #Lennard-Jones global cut-off=1.1225 \n')
     epsilon = 1.0
-    for i in xrange(atomTypes):
-        for j in xrange(atomTypes):
+    for i in range(atomTypes):
+        for j in range(atomTypes):
             if i <= j:
                 sigma = diameterType[i]/2. + diameterType[j]/2.
                 cutOff = sigma*1.1225 #1.1225 = 2**(1/6)
@@ -295,7 +295,7 @@ def LAMMPS_input_generator(randomSeed, poreWidth, poreSpacing, impurityDiameter,
                 if ((idType[i] == 1) and (idType[j] == 1)):
                     cutOff = 0.5
                 sf.write('pair_coeff     {0} {1} {2} {3} {4}     #Pairwise {0}-{1} interaction, epsilon={2}, sigma={3}, cut-off={4} \n'.format(idType[i], idType[j], epsilon, sigma, cutOff))
-    for i in xrange(atomTypes):
+    for i in range(atomTypes):
         sf.write('mass    {0} {1}    #Sets mass of particle type {0} to {1} \n'.format(idType[i], massType[i]))
     if flagPairShift == True:
         sf.write('pair_modify    shift yes    #Shifts LJ potential to 0.0 at the cut-off \n')
@@ -356,7 +356,7 @@ def LAMMPS_input_generator(randomSeed, poreWidth, poreSpacing, impurityDiameter,
         sf.write('region    midWall2 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int(yMax-poreSpacing)/2+1+2*filterDepth, int((yMax+poreSpacing)/2-1), int(zMin), int(zMax)))
         sf.write('region    botWall2 block {0} {1} {2} {3} {4} {5}    #Bottom half of dual pore filter \n'.format(int(xMax/2)+filterSpacing+filterDepth, int(xMax/2)+filterSpacing+2*filterDepth-1, int(yMin+1+2*filterDepth), int((yMax-poreSpacing)/2-1+2*filterDepth), int(zMin), int(zMax)))
         sf.write('region    frontVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(xMin + diameterType[-1]/2 + 1), int(int(xMax/2)-(diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1), int(yMax-(diameterType[-1]/2+1)), int(zMin+diameterType[-1]/2+1), int(zMax-(diameterType[-1]/2+1))))
-        sf.write('region    midVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(int(xMax/2)+(diameterType[-1]/2 + filterDepth + 1)), int(int(xMax/2) + filterSpacing + filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1+2*filterDepth), int(yMax-(diameterType[-1]/2+1)), int(zMax-(diameterType[-1]/2+1))))
+        sf.write('region    midVacuum block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(int(int(xMax/2)+(diameterType[-1]/2 + filterDepth + 1)), int(int(xMax/2) + filterSpacing + filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1+2*filterDepth), int(yMax-(diameterType[-1]/2+1)), int(zMin+diameterType[-1]/2+1), int(zMax-(diameterType[-1]/2+1))))
         sf.write('region    rearVacuum block {0} {1} {2} {3} {4} {5}    #Rear Region to be filled by gas \n'.format(int(int(xMax/2) + filterSpacing + 2*filterDepth + diameterType[-1]/2 + 1), int(xMax + 2*filterDepth - (diameterType[-1]/2 + 1)), int(yMin+diameterType[-1]/2+1+2*filterDepth), int(yMax-(diameterType[-1]/2+1)), int(zMin+diameterType[-1]/2+1), int(zMax-(diameterType[-1]/2+1))))
         sf.write('region    vacuum union 3 frontVacuum midVacuum rearVacuum \n')
     
@@ -392,7 +392,7 @@ def LAMMPS_input_generator(randomSeed, poreWidth, poreSpacing, impurityDiameter,
 
 
     sf.write('## Define the flow area and populate with gas molecules \n')
-    for i in xrange(1,atomTypes):
+    for i in range(1,atomTypes):
         sf.write('create_atoms    {0} random {1} {2} vacuum    #Create atoms: type={0}, placement=random, N={1}, seed={2}, region=vacuum \n'.format(idType[i], nType[i], randomSeed[i]))
     
     if atomTypes == 2:
