@@ -4,12 +4,13 @@ Created on Fri Aug 18 14:46:50 2017
 
 @author: Kevin Van Slyke
 """
-from LAMMPS_input_generator import LAMMPS_input_generator
-from LAMMPS_sbatch_generator import LAMMPS_sbatch_generator
-import random
 import os
+import random
 import shutil
 import time
+
+from LAMMPS_input_generator import LAMMPS_input_generator
+from LAMMPS_sbatch_generator import LAMMPS_sbatch_generator
 
 nTrialEnsemble = 1 #number of trials with differing random seed but otherwise identical parameters to create
 timeout = 48 #hours
