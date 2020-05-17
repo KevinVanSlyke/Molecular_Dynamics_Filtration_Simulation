@@ -57,9 +57,9 @@ for width in poreWidth:
                         LAMMPS_sbatch_generator(paramDir, nTrialEnsemble, timeout)
                         os.chdir('..')
                     else:
-                        seed = random.seed()
+                        random.seed()
                         randomSeed = []
-                        for i in xrange(6):
+                        for i in range(6):
                             randomSeed.append(random.randint(i+1,(i+1)*100000))
                         LAMMPS_input_generator(width, diameter, separation, spacing, shift, movies)
                         os.chdir('..')
