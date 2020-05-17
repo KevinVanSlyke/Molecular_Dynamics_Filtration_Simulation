@@ -39,4 +39,4 @@ movedList = []
 for i in range(len(movedFromList)):
     movedList.append([movedFromList[i], movedToList[i]])
     
-print movedList
+print(movedList)

@@ -23,6 +23,6 @@ for aFile in files:
     for bFile in files:
         if aFile != bFile:
             if filecmp.cmp(aFile, bFile):
-                print aFile
-                print bFile
-                print '\n'
+                print(aFile)
+                print(bFile)
+                print('\n')
