@@ -4,3 +4,4 @@ Deprecated/
 Simulation_Files/
 Legacy/
 .vscode/
+*.code-workspace
