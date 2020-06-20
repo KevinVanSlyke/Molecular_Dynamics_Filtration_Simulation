@@ -1,4 +1,4 @@
-function [t,x,y,meshData] = chunkCountConvert(chunkData, chunkFileName)
+function [t,x,y,meshData] = chunkCountConvert(chunkData, chunkFileName, nBinsX, nBinsY)
 %UNTITLED5 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -12,8 +12,8 @@ function [t,x,y,meshData] = chunkCountConvert(chunkData, chunkFileName)
 %Standard domain full chunk output
 nSteps = size(chunkData,1);
 
-nBinsX = 102;
-nBinsY = 100;
+% nBinsX = 102;
+% nBinsY = 100;
 nBins = nBinsX*nBinsY;
 t = zeros(nSteps,1);
 x = zeros(nBinsX,nBinsY);
@@ -24,15 +24,15 @@ for n=1:1:nSteps
     t(n)=(n-1)*1000/200;
     for k=1:1:nBins
 %         i=floor(k/30)+1;
-        i=floor(k/100)+1;
+        i=floor(k/nBinsY)+1;
 %         i=floor(k/1000)+1;
 %         j=mod(k,30);
-        j=mod(k,100);
+        j=mod(k,nBinsY);
 %         j=mod(k,1000);
         if j == 0
             i = i-1;
 %             j = 30;
-            j = 100;
+            j = nBinsY;
 %             j = 1000;
         end
 %         fprintf(num2str(k));
@@ -40,8 +40,8 @@ for n=1:1:nSteps
 
         meshData(i,j,n)=chunkData(n,k,1);
         if n == 1
-            x(i,j)=20*(i-1)+10;
-            y(i,j)=20*(j-1)+10;     
+            x(i,j)=20*(i-1);
+            y(i,j)=20*(j-1);     
 %             x(i,j)=20*(i-1)+800;
 %             y(i,j)=20*(j-1)+700;
         end

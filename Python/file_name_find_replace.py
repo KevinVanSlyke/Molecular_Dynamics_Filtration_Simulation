@@ -8,8 +8,8 @@ Created on Tue Apr 10 12:39:21 2018
 import os
 import shutil
 D = '20D'
-destination = '/home/Kevin/Documents/Dust_Data/Molecular/April_2018_Impurity_Statistics/High_Average_Data/D1_thru_D20/100W_' + D + '_Test/'
-source = '/home/Kevin/Documents/Dust_Data/Molecular/April_2018_Impurity_Statistics/High_Average_Data/D1_thru_D20/100W_' + D + '/'
+destination = '/mnt/e/Molecular_Dynamics_Filtration_Simulation/Python/100W_' + D + '_Test/'
+source = '/mnt/e/Molecular_Dynamics_Filtration_Simulation/Python/100W_' + D + '/'
 movedToList = []
 movedFromList = []
 for t in reversed(range(100)):

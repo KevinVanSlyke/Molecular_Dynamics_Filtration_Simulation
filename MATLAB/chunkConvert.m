@@ -1,4 +1,4 @@
-function [t,x,y,u,v] = chunkConvert(vcmChunkData, chunkFileName)
+function [t,x,y,u,v] = chunkConvert(vcmChunkData, chunkFileName, nBinsX, nBinsY)
 %UNTITLED5 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -20,8 +20,8 @@ nSteps = size(vcmChunkData,1);
 % nBinsY = 30;
 
 %Standard domain full chunk output
-nBinsX = 102;
-nBinsY = 100;
+% nBinsX = 125;
+% nBinsY = 100;
 
 %Long domain full chunk output
 % nBinsX = 1002;
@@ -37,15 +37,15 @@ for n=1:1:nSteps
     t(n)=(n-1)*1000/200;
     for k=1:1:nBins
 %         i=floor(k/30)+1;
-        i=floor(k/100)+1;
+        i=floor(k/nBinsY)+1;
 %         i=floor(k/1000)+1;
 %         j=mod(k,30);
-        j=mod(k,100);
+        j=mod(k,nBinsY);
 %         j=mod(k,1000);
         if j == 0
             i = i-1;
 %             j = 30;
-            j = 100;
+            j = nBinsY;
 %             j = 1000;
         end
 %         fprintf(num2str(k));
