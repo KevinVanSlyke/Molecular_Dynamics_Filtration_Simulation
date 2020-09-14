@@ -27,5 +27,5 @@ echo -e "dataType=${dataType} \n"
 #echo -e 'matlab -nodisplay -r "addpath(~/MATLAB)"'
 #matlab -nodisplay -r "addpath('~/MATLAB')"
 
-echo -e 'matlab -nodisplay -r "ccr_read_convert_chunk_file(${simString}, ${nBinsX}, ${nBinsY}, ${particleType}, ${dataType})"'
-matlab -nodisplay -r "ccr_read_convert_chunk_file('${simString}', ${nBinsX}, ${nBinsY}, '${particleType}', '${dataType}')"
+echo -e 'matlab -nodisplay -r "read_convert_chunk_file(${simString}, ${nBinsX}, ${nBinsY}, ${particleType}, ${dataType})"'
+matlab -nodisplay -r "read_convert_chunk_file('${simString}', ${nBinsX}, ${nBinsY}, '${particleType}', '${dataType}')"

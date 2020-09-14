@@ -19,5 +19,5 @@ export HOME=$SLURMTMPDIR
 # adjust temporary directory
 export TMP=$SLURMTMPDIR
 
-echo -e 'matlab -nodisplay -r "ccr_catenate_mesh()"'
-matlab -nodisplay -r "ccr_catenate_mesh()"
+echo -e 'matlab -nodisplay -r "catenate_mesh()"'
+matlab -nodisplay -r "catenate_mesh()"
