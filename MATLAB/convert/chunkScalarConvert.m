@@ -1,4 +1,4 @@
-function [t,x,y,u,v] = chunkConvert(vcmChunkData, nBinsX, nBinsY)
+function [t,x,y,meshData] = chunkScalarConvert(chunkData, nBinsX, nBinsY)
 %UNTITLED5 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -9,30 +9,17 @@ function [t,x,y,u,v] = chunkConvert(vcmChunkData, nBinsX, nBinsY)
 %     outputName = strcat(outputName, '_', nameParts{1,i});
 % end
 
-
-% nSteps = 11;
-% nSteps = 101;
-% nSteps = 301;
-nSteps = size(vcmChunkData,1);
-
-%Zoomed chunk output
-% nBinsX = 30;
-% nBinsY = 30;
-
 %Standard domain full chunk output
-% nBinsX = 125;
-% nBinsY = 100;
+nSteps = size(chunkData,1);
 
-%Long domain full chunk output
-% nBinsX = 1002;
+% nBinsX = 102;
 % nBinsY = 100;
-
 nBins = nBinsX*nBinsY;
 t = zeros(nSteps,1);
 x = zeros(nBinsX,nBinsY);
 y = zeros(nBinsX,nBinsY);
-u = zeros(nBinsX,nBinsY,nSteps);
-v = zeros(nBinsX,nBinsY,nSteps);
+meshData = zeros(nBinsX,nBinsY,nSteps);
+
 for n=1:1:nSteps
     t(n)=(n-1)*1000/200;
     for k=1:1:nBins
@@ -51,8 +38,7 @@ for n=1:1:nSteps
 %         fprintf(num2str(k));
 %         fprintf('\n');
 
-        u(i,j,n)=vcmChunkData(n,k,1);
-        v(i,j,n)=vcmChunkData(n,k,2);
+        meshData(i,j,n)=chunkData(n,k,1);
         if n == 1
             x(i,j)=20*(i-1);
             y(i,j)=20*(j-1);     
@@ -61,7 +47,7 @@ for n=1:1:nSteps
         end
     end
 end
-clear vcmChunkData;
-% save(strcat(outputName, '.mat'), 't', 'x', 'y', 'u', 'v');
+clear chunkData i j k n;
+% save(strcat(outputName, '.mat'), 't', 'x', 'y', 'count');
 end
 

@@ -1,7 +1,8 @@
-function [] = png2avi(fRate)
+function [] = png2avi(fRate, fileNameFormat, nTimes)
 
+aviName = strcat(fileNameFormat,'_Mesh.avi');
 % writerObj = VideoWriter('Zoom_ArgonVelocity_LogKE.avi');
-writerObj = VideoWriter('Angular_ArgonVelocity.avi');
+writerObj = VideoWriter(aviName);
 
 %writerObj = VideoWriter('Impurity_Velocity_Quiver.avi');
 %writerObj = VideoWriter('Impurity_Count.avi');
@@ -20,9 +21,8 @@ writerObj = VideoWriter('Angular_ArgonVelocity.avi');
 
 writerObj.FrameRate=fRate;
 open(writerObj);
-for K = 0 : 1000 : 99000
-    
-    filename = sprintf('Angular_ArgonVelocity_Timestep_%d.png', K);
+for K = 0 : 1 : nTimes-1
+    fileName = sprintf(strcat(fileNameFormat,'_Timestep_%d.png'), K*1000);
 %     filename = sprintf('ArgonVelocity_LogKE_Timestep_%d.png', K);
 
 %    filename = sprintf('Impurity_Quiver_Timestep_%d.png', K);
@@ -40,7 +40,7 @@ for K = 0 : 1000 : 99000
 %    filename = sprintf('Gas_Temp_Timestep_%d.png', K);
 %    filename = sprintf('Gas_Pres_Timestep_%d.png', K);
 
-    thisimage = imread(filename);
+    thisimage = imread(fileName);
     writeVideo(writerObj, thisimage);
 end
 close(writerObj);

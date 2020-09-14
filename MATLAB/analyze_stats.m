@@ -4,9 +4,7 @@ function [varNames, ensembleAvgVals, ensembleStdVals] = analyze_stats(trialsDir,
 cwd = pwd;
 
 [varNames, ensembleData] = collate_ensemble_data(trialsDir);
-
 [ensembleAvgVals, ensembleStdVals] = ensemble_thermo_stats(ensembleData);
-
 [parNames, parVars, parVals] = ensemble_parameters(trialsDir);
 [parString] = catenate_parameters(parVars,parVals);
 

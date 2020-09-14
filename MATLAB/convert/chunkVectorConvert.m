@@ -1,4 +1,4 @@
-function [t,x,y,u,v] = chunkConvert(vcmChunkData, nBinsX, nBinsY)
+function [t,x,y,u,v] = chunkVectorConvert(vcmChunkData, nBinsX, nBinsY)
 %UNTITLED5 Summary of this function goes here
 %   Detailed explanation goes here
 

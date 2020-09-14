@@ -8,7 +8,7 @@ function [stat_data] = calculate_ensemble_particle_transport_statistics()
 
 nTimeMax = Inf;
 %baseDir = '/home/Kevin/Documents/Dust_Data/Molecular/.../';
-baseDir = '/home/Kevin/Documents//Simulation_Data/Molecular/April_2018_Impurity_Statistics/High_Average_Data/D1_thru_D20';
+baseDir = '/home/Kevin/Documents/Simulation_Data/Molecular/April_2018_Impurity_Statistics/High_Average_Data/D1_thru_D20';
 parameterList = dir(baseDir);
 nParDir = size(parameterList,1);
 %TODO: Replace with function that reads much less and only outputs total
