@@ -21,8 +21,8 @@ writerObj = VideoWriter(aviName);
 
 writerObj.FrameRate=fRate;
 open(writerObj);
-for K = 0 : 1 : nTimes-1
-    fileName = sprintf(strcat(fileNameFormat,'_Timestep_%d.png'), K*1000);
+for K = 1 : 1 : nTimes
+    fileName = sprintf(strcat(fileNameFormat,'_LJTime_%d.png'), K*500);
 %     filename = sprintf('ArgonVelocity_LogKE_Timestep_%d.png', K);
 
 %    filename = sprintf('Impurity_Quiver_Timestep_%d.png', K);

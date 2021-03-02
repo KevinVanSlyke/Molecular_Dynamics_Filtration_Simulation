@@ -12,13 +12,13 @@ def dual_layer_LAMMPS_sbatch_generator(dirName, nTrials, timeout):
     """
         Rush CCR LAMMPS srun start/restart sbatch files
     """
+
     inputName = 'input_' + dirName + '.lmp'
     sbatchName = 'slurm_' + dirName + '.sh'
-    logName = 'thermo_' + dirName + '.log'
+    logName = 'thermo_' + dirName + '_${SLURM_ARRAY_TASK_ID}T.log'
     jobName = dirName
-    outputName = dirName + '.out'
-    errorName =  dirName + '.err'
-
+    outputName = dirName + '_%aT.out'
+    errorName =  dirName + '_%aT.err'
     r =open(sbatchName,'w')
 
     r.write('#!/bin/sh \n')
@@ -73,6 +73,10 @@ def dual_layer_LAMMPS_sbatch_generator(dirName, nTrials, timeout):
     r.write('echo "Launch ' + str(N) + 'th restart of MPI LAMMPS air filtration simulation with srun" \n')
     r.write('echo "srun --mpi=pmi2 -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + ' -var id ${SLURM_ARRAY_TASK_ID} -var ran0 ${random0[${SLURM_ARRAY_TASK_ID}]} -var ran1 ${random1[${SLURM_ARRAY_TASK_ID}]} -var ran2 ${random2[${SLURM_ARRAY_TASK_ID}]} -var ran3 ${random3[${SLURM_ARRAY_TASK_ID}]}" \n')
     r.write('srun --mpi=pmi2 -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + ' -var id ${SLURM_ARRAY_TASK_ID} -var ran0 ${random0[${SLURM_ARRAY_TASK_ID}]} -var ran1 ${random1[${SLURM_ARRAY_TASK_ID}]} -var ran2 ${random2[${SLURM_ARRAY_TASK_ID}]} -var ran3 ${random3[${SLURM_ARRAY_TASK_ID}]} \n')
+
+    # r.write('echo "Launch ' + str(N) + 'th restart of MPI LAMMPS air filtration simulation with srun" \n')
+    # r.write('echo "srun --mpi=pmi2 -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + ' -var id ${SLURM_ARRAY_TASK_ID} -var ran0 ${random0[${SLURM_ARRAY_TASK_ID}]} -var ran1 ${random1[${SLURM_ARRAY_TASK_ID}]} -var ran2 ${random2[${SLURM_ARRAY_TASK_ID}]} -var ran3 ${random3[${SLURM_ARRAY_TASK_ID}]}" \n')
+    # r.write('srun --mpi=pmi2 -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + ' -var id ${SLURM_ARRAY_TASK_ID} -var ran0 ${random0[${SLURM_ARRAY_TASK_ID}]} -var ran1 ${random1[${SLURM_ARRAY_TASK_ID}]} -var ran2 ${random2[${SLURM_ARRAY_TASK_ID}]} -var ran3 ${random3[${SLURM_ARRAY_TASK_ID}]} \n')
 
 
 

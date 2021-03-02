@@ -1,4 +1,5 @@
 function [orificeAverages] = get_orifice_averages(fileDir,rootName)
+
 cd(fileDir);
 fileList = dir(pwd);
 for j=1:1:size(fileList,1)

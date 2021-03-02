@@ -13,7 +13,9 @@ def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurit
     nFilters = 2
     dimensions = 2
     # periodic = True
-        
+
+    WCA = False
+
     bufferWidth = 20*5
     ##Spatial input parameters
     xFilter = 1000
@@ -162,8 +164,10 @@ def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurit
         trialName = trialName + '_{0}S'.format(orificeSpacing)
     if registryShift != 0:
         trialName = trialName + '_{0}H'.format(registryShift)
-
-    inputFile = 'input_' + trialName + '.lmp'
+    if dumpMovies == False:
+        ensembleName = trialName
+        trialName = trialName + '_${id}T'
+    inputFile = 'input_' + ensembleName + '.lmp'
 
     """
         Primary LAMMPS start/restart files
@@ -214,7 +218,11 @@ def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurit
                 if ((idType[i] == 1) and (idType[j] == 1)): #Wall self interaction
                     cutOff = 0.5
                 else:
-                    cutOff = sigma*1.122462 #1.122462 = 2**(1/6)
+                    if WCA:
+                        cutOff = sigma*1.122462 #1.122462 = 2**(1/6), WCA potential
+ 
+                    else:
+                        cutOff = sigma*2.5 #Typical LJ cutoff
                 sf.write('pair_coeff     {0} {1} {2} {3} {4}     #Type:{0}-{1}, E={2}, sigma={3}, r_c={4} \n'.format(idType[i], idType[j], epsilon, sigma, cutOff))
     ##Shift potential to zero at minima
     sf.write('pair_modify    shift yes    #Shifts LJ potential to 0.0 at the cut-off \n')
@@ -404,35 +412,35 @@ def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurit
     ##Define chunk grid for more detailed analysis
     sf.write('compute argonChunks argon chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(xChunkLow, dx, yChunkLow, dy, xChunkLow, xChunkHigh, yChunkLow, yChunkHigh))
     sf.write('compute argonChunkVCM argon vcm/chunk argonChunks \n')
-    sf.write('fix argonChunksAvgVCM argon ave/time {0} {1} {2} c_argonChunkVCM[*] file argon_vcm_{3}.chunk mode vector \n'.format(dynamicTime, 1, dynamicTime, trialName))
+    sf.write('fix argonChunksAvgVCM argon ave/time {0} {1} {2} c_argonChunkVCM[*] file argon_vcm_{3}.chunk mode vector \n'.format(dynamicTime, 0, dynamicTime, trialName))
     sf.write('compute argonChunkTemp argon temp/chunk argonChunks temp \n')
-    sf.write('fix argonChunksAvgTemp argon ave/time {0} {1} {2} c_argonChunkTemp[*] file argon_temp_{3}.chunk mode vector \n'.format(dynamicTime, 1, dynamicTime, trialName))
+    sf.write('fix argonChunksAvgTemp argon ave/time {0} {1} {2} c_argonChunkTemp[*] file argon_temp_{3}.chunk mode vector \n'.format(dynamicTime, 0, dynamicTime, trialName))
     sf.write('compute argonChunkInternalTemp argon temp/chunk argonChunks temp com yes \n')
-    sf.write('fix argonChunksAvgInternalTemp argon ave/time {0} {1} {2} c_argonChunkInternalTemp[*] file argon_internalTemp_{3}.chunk mode vector \n'.format(dynamicTime, 1, dynamicTime, trialName))
+    sf.write('fix argonChunksAvgInternalTemp argon ave/time {0} {1} {2} c_argonChunkInternalTemp[*] file argon_internalTemp_{3}.chunk mode vector \n'.format(dynamicTime, 0, dynamicTime, trialName))
     if dumpMovies:
         sf.write('compute argonChunkInternalKE argon temp/chunk argonChunks internal \n')
-        sf.write('fix argonChunksAvgInternalKE argon ave/time {0} {1} {2} c_argonChunkInternalKE[*] file argon_internalKE_{3}.chunk mode vector \n'.format(dynamicTime, 1, dynamicTime, trialName))
+        sf.write('fix argonChunksAvgInternalKE argon ave/time {0} {1} {2} c_argonChunkInternalKE[*] file argon_internalKE_{3}.chunk mode vector \n'.format(dynamicTime, 0, dynamicTime, trialName))
     sf.write('compute argonChunkCount argon property/chunk argonChunks count \n')
-    sf.write('fix argonChunksAvgCount argon ave/time {0} {1} {2} c_argonChunkCount[*] file argon_count_{3}.chunk mode vector \n'.format(dynamicTime, 1, dynamicTime, trialName))
+    sf.write('fix argonChunksAvgCount argon ave/time {0} {1} {2} c_argonChunkCount[*] file argon_count_{3}.chunk mode vector \n'.format(dynamicTime, 0, dynamicTime, trialName))
     sf.write('\n')
 
     if atomTypes != 2:
         sf.write('compute impurityChunks impurity chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(xChunkLow, dx, yChunkLow, dy, xChunkLow, xChunkHigh, yChunkLow, yChunkHigh))
         sf.write('compute impurityChunkVCM impurity vcm/chunk impurityChunks \n')
-        sf.write('fix impurityChunksAvgVCM impurity ave/time {0} {1} {2} c_impurityChunkVCM[*] file impurity_vcm_{3}.chunk mode vector \n'.format(dynamicTime, 1, dynamicTime, trialName))
+        sf.write('fix impurityChunksAvgVCM impurity ave/time {0} {1} {2} c_impurityChunkVCM[*] file impurity_vcm_{3}.chunk mode vector \n'.format(dynamicTime, 0, dynamicTime, trialName))
         sf.write('compute impurityChunkTemp impurity temp/chunk impurityChunks temp \n')
-        sf.write('fix impurityChunksAvgTemp impurity ave/time {0} {1} {2} c_impurityChunkTemp[*] file impurity_temp_{3}.chunk mode vector \n'.format(dynamicTime, 1, dynamicTime, trialName))
+        sf.write('fix impurityChunksAvgTemp impurity ave/time {0} {1} {2} c_impurityChunkTemp[*] file impurity_temp_{3}.chunk mode vector \n'.format(dynamicTime, 0, dynamicTime, trialName))
         sf.write('compute impurityChunkInternalTemp impurity temp/chunk impurityChunks temp com yes \n')
-        sf.write('fix impurityChunksAvgInternalTemp impurity ave/time {0} {1} {2} c_impurityChunkInternalTemp[*] file impurity_internalTemp_{3}.chunk mode vector \n'.format(dynamicTime, 1, dynamicTime, trialName))
+        sf.write('fix impurityChunksAvgInternalTemp impurity ave/time {0} {1} {2} c_impurityChunkInternalTemp[*] file impurity_internalTemp_{3}.chunk mode vector \n'.format(dynamicTime, 0, dynamicTime, trialName))
         if dumpMovies:
             sf.write('compute impurityChunkInternalKE impurity temp/chunk impurityChunks internal \n')
-            sf.write('fix impurityChunksAvgInternalKE impurity ave/time {0} {1} {2} c_impurityChunkInternalKE[*] file impurity_internalKE_{3}.chunk mode vector \n'.format(dynamicTime, 1, dynamicTime, trialName))
+            sf.write('fix impurityChunksAvgInternalKE impurity ave/time {0} {1} {2} c_impurityChunkInternalKE[*] file impurity_internalKE_{3}.chunk mode vector \n'.format(dynamicTime, 0, dynamicTime, trialName))
         sf.write('compute impurityChunkCount impurity property/chunk impurityChunks count \n')
-        sf.write('fix impurityChunksAvgCount impurity ave/time {0} {1} {2} c_impurityChunkCount[*] file impurity_count_{3}.chunk mode vector \n'.format(dynamicTime, 1, dynamicTime, trialName))
+        sf.write('fix impurityChunksAvgCount impurity ave/time {0} {1} {2} c_impurityChunkCount[*] file impurity_count_{3}.chunk mode vector \n'.format(dynamicTime, 0, dynamicTime, trialName))
         sf.write('\n')
 
     ##This is meant to be used to write data in format readable by VMD, but futher reading seems to indicate that VMD only works with a combination of write_data and dump dcd methods.
-    if dumpMovies == True:
+    if dumpMovies:
         sf.write('## Extra dump for movies \n')
         zoom = 10
         xScaled = (xFilter+filterDepth+filterSeparation/2)/xMax
@@ -475,7 +483,7 @@ def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurit
         # sf.write('\n')
 
     ##Run shorter if using movies for local debug
-    if dumpMovies == True:
+    if dumpMovies:
         sf.write('run {0} pre yes post yes \n'.format(movieDuration))
     else:
         # sf.write('restart {0} {1}_backup.rst {1}_archive.rst \n'.format(archiveTime, trialName))
@@ -488,7 +496,7 @@ def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurit
     """
 
 
-    if dumpMovies == True:
+    if dumpMovies:
         localRunScript = 'run_movie_' + trialName + '.sh'
         localCores = 2
         ls = open(localRunScript, 'w')

@@ -10,7 +10,7 @@ for i=1:1:size(nameParts,2)
 end
 
 nSteps = size(tempChunkData,1);
-nBinsX = 102;
+nBinsX = 101;
 nBinsY = 100;
 t = zeros(nSteps,1);
 x = zeros(nBinsX,nBinsY);

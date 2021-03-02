@@ -15,7 +15,7 @@ else
 end
 titles = ['(a)';'(b)';'(c)';'(d)';'(e)';'(f)'];
 fileName = strcat(simString,'_count_slice_',num2str(centeredX(sliceIndx)));
-tickSpacing = 120;
+tickSpacing = 240;
 yHigh = round(max(centeredY)/tickSpacing);
 yLow = -yHigh;
 xTic = (yLow:1:yHigh)*tickSpacing;
@@ -56,11 +56,11 @@ title(titles(1,:),'Interpreter','none');
 subplot(3,nCol,aRow(2));
 hold on;
 bar(binsLowTheta,edgeSumA,'grouped');
-[lowArgonLine,lowArgonGood,lowArgonEtc] = fit(binsLowTheta',edgeSumA','gauss2','StartPoint',[2*10^4,0,45,2*10^4,75,5]);
+[lowArgonLine,lowArgonGood,lowArgonEtc] = fit(binsLowTheta',edgeSumA','gauss2','StartPoint',[2*10^4,-75,45,2*10^4,0,5]);
 
 fitCoef = coeffvalues(lowArgonLine);
-argonAngleLow=fitCoef(1,2);
-argonStddevLow=fitCoef(1,3);
+argonAngleLow=fitCoef(1,5);
+argonStddevLow=fitCoef(1,6);
 
 plot(lowArgonLine);
 legend('off');
@@ -76,12 +76,12 @@ title(titles(2,:),'Interpreter','none');
 subplot(3,nCol,aRow(3));
 hold on;
 bar(binsUpTheta,edgeSumA,'grouped');
-[upArgonLine,upArgonGood,upArgonEtc] = fit(binsUpTheta',edgeSumA','gauss2','StartPoint',[2*10^4,0,45,2*10^4,-75,5]);
+[upArgonLine,upArgonGood,upArgonEtc] = fit(binsUpTheta',edgeSumA','gauss2','StartPoint',[2*10^4,0,45,2*10^4,75,45]);
 
 fitCoef = coeffvalues(upArgonLine);
 argonAngleUp=fitCoef(1,2);
 argonStddevUp=fitCoef(1,3);
-coefConfInt = confint(argonLine);
+% coefConfInt = confint(argonLine);
 
 plot(upArgonLine);
 legend('off');
@@ -129,11 +129,11 @@ if nCol == 2
     title(titles(5),'Interpreter','none');
     hold on;
     bar(binsLowTheta,edgeSumI,'grouped');
-    [lowImpurityLine,lowImpurityGood,lowImpurityEtc] = fit(binsLowTheta',edgeSumI','gauss2','StartPoint',[2*10^4,0,45,2*10^4,75,5]);
+    [lowImpurityLine,lowImpurityGood,lowImpurityEtc] = fit(binsLowTheta',edgeSumI','gauss2','StartPoint',[2*10^4,-75,45,2*10^4,0,5]);
     
     fitCoef = coeffvalues(lowImpurityLine);
-    impurityAngleLow=fitCoef(1,2);
-    impurityStddevLow=fitCoef(1,3);
+    impurityAngleLow=fitCoef(1,5);
+    impurityStddevLow=fitCoef(1,6);
     coefConfInt = confint(argonLine);
     
     plot(lowImpurityLine);
@@ -151,7 +151,7 @@ if nCol == 2
     title(titles(6),'Interpreter','none');
     hold on;
     bar(binsUpTheta,edgeSumI,'grouped');
-    [upImpurityLine,upImpurityGood,upImpurityEtc] = fit(binsUpTheta',edgeSumI','gauss2','StartPoint',[2*10^4,0,45,2*10^4,-75,5]);
+    [upImpurityLine,upImpurityGood,upImpurityEtc] = fit(binsUpTheta',edgeSumI','gauss2','StartPoint',[2*10^4,0,45,2*10^4,75,45]);
         
     fitCoef = coeffvalues(upImpurityLine);
     impurityAngleUp=fitCoef(1,2);

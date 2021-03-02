@@ -1,6 +1,24 @@
 function [] = meshVectorPlotStep(t,x,y,uA,vA,countA,tempA,uI,vI,countI,tempI)
 %UNTITLED8 Summary of this function goes here
 %   Detailed explanation goes here
+leftDual = 1;
+zCut = 0;
+xMid = 180;
+yMid = 280;
+% yMid = 460;
+width = 120;
+depth = 60;
+spacing = 120;
+separation = 60;
+xLeft = xMid;
+if leftDual == 1
+    yLeft = yMid-spacing-width/2;
+else
+    yLeft = yMid-width/2;
+end
+%For dual orifice in left
+xRight = xMid+depth+separation;
+yRight = yMid-spacing-width/2;
 
 xLow = min(x,[],'all');
 xUp = max(x,[],'all');
@@ -48,7 +66,9 @@ vINorm = vI./maxMag;
 
 
 % for i = 1:1:301
-for i = 1:1:size(t,1)
+for i = 200:20:size(t,1)/100+200
+% for i = 20:20:size(t,1)/100
+% for i = [1,20,40,100,200,400,600,800,1000,2000,3000,4000,5000,5001,5020,5040,5100,5200,5400,5600,5800,6000,7000,8000,9000,9001,9020,9040,9100,9200,9400,9600,9800,10000]
     qFig = figure('Visible','off');
     pos = get(qFig,'position');
     set(qFig,'position',[pos(1:2)/4 pos(3:4)*2])    
@@ -80,53 +100,65 @@ for i = 1:1:size(t,1)
 %     colorbar('TickLabels', num2cell(0:1:8));
 %     colorbar('TickLabels', num2cell(0:1:kinTickSpace+1));
 
-     surf(x,y,logKinetic(:,:,i)-logKineticMax);
-     axis([xLow xUp yLow yUp -logKineticMax 0]);
-%      axis([0 0 xAxMax yAxMax -logKineticMax 0]);
-     caxis([-logKineticMax 0]);
-     hcolorBar = colorbar('Ticks',linspace(-logKineticMax,0,8),'TickLabels', num2cell(0:0.5:3.5));
-     ylabel(hcolorBar, '$log(KE+1)$', 'Interpreter', 'latex') ;
-     
-%     colorbar('Ticks', (0:1:4));
-%     colorbar('TickLabels', num2cell(0:1:4));
+%      surf(x,y,logKinetic(:,:,i)-logKineticMax);
+%      axis([xLow xUp yLow yUp -logKineticMax 0]);
+% %      axis([0 0 xAxMax yAxMax -logKineticMax 0]);
+%      caxis([-logKineticMax 0]);
+%      hcolorBar = colorbar('Ticks',linspace(-logKineticMax,0,8),'TickLabels', num2cell(0:0.5:3.5));
+%      ylabel(hcolorBar, '$log(KE+1)$', 'Interpreter', 'latex') ;
+%      
+% %     colorbar('Ticks', (0:1:4));
+% %     colorbar('TickLabels', num2cell(0:1:4));
 
 
 
-%     surf(x,y,countI(:,:,i)-countIMax);
-%     axis([xLow xUp yLow yUp -countIMax 0]);
-%     colormap(parula(countIMax));
-%     colorbar('TickLabels', num2cell(0:countIMax));
-%     caxis([-countIMax 0]);
+    surf(x,y,countI(:,:,i)-countIMax);
+    axis([min(x,[],'all') max(x,[],'all') min(y,[],'all') max(y,[],'all') -countIMax 1]);
+    colormap(parula(countIMax+1));
+    hcolorBar = colorbar('Ticks',(-countIMax:1),'TickLabels',(0:1:countIMax+1));
+    ylabel(hcolorBar, 'Number of Impurities', 'Interpreter', 'latex');
+    caxis([-countIMax 1]);
 
-    quiver(x+10, y+10, uANorm(:,:,i)*50, vANorm(:,:,i)*50, 'AutoScale', 'off', 'Color' ,'k');%, 'LineWidth',2);%,'MaxHeadSize',5);
+    quiver(x+10, y+10, uANorm(:,:,i)*50, vANorm(:,:,i)*50, 'AutoScale', 'off', 'Color' ,'w');%, 'LineWidth',2);%,'MaxHeadSize',5);
 %     quiver(x+10, y+10, uINorm(:,:,i)*50, vINorm(:,:,i)*50, 'AutoScale', 'off', 'Color' ,'w');%, 'LineWidth',2,'MaxHeadSize',5);
 %     axis([xLow xUp yLow yUp 0 0]);
 
-    zCut = 0;
-    mid = 1000;
-    width = 120;
-    depth = 60;
-    spacing = 120;
-    separation = 120;
-    
-    xLeft = mid;
-    yLeft = mid-width/2;
-
-    xRight = mid+depth+separation;
-    yRight = mid-spacing-width/2;
-    
+%     zCut = 0;
+%     mid = 1000;
+%     width = 120;
+%     depth = 60;
+%     spacing = 120;
+%     separation = 120;
+%     
+%     xLeft = mid;
+%     yLeft = mid-width/2;
+% 
+%     xRight = mid+depth+separation;
+%     yRight = mid-spacing-width/2;
 %     patch( [xLeft xLeft xLeft+depth xLeft+depth], [0 yLeft yLeft 0], [zCut zCut zCut zCut], 'k');
 %     patch( [xLeft xLeft xLeft+depth xLeft+depth], [yLeft+width 2000 2000 yLeft+width], [zCut zCut zCut zCut], 'k');
-% 
 %     patch( [xRight xRight xRight+depth xRight+depth], [0 yRight yRight 0], [zCut zCut zCut zCut], 'k');
 %     patch( [xRight xRight xRight+depth xRight+depth], [yRight+width yRight+2*width yRight+2*width yRight+width], [zCut zCut zCut zCut], 'k');
 %     patch( [xRight xRight xRight+depth xRight+depth], [yRight+3*width 2000 2000 yRight+3*width], [zCut zCut zCut zCut], 'k');
+ 
+if leftDual == 1
+    patch( [xLeft xLeft xLeft+depth xLeft+depth], [0 yLeft yLeft 0], [zCut zCut zCut zCut], 'w');
+    patch( [xLeft xLeft xLeft+depth xLeft+depth], [yLeft+width yLeft+2*width yLeft+2*width yLeft+width], [zCut zCut zCut zCut], 'w');
+    patch( [xLeft xLeft xLeft+depth xLeft+depth], [yLeft+3*width 2000 2000 yLeft+3*width], [zCut zCut zCut zCut], 'w');
+else
+    patch( [xLeft xLeft xLeft+depth xLeft+depth], [0 yLeft yLeft 0], [zCut zCut zCut zCut], 'w');
+    patch( [xLeft xLeft xLeft+depth xLeft+depth], [yLeft+width 2000 2000 yLeft+width], [zCut zCut zCut zCut], 'w');
+end
+patch( [xRight xRight xRight+depth xRight+depth], [0 yRight yRight 0], [zCut zCut zCut zCut], 'w');
+patch( [xRight xRight xRight+depth xRight+depth], [yRight+width yRight+2*width yRight+2*width yRight+width], [zCut zCut zCut zCut], 'w');
+patch( [xRight xRight xRight+depth xRight+depth], [yRight+3*width 2000 2000 yRight+3*width], [zCut zCut zCut zCut], 'w');
 
 %     title(strcat("Argon Velocity Vector Field, Log Internal KE Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
-    title(strcat("Argon Velocity Vector Field, Log Calculated Internal KE Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
+%     title(strcat("Argon Velocity Vector Field, Log Calculated Internal KE Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Argon Velocity Vector Field, Log TempCom Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Argon Velocity Vector Field, Log Temp Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
-
+ 
+   title(strcat("Argon Velocity Vector Field, Impurity Count Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Impurity Velocity Vector Field, Impurity Count Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Impurity Velocity Vector Field at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Pressure at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
@@ -135,8 +167,9 @@ for i = 1:1:size(t,1)
     ylabel("y $(r*)$",'Interpreter','Latex');
     view(0,90);
 
-%     print(strcat("ImpurityVelocityCount_Timestep_",num2str(t(i)*200)), '-dpng');
-   print(strcat("ShiftedArgonVelocity_LogCalcKE_Timestep_",num2str(t(i)*200)), '-dpng');
+%     print(strcat("480F_ImpurityVelocityCount_LJTime_",num2str(t(i))), '-dpng');
+    print(strcat("ArgonVelocity_ImpurityCount_LJTime_",num2str(t(i))), '-dpng');
+%    print(strcat("ShiftedArgonVelocity_LogCalcKE_Timestep_",num2str(t(i))), '-dpng');
 
 %     print(strcat("Bernoulli_Timestep_",num2str(t(i)*200)), '-dpng');
     close(qFig);

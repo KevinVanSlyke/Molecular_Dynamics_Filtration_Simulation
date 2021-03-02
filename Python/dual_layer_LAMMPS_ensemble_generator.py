@@ -16,17 +16,21 @@ from dual_layer_LAMMPS_sbatch_generator import dual_layer_LAMMPS_sbatch_generato
 movies = False
 periodic = True
 
-nTrialEnsemble = 1 #number of trials with differing random seed but otherwise identical parameters to create
+nTrialEnsemble = 10 #number of trials with differing random seed but otherwise identical parameters to create
 timeout = 72 #hours
 
 ##Test study
 poreWidth = [120]
 poreSpacings = [120]
-impurityDiameter = [1,2,5,10]
-filterSeparation = [60,120,240,480]
+impurityDiameter = [5]
+# impurityDiameter = [1,2,5,10]
+# impurityDiameter = range(1,11,1)
+# filterSeparation = [120]
+# filterSeparation = [60,120,240,480]
+filterSeparation = range(40,401,40)
 filterDepth = [60]
 registryShift = [0]
-timeSteps = 1*10**(7)
+timeSteps = 5*10**(5)
 
 # ##Orifice Spacing study
 # poreWidth = [120]
@@ -136,8 +140,8 @@ if movies == True:
     ensembleDir = 'Local_' + ensembleDir
 if not os.path.exists(ensembleDir):
     os.makedirs(ensembleDir)
-shutil.copy2(os.path.join(pyDir, 'dual_layer_run_LAMMPS_ensemble.py'),ensembleDir)
-shutil.copy2(os.path.join(pyDir, 'dual_layer_delete_extra_ensemble_files.py'),ensembleDir)
+shutil.copy2(os.path.join(pyDir, 'run_LAMMPS_ensemble.py'),ensembleDir)
+shutil.copy2(os.path.join(pyDir, 'delete_extra_files.py'),ensembleDir)
 os.chdir(ensembleDir)
 for depth in filterDepth:
     for width in poreWidth:
