@@ -1,4 +1,4 @@
-function [t,x,y,outVal] = chunkConvert(chunkData, nBinsX, nBinsY)
+function [t,x,y,meshData] = chunkConvert(chunkData, nBinsX, nBinsY)
 % [t,x,y,meshData] = chunkVectorConvert(vcmChunkData, nBinsX, nBinsY) Converts
 % LAMMPS 'chunk' data format to MATLAB 'mesh' data format for a vector value
 % grid.
@@ -6,11 +6,13 @@ function [t,x,y,outVal] = chunkConvert(chunkData, nBinsX, nBinsY)
 %   number of horizontal and vertical grid values. Chunk data is then parsed
 %   based on the number of x and y bins into a pair of MATLAB mesh data structures.
 %   Returns time series vector, horizontal and vertical spatial value matrix
-%   and one or two scalar component value mesh data structures for 2D.
+%   and two scalar velocity component value mesh data structures for 2D.
 
+%TODO: Overload so that scalar and vector aren't seperate
+%functions
 
 nSteps = size(chunkData,1); %Standard domain full time series chunk output
-nVars = size(chunkData,2);
+nVars = size(chunkData,3);
 debug = 0;
 if debug == 1 %Hardcode number of bins and time values for debugging
     nBinsX = 102;
@@ -24,11 +26,7 @@ nBins = nBinsX*nBinsY;
 t = zeros(nSteps,1);
 x = zeros(nBinsX,nBinsY);
 y = zeros(nBinsX,nBinsY);
-val = zeros(nBinsX,nBinsY,nSteps);
-
-if nVars == 2
-    val2 = zeros(nBinsX,nBinsY,nSteps);
-end
+meshData = zeros(nBinsX, nBinsY, nSteps, nVars);
 
 %Chunk data is a series of lists containing simulation values, lists are
 %ordered sequentially by timestep. List is ordered as
@@ -48,28 +46,19 @@ for n=1:1:nSteps
             j = nBinsY;
         end
         
-        val(i,j,n)=chunkData(n,k,1); %x vel component
-        if nVars == 2
-            val2(i,j,n)=chunkData(n,k,2); %y vel component
+        for q=1:1:nVars
+            meshData(i,j,n,q)=chunkData(n,k,q); 
         end
+        
         if n == 1
             x(i,j)=20*(i-1); %convert indices to spatial value
             y(i,j)=20*(j-1);
-            %Depricated: Shift spatial data to simulation domain coordinates, 
-            %x(i,j)=20*(i-1)+800;
-            %y(i,j)=20*(j-1)+700;
         end
     end
 end
 %Optional save during run to supplement function return
 % save(strcat(outputName, '.mat'), 't', 'x', 'y', 'u', 'v');
-if nVars == 1
-    outVal = val;
-    clear val i j k n;
-elseif nVars == 2
-    outVal = [val, val2];
-    clear val val2 i j k n;
-end
-
+% outVal = [val, val2];
+clear i j k n;
 end
 

@@ -71,7 +71,6 @@ elseif ispc %Windows OS, read first four lines to get num variables and bins.
 end
 t = zeros(nTimes, 1);
 
-% chunkData = zeros(nTimes,nChunks,nVars); %Create chunk data series
 meshData = zeros(nBinsX, nBinsY, nTimes, nVars);
 ti = 1;
 xi = 0;
