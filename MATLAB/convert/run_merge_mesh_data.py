@@ -6,6 +6,7 @@ Created on Tue Sep 19 15:01:53 2017
 """
 import os
 import shutil
+debug = 1
 ensembleDir = os.getcwd()
 for dataDir in os.listdir(ensembleDir):
     if os.path.isdir(os.path.join(ensembleDir, dataDir)):
@@ -15,7 +16,8 @@ for dataDir in os.listdir(ensembleDir):
         shutil.copy2('/user/kgvansly/MATLAB/slurm_merge_mesh_data.sh',os.getcwd())
         shutil.copy2('/user/kgvansly/MATLAB/merge_mesh_data.m',os.getcwd())
         jobName = simString+'_Merge'
-        myCommand = "sbatch  --job-name="+simString+" --output="+simString+".out --error="+simString+".err slurm_merge_mesh_data.sh"
+        myCommand = "sbatch  --job-name="+simString+" --output="+simString+".out --error="+simString+".err --export=debug="+str(debug)+" slurm_merge_mesh_data.sh"
+        print(myCommand)
         os.system(myCommand)
     else:
         continue

@@ -1,4 +1,4 @@
-function [] = chunk_to_mesh(chunkFile, nBinsX, nBinsY)
+function [] = chunk_to_mesh(chunkFile, nBinsX, nBinsY, debug)
 %[chunkData] = read_chunk(varargin) Takes .chunk file name and reads in
 %data as 'chunk' format, a series of value lists ordered by timestep
 %   Input is name of .chunk file, output is a mesh data series.
@@ -7,26 +7,20 @@ function [] = chunk_to_mesh(chunkFile, nBinsX, nBinsY)
 %   (x1, y1), (x1, y2), (x1, y3)...(x2, y1), (x2, y2), (x2, y3)... such that
 %   y is the most rapidly varying bin coordinate/index. The resulting mesh 
 %   is a four dimensional tensor with dimensions/values: [nBinsX, nBinsY, nTimes, nVars].
-debug = 1;
-nBinsX = str2double(nBinsX);
-nBinsY = str2double(nBinsY);
+
+% debug = 1;
+
 try %Open file
     cFile = fopen(chunkFile, 'r');
 catch
     error('Log file not found!');
 end
-% x = zeros(nBinsX, nBinsY);
-% y = zeros(nBinsX, nBinsY);
 
 if isunix %Unix OS, read 'head' and 'tail' terminal outputs as strings
-    headCommand = strcat({'head -n '}, num2str(4),{' '}, chunkFile);
+    headCommand = convertCharsToStrings(strcat({'head -n '}, num2str(4),{' '}, chunkFile));
     if debug == 1
-        disp('headCommand')
+        disp(' headCommand')
         disp(headCommand)
-        disp(class(headCommand))
-        headCommand = convertCharsToStrings(headCommand);
-        disp(class(headCommand))
-        headCommand = char(headCommand);
         disp(class(headCommand))
     end
 
@@ -76,6 +70,8 @@ ti = 1;
 xi = 0;
 yi = 0;
 i = 0;
+
+disp('Timesteps processed:')
 while feof(cFile) == 0 %Read file line by line
     chunkLine = fgetl(cFile);
     chunkWords = strsplit(chunkLine,' ');
@@ -83,10 +79,13 @@ while feof(cFile) == 0 %Read file line by line
     if isNum == 1
         if (mod(str2double(chunkWords{1,1}), 1000) == 0) && strcmp(chunkWords{1,2}, num2str(nChunks)) %If line is the number of bins the following data will be at next output time
             ti = ti + 1;
-            if debug == 1 && ti == 101 %Shorten read for debugging
+            if debug == 1 && ti == 1001 %Shorten read for debugging
                 break;
             end
             t(ti) = (ti - 1)*(1000/200); %Convert timestep to LJ time
+            if (mod(ti, 1000) == 0) %Output timesteps processed.
+                disp(ti)
+            end
             i = 0;
         else
             i = i + 1;
@@ -96,7 +95,6 @@ while feof(cFile) == 0 %Read file line by line
                 xi = xi - 1;
                 yi = nBinsY;
             end
-%             chunkID = str2double(chunkWords{1, 1}); %First column is chunk list index
             varWords = chunkWords(2:end); %Following columns are data values
             for n = 1:1:nVars
                 var = varWords{1,n};
@@ -107,8 +105,10 @@ while feof(cFile) == 0 %Read file line by line
 end
 fclose(cFile);
 
-[y,x] = meshgrid(0:20:nBinsX*20);
+[y,x] = meshgrid(0:20:(nBinsX-1)*20);
 
 fileParts = strsplit(chunkFile, '.');
-save(convertCharsToStrings(strcat(fileParts(1),'_mesh.mat')),'t','x','y','meshData');
+saveFile = convertCharsToStrings(strcat(fileParts(1),'_mesh.mat'));
+disp(strcat('save(',saveFile,', t, x, y, meshData'))
+save(saveFile,'t','x','y','meshData');
 end

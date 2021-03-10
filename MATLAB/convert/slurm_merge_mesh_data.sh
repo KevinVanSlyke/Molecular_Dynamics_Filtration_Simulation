@@ -19,5 +19,7 @@ export HOME=$SLURMTMPDIR
 # adjust temporary directory
 export TMP=$SLURMTMPDIR
 
-echo -e 'matlab -nodisplay -r "merge_mesh_data()"'
-matlab -nodisplay -r "merge_mesh_data()"
+echo -e "debug=${debug} \n"
+
+echo -e 'matlab -nodisplay -r "merge_mesh_data(${debug})"'
+matlab -nodisplay -r "merge_mesh_data('${debug}')"
