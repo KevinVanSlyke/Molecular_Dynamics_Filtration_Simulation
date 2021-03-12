@@ -15,8 +15,8 @@ for dataDir in os.listdir(ensembleDir):
         simString = dirParts[-1]
         shutil.copy2('/user/kgvansly/MATLAB/slurm_merge_mesh_data.sh',os.getcwd())
         shutil.copy2('/user/kgvansly/MATLAB/merge_mesh_data.m',os.getcwd())
-        jobName = simString+'_Merge'
-        myCommand = "sbatch  --job-name="+simString+" --output="+simString+".out --error="+simString+".err --export=debug="+str(debug)+" slurm_merge_mesh_data.sh"
+        jobName = 'Merge_'+simString
+        myCommand = "sbatch  --job-name="+jobName+" --output="+jobName+".out --error="+jobName+".err --export=debug="+str(debug)+" slurm_merge_mesh_data.sh"
         print(myCommand)
         os.system(myCommand)
     else:

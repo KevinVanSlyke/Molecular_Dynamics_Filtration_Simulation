@@ -37,6 +37,8 @@ for n = 1 : 1 : nFiles
         if startsWith(dataDirList(n).name(), 'argon_vcm')
             if trialID == 1
                 load(dataDirList(n).name(),'x','y','t');
+                %Will have to make robust for uneven length trials
+                nTimes = size(t,1);
             end
             load(dataDirList(n).name(),'meshData');
             uA(:,:,:,trialID) = meshData(:,:,:,1);
@@ -52,8 +54,8 @@ for n = 1 : 1 : nFiles
             countA(:,:,:,trialID) = meshData(:,:,:,1);
             clear meshData
         elseif startsWith(dataDirList(n).name(), 'impurity_count')
-            load(dataDirList(n).name(),'outVal');
-            countI(:,:,:,trialID) = outVal(:,:,:,1);
+            load(dataDirList(n).name(),'meshData');
+            countI(:,:,:,trialID) = meshData(:,:,:,1);
             clear meshData
         elseif startsWith(dataDirList(n).name(), 'argon_temp')
             load(dataDirList(n).name(),'meshData');
@@ -72,9 +74,10 @@ for n = 1 : 1 : nFiles
             internalTempI(:,:,:,trialID) = meshData(:,:,:,1);
             clear meshData
         end
+
 %Potentially for use if each trial has a diff number of output times
 %         if size(meshData,3) < nTimes
-        nTimes = size(meshData,3);
+%         nTimes = size(meshData,3);
 %         end
     end
 end
@@ -99,7 +102,7 @@ end
 %simulation included impurity of diameter not equal to 1
 if exist('uI','var') == 1
     uMeanI = mean(uI(:,:,1:nTimes,:),4);
-    uStdI = std(uI(:,:,1:nTimes,:),4);
+    uStdI = std(uI(:,:,1:nTimes,:),0,4);
     vMeanI = mean(vI(:,:,1:nTimes,:),4);
     vStdI = std(vI(:,:,1:nTimes,:),0,4);
     countMeanI = mean(countI(:,:,1:nTimes,:),4);

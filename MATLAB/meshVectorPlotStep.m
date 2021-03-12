@@ -3,13 +3,13 @@ function [] = meshVectorPlotStep(t,x,y,uA,vA,countA,tempA,uI,vI,countI,tempI)
 %   Detailed explanation goes here
 leftDual = 1;
 zCut = 0;
-xMid = 180;
+xMid = 120;
 yMid = 280;
 % yMid = 460;
 width = 120;
 depth = 60;
 spacing = 120;
-separation = 60;
+separation = 120;
 xLeft = xMid;
 if leftDual == 1
     yLeft = yMid-spacing-width/2;
@@ -64,10 +64,11 @@ vANorm = vA./maxMag;
 uINorm = uI./maxMag;
 vINorm = vI./maxMag;
 
-
-% for i = 1:1:301
-for i = 200:20:size(t,1)/100+200
-% for i = 20:20:size(t,1)/100
+% for i = 2:200:size(t,1)
+% for i = 2:1:20+1
+% for i = 2:1000:size(t,1)
+% for i = 2:20:size(t,1)/50+20
+for i = 2:200:size(t,1)/10+200
 % for i = [1,20,40,100,200,400,600,800,1000,2000,3000,4000,5000,5001,5020,5040,5100,5200,5400,5600,5800,6000,7000,8000,9000,9001,9020,9040,9100,9200,9400,9600,9800,10000]
     qFig = figure('Visible','off');
     pos = get(qFig,'position');
@@ -113,11 +114,17 @@ for i = 200:20:size(t,1)/100+200
 
 
     surf(x,y,countI(:,:,i)-countIMax);
-    axis([min(x,[],'all') max(x,[],'all') min(y,[],'all') max(y,[],'all') -countIMax 1]);
-    colormap(parula(countIMax+1));
-    hcolorBar = colorbar('Ticks',(-countIMax:1),'TickLabels',(0:1:countIMax+1));
-    ylabel(hcolorBar, 'Number of Impurities', 'Interpreter', 'latex');
-    caxis([-countIMax 1]);
+%     axis([min(x,[],'all') max(x,[],'all') min(y,[],'all') max(y,[],'all') -countIMax 1]);
+    
+%     colormap(parula(countIMax+1));
+%     hcolorBar = colorbar('Ticks',(-countIMax:1),'TickLabels',(0:1:countIMax+1));
+%     ylabel(hcolorBar, 'Number of Impurities', 'Interpreter', 'latex');
+%     caxis([-countIMax 0]);
+
+    axis([min(x,[],'all') max(x,[],'all') min(y,[],'all') max(y,[],'all') -countIMax 0]);
+    hcolorBar = colorbar('Ticks',[-2,-1,0],'TickLabels',[0,1,2]);
+    ylabel(hcolorBar, 'Uncertainty in Argon X-Velocity $(\frac{r^*}{t^*})$', 'Interpreter', 'latex');
+    caxis([-countIMax 0]);
 
     quiver(x+10, y+10, uANorm(:,:,i)*50, vANorm(:,:,i)*50, 'AutoScale', 'off', 'Color' ,'w');%, 'LineWidth',2);%,'MaxHeadSize',5);
 %     quiver(x+10, y+10, uINorm(:,:,i)*50, vINorm(:,:,i)*50, 'AutoScale', 'off', 'Color' ,'w');%, 'LineWidth',2,'MaxHeadSize',5);
@@ -141,24 +148,28 @@ for i = 200:20:size(t,1)/100+200
 %     patch( [xRight xRight xRight+depth xRight+depth], [yRight+width yRight+2*width yRight+2*width yRight+width], [zCut zCut zCut zCut], 'k');
 %     patch( [xRight xRight xRight+depth xRight+depth], [yRight+3*width 2000 2000 yRight+3*width], [zCut zCut zCut zCut], 'k');
  
-if leftDual == 1
-    patch( [xLeft xLeft xLeft+depth xLeft+depth], [0 yLeft yLeft 0], [zCut zCut zCut zCut], 'w');
-    patch( [xLeft xLeft xLeft+depth xLeft+depth], [yLeft+width yLeft+2*width yLeft+2*width yLeft+width], [zCut zCut zCut zCut], 'w');
-    patch( [xLeft xLeft xLeft+depth xLeft+depth], [yLeft+3*width 2000 2000 yLeft+3*width], [zCut zCut zCut zCut], 'w');
-else
-    patch( [xLeft xLeft xLeft+depth xLeft+depth], [0 yLeft yLeft 0], [zCut zCut zCut zCut], 'w');
-    patch( [xLeft xLeft xLeft+depth xLeft+depth], [yLeft+width 2000 2000 yLeft+width], [zCut zCut zCut zCut], 'w');
-end
-patch( [xRight xRight xRight+depth xRight+depth], [0 yRight yRight 0], [zCut zCut zCut zCut], 'w');
-patch( [xRight xRight xRight+depth xRight+depth], [yRight+width yRight+2*width yRight+2*width yRight+width], [zCut zCut zCut zCut], 'w');
-patch( [xRight xRight xRight+depth xRight+depth], [yRight+3*width 2000 2000 yRight+3*width], [zCut zCut zCut zCut], 'w');
+    if leftDual == 1
+        patch( [xLeft xLeft xLeft+depth xLeft+depth], [0 yLeft yLeft 0], [zCut zCut zCut zCut], 'w');
+        patch( [xLeft xLeft xLeft+depth xLeft+depth], [yLeft+width yLeft+2*width yLeft+2*width yLeft+width], [zCut zCut zCut zCut], 'w');
+        patch( [xLeft xLeft xLeft+depth xLeft+depth], [yLeft+3*width 2000 2000 yLeft+3*width], [zCut zCut zCut zCut], 'w');
+    else
+        patch( [xLeft xLeft xLeft+depth xLeft+depth], [0 yLeft yLeft 0], [zCut zCut zCut zCut], 'w');
+        patch( [xLeft xLeft xLeft+depth xLeft+depth], [yLeft+width 2000 2000 yLeft+width], [zCut zCut zCut zCut], 'w');
+    end
+    patch( [xRight xRight xRight+depth xRight+depth], [0 yRight yRight 0], [zCut zCut zCut zCut], 'w');
+    patch( [xRight xRight xRight+depth xRight+depth], [yRight+width yRight+2*width yRight+2*width yRight+width], [zCut zCut zCut zCut], 'w');
+    patch( [xRight xRight xRight+depth xRight+depth], [yRight+3*width 2000 2000 yRight+3*width], [zCut zCut zCut zCut], 'w');
 
 %     title(strcat("Argon Velocity Vector Field, Log Internal KE Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Argon Velocity Vector Field, Log Calculated Internal KE Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Argon Velocity Vector Field, Log TempCom Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Argon Velocity Vector Field, Log Temp Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
  
-   title(strcat("Argon Velocity Vector Field, Impurity Count Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
+   title(strcat("Argon Velocity Vector Field, Uncertainty in Argon X-Vel at $t^*=$ ", num2str(t(i)-5)), 'Interpreter', 'LaTex', 'FontSize', 12 );
+%    title(strcat("Mean Argon Velocity Vector Field, Uncertainty in Argon X-Vel at $t^*=$ ", num2str(t(i)-5)), 'Interpreter', 'LaTex', 'FontSize', 12 );
+%    title(strcat("Mean Argon Velocity Vector Field, Impurity Count Mesh at $t^*=$ ", num2str(t(i)-5)), 'Interpreter', 'LaTex', 'FontSize', 12 );
+%    title(strcat("Mean Argon Velocity Vector Field, Mean Impurity Count Mesh at $t^*=$ ", num2str(t(i)-5)), 'Interpreter', 'LaTex', 'FontSize', 12 );
+%    title(strcat("Argon Velocity Vector Field, Impurity Count Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Impurity Velocity Vector Field, Impurity Count Mesh at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Impurity Velocity Vector Field at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
 %     title(strcat("Pressure at $t^*=$ ", num2str(t(i))), 'Interpreter', 'LaTex', 'FontSize', 12 );
@@ -168,7 +179,11 @@ patch( [xRight xRight xRight+depth xRight+depth], [yRight+3*width 2000 2000 yRig
     view(0,90);
 
 %     print(strcat("480F_ImpurityVelocityCount_LJTime_",num2str(t(i))), '-dpng');
-    print(strcat("ArgonVelocity_ImpurityCount_LJTime_",num2str(t(i))), '-dpng');
+%      print(strcat("MeanArgonVelocity_VxUncertainty_LJTime_",num2str(t(i)-5)), '-dpng');
+     print(strcat("ArgonVelocity_VxUncertainty_LJTime_",num2str(t(i)-5)), '-dpng');
+
+%     print(strcat("MeanArgonVelocity_ImpurityCount_LJTime_",num2str(t(i)-5)), '-dpng');
+%     print(strcat("MeanArgonVelocity_MeanImpurityCount_LJTime_",num2str(t(i)-5)), '-dpng');
 %    print(strcat("ShiftedArgonVelocity_LogCalcKE_Timestep_",num2str(t(i))), '-dpng');
 
 %     print(strcat("Bernoulli_Timestep_",num2str(t(i)*200)), '-dpng');

@@ -2,7 +2,7 @@
 #SBATCH --time=12:00:00
 #SBATCH --nodes=1
 #SBATCH --tasks-per-node=1
-##SBATCH --mem=6000
+#SBATCH --mem=6000
 #SBATCH --mail-user=kgvansly@buffalo.edu
 #SBATCH --mail-type=END
 ##SBATCH --job-name=${particleType}_${dataType}
