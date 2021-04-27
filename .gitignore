@@ -1,5 +1,5 @@
 *~
 *.pyc
-Deprecated/
+Deprecated/*
 .vscode/
 *.code-workspace
