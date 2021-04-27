@@ -4,6 +4,7 @@
 Created on Fri Jun 14 14:54:42 2019
 
 @author: Kevin
+Delete various extra files with flags to specify what to clean and how to clean it.
 """
 import os
 
