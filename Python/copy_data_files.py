@@ -3,7 +3,6 @@
 Created on Fri Aug 18 14:46:50 2017
 
 @author: Kevin Van Slyke
-Move all processed mesh data from trial folders to a single data folder
 """
 import os
 import shutil

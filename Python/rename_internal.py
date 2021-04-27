@@ -3,7 +3,6 @@
 Created on Fri Aug 18 14:46:50 2017
 
 @author: Kevin Van Slyke
-Replaces variable names inside files
 """
 import os
 import shutil
