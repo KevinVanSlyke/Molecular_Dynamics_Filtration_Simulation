@@ -7,7 +7,7 @@ xMid = 120;
 yMid = 280;
 % yMid = 460;
 width = 120;
-depth = 60;
+depth = 60;    
 spacing = 120;
 separation = 120;
 xLeft = xMid;
@@ -111,7 +111,8 @@ for i = 2:200:size(t,1)/10+200
 % %     colorbar('Ticks', (0:1:4));
 % %     colorbar('TickLabels', num2cell(0:1:4));
 
-
+%pcolor(x,y,countI(:,:,i)-countIMax);
+%shading interp
 
     surf(x,y,countI(:,:,i)-countIMax);
 %     axis([min(x,[],'all') max(x,[],'all') min(y,[],'all') max(y,[],'all') -countIMax 1]);

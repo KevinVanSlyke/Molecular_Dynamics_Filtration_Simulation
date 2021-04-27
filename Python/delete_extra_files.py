@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Fri Jun 14 14:54:42 2019
@@ -6,23 +6,23 @@ Created on Fri Jun 14 14:54:42 2019
 @author: Kevin
 """
 import os
-localMachine = 0
 
 executeChanges = 1
 listChanges = 1
 
-permanentlyDelete = 0
+permanentlyDelete = 1
+localMachine = 0
 
-removeArchiveRestart = 0
+removeArchiveRestart = 1
 removeRestartFiles = 1
 removeErrorFiles = 1
 removeOutputFiles = 1
 removeTextFiles = 1
 removeBackupFiles = 1
 removeChunkFiles = 1
-removeIndividualMesh = 1
-removeMatlabScripts = 1
-removeSlurmScripts = 1
+removeIndividualMesh = 0
+removeMatlabScripts = 0
+removeSlurmScripts = 0
 
 rootDir = '.'
 for dirName, subdirList, fileList in os.walk(rootDir):
