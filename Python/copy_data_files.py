@@ -3,6 +3,8 @@
 Created on Fri Aug 18 14:46:50 2017
 
 @author: Kevin Van Slyke
+
+Iterates through ensemble folder, putting all process MATLAB Mesh_*.mat files into a single folder
 """
 import os
 import shutil

@@ -8,15 +8,16 @@ import os
 import stat
 
 def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurityDiameter, filterDepth, filterSeparation, orificeSpacing, registryShift, dumpMovies):
+"""Creates LAMMPS input files"""
+    ##Set if potential is WCA, if not it unshifted and untruncated LJ
+    WCA = False
 
-    ##Dimension and number of filters assumed to be 2
+    ##Dimension, number of layers and number of orifices in first layer assumed to be 2
+    nOrifice1 = 2
     nFilters = 2
     dimensions = 2
     # periodic = True
 
-    WCA = False
-
-    bufferWidth = 20*5
     ##Spatial input parameters
     xFilter = 1000
     xMax = xFilter+nFilters*filterDepth+filterSeparation+2*bufferWidth
@@ -27,77 +28,7 @@ def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurit
     dy = 20
     zMax = 0.01
     zMin = -0.01
-
-    halfOrificeWidth = int(orificeWidth/2)
-    halfOrificeSpacing = int(orificeSpacing/2)
-    ##Filter limits
-    xLeftMin = xFilter
-    xLeftMax = xLeftMin+filterDepth-1
-    yHalf = int((yMax-1)/2)
-
-    # yLeftLowerMax = yHalf-halfOrificeWidth
-    # yLeftUpperMin = yHalf+halfOrificeWidth+1
-
-    yLeftLowerMax = yHalf-halfOrificeSpacing-orificeWidth
-    yLeftMiddleMin = yHalf-halfOrificeSpacing+1
-    yLeftMiddleMax = yHalf+halfOrificeSpacing
-    yLeftUpperMin = yHalf+halfOrificeSpacing+orificeWidth+1
-
-    # yLeftLowerMin = yMin
-    # yLeftUpperMax = yMax
-    # yRightUpperMax = yMax
-    # yRightLowerMin = yMin
-
-    xRightMin = xLeftMin+filterDepth+filterSeparation
-    xRightMax = xRightMin+filterDepth-1
-    yRightLowerMax = yHalf-halfOrificeSpacing-orificeWidth+registryShift
-    yRightMiddleMin = yHalf-halfOrificeSpacing+registryShift+1
-    yRightMiddleMax = yHalf+halfOrificeSpacing+registryShift
-    yRightUpperMin = yHalf+halfOrificeSpacing+orificeWidth+registryShift+1
-
-    ##Chunk data limits, set to square region for easy plotting
-    ##X*9,Y*9
-    # xChunkLow=xLeftMin-bufferWidth-1
-    # xChunkHigh=xMax-1
-    # yChunkLow=yHalf-orificeWidth-halfOrificeSpacing-bufferWidth
-    # yChunkHigh=yHalf+orificeWidth-halfOrificeSpacing+bufferWidth
-   
-    ##X*0,Y*0
-    xChunkLow=xLeftMin-bufferWidth
-    xChunkHigh=xMax
-    yChunkHigh=round(yRightUpperMin+bufferWidth+1,-1)
-    if yLeftLowerMax < yRightLowerMax:
-        yChunkLow=round(yLeftLowerMax-bufferWidth+1,-1)
-    else:
-        yChunkLow=round(yRightLowerMax-bufferWidth+1,-1)
-
-    ##X*0,Y*9
-    # xChunkLow=xLeftMin-bufferWidth
-    # xChunkHigh=xMax
-    # yChunkLow=yHalf-orificeWidth-halfOrificeSpacing-bufferWidth
-    # yChunkHigh=yHalf+orificeWidth+halfOrificeSpacing+bufferWidth
-   
-    ##X*9,Y*0
-    # xChunkLow=xLeftMin-bufferWidth-1
-    # xChunkHigh=xMax-1
-    # yChunkLow=yHalf-orificeWidth-halfOrificeSpacing-bufferWidth+1
-    # yChunkHigh=yHalf+orificeWidth+halfOrificeSpacing+bufferWidth+1
- 
-    numChunkX = (xChunkHigh-xChunkLow)/dx
-    if numChunkX%2 != 0:
-        numChunkX = numChunkX+1
-        xChunkLow = xChunkLow-dx
-    numChunkY = (yChunkHigh-yChunkLow)/dy
-    if numChunkX > numChunkY:
-        if (numChunkX-numChunkY)%2==0:
-            yChunkLow=yChunkLow-int(20*(numChunkX-numChunkY)/2)
-            yChunkHigh=yChunkHigh+int(20*(numChunkX-numChunkY)/2)
-        else:        
-            yChunkLow=round(yHalf+halfOrificeSpacing+registryShift-int(dy*numChunkX/2)+1,-1)
-            yChunkHigh=round(yHalf+halfOrificeSpacing+registryShift+int(dy*numChunkX/2)+1,-1)
-    elif numChunkX < numChunkY:
-        xChunkLow=xChunkHigh-int(dx*numChunkY)
-        # xChunkHigh=xFilter-yHalf+yChunkHigh
+    bufferWidth = 20*5
 
     ##Default for 2D simulation of L_x = 2000, L_y = 2000
     nTotal = 1*10**(5)
@@ -105,6 +36,7 @@ def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurit
     
     ##Initialization temperature and velocity parameters
     fluidTemperature = 1
+    # velBias = 1
 
     ##Required Temporal input parameters
     timeStep = 0.005
@@ -169,9 +101,7 @@ def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurit
         trialName = trialName + '_${id}T'
     inputFile = 'input_' + ensembleName + '.lmp'
 
-    """
-        Primary LAMMPS start/restart files
-    """
+    ##Primary LAMMPS start/restart files
     sf = open(inputFile, 'w')
 
     ##Write header
@@ -192,12 +122,15 @@ def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurit
     sf.write('units    lj    #Simple Lennard-Jones cut-off potential \n')
     sf.write('atom_style     atomic     #Particles have mass \n')
     sf.write('dimension    {0}    #Fix simulation to {0}D \n'.format(dimensions))
+
     ##Write simulation domain
-    # sf.write('boundary    p f p    #Set boundaries such that x_axis=periodic, y_axis=fixed, z_axis=periodic \n')
     if periodic:
         sf.write('boundary    f p p    #Set boundaries such that x_axis=fixed, y_axis=periodic, z_axis=periodic \n')
     else:
         sf.write('boundary    f f p    #Set boundaries such that x_axis=fixed, y_axis=fixed, z_axis=periodic \n')
+    
+    ##Alternative boundary conditions
+    # sf.write('boundary    p f p    #Set boundaries such that x_axis=periodic, y_axis=fixed, z_axis=periodic \n')
     # sf.write('boundary    fm p p    #Set boundaries such that x_axis=fixedMinShrinkwrap, y_axis=periodic, z_axis=periodic \n')
 
     sf.write('lattice    sq 1    #Simple square lattice with one basis atom per cell, lattice_spacing=1/1=1, reduced density rho = 1 \n')
@@ -220,66 +153,105 @@ def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurit
                 else:
                     if WCA:
                         cutOff = sigma*1.122462 #1.122462 = 2**(1/6), WCA potential
- 
                     else:
                         cutOff = sigma*2.5 #Typical LJ cutoff
                 sf.write('pair_coeff     {0} {1} {2} {3} {4}     #Type:{0}-{1}, E={2}, sigma={3}, r_c={4} \n'.format(idType[i], idType[j], epsilon, sigma, cutOff))
     ##Shift potential to zero at minima
-    sf.write('pair_modify    shift yes    #Shifts LJ potential to 0.0 at the cut-off \n')
-    sf.write('\n')
+    if WCA:
+        sf.write('pair_modify    shift yes    #Shifts LJ potential to 0.0 at the cut-off \n')
+        sf.write('\n')
 
     ##Write masses
     for i in range(atomTypes):
         sf.write('mass    {0} {1}    #Sets mass of particle type {0} to {1} \n'.format(idType[i], massType[i]))
     sf.write('\n')
 
-    # sf.write('region    topWall block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(xLeftMin, xLeftMax, yLeftUpperMin, yMax+1, 0, 0))
-    # sf.write('region    botWall block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(xLeftMin, xLeftMax, yMin, yLeftLowerMax, 0, 0))
+    ##Filter limits in cartesian coordinates
+    xLeftMin = xFilter
+    xLeftMax = xLeftMin+filterDepth-1
+    yHalf = int((yMax-1)/2)
+
+    yLeftLowerMax = yHalf-halfOrificeSpacing-orificeWidth
+    yLeftMiddleMin = yHalf-halfOrificeSpacing+1
+    yLeftMiddleMax = yHalf+halfOrificeSpacing
+    yLeftUpperMin = yHalf+halfOrificeSpacing+orificeWidth+1
+
+    xRightMin = xLeftMin+filterDepth+filterSeparation
+    xRightMax = xRightMin+filterDepth-1
+    yRightLowerMax = yHalf-halfOrificeSpacing-orificeWidth+registryShift
+    yRightMiddleMin = yHalf-halfOrificeSpacing+registryShift+1
+    yRightMiddleMax = yHalf+halfOrificeSpacing+registryShift
+    yRightUpperMin = yHalf+halfOrificeSpacing+orificeWidth+registryShift+1
+
+    halfOrificeWidth = int(orificeWidth/2)
+    halfOrificeSpacing = int(orificeSpacing/2)
 
     ##Create filter regions, add atoms and assign group
     sf.write('## Define the filter area and fill it with atoms fixed to lattice sites \n')
-    sf.write('region    botWall1 block {0} {1} {2} {3} {4} {5}    #Bottom half of dual pore filter \n'.format(xLeftMin, xLeftMax, yMin, yLeftLowerMax, 0, 0))
-    sf.write('region    midWall1 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(xLeftMin, xLeftMax, yLeftMiddleMin, yLeftMiddleMax, 0, 0))
-    sf.write('region    topWall1 block {0} {1} {2} {3} {4} {5}    #Top half of dual pore filter \n'.format(xLeftMin, xLeftMax, yLeftUpperMin, yMax, 0, 0))
-    sf.write('region    botWall2 block {0} {1} {2} {3} {4} {5}    #Bottom half of dual pore filter \n'.format(xRightMin, xRightMax, yMin, yRightLowerMax, 0, 0))
-    sf.write('region    midWall2 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(xRightMin, xRightMax, yRightMiddleMin, yRightMiddleMax, 0, 0))
-    sf.write('region    topWall2 block {0} {1} {2} {3} {4} {5}    #Top half of dual pore filter \n'.format(xRightMin, xRightMax, yRightUpperMin, yMax, 0, 0))
-    sf.write('create_atoms    {0} region topWall1 \n'.format(idType[0]))
-    sf.write('create_atoms    {0} region midWall1 \n'.format(idType[0]))
-    sf.write('create_atoms    {0} region botWall1 \n'.format(idType[0]))
-    sf.write('group    botFilter1 region botWall1 \n')
-    sf.write('group    midFilter1 region midWall1 \n')
-    sf.write('group    topFilter1 region topWall1 \n')
-    sf.write('group    filter1 union topFilter1 midFilter1 botFilter1 \n')
-    sf.write('create_atoms    {0} region topWall2 \n'.format(idType[0]))
-    sf.write('create_atoms    {0} region midWall2 \n'.format(idType[0]))
-    sf.write('create_atoms    {0} region botWall2 \n'.format(idType[0]))
-    sf.write('group    botFilter2 region botWall2 \n')
-    sf.write('group    midFilter2 region midWall2 \n')
-    sf.write('group    topFilter2 region topWall2 \n')
-    sf.write('group    filter2 union topFilter2 midFilter2 botFilter2 \n')
-    sf.write('group    filter union filter1 filter2 \n')
-    
-    # sf.write('## Define the filter area and fill it with atoms fixed to lattice sites \n')
-    # sf.write('region    botWall1 block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(xLeftMin, xLeftMax, yMin, yLeftLowerMax, 0, 0))
-    # sf.write('region    topWall1 block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(xLeftMin, xLeftMax, yLeftUpperMin, yMax, 0, 0))
-    # sf.write('region    botWall2 block {0} {1} {2} {3} {4} {5}    #Bottom half of dual pore filter \n'.format(xRightMin, xRightMax, yMin, yRightLowerMax, 0, 0))
-    # sf.write('region    midWall2 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(xRightMin, xRightMax, yRightMiddleMin, yRightMiddleMax, 0, 0))
-    # sf.write('region    topWall2 block {0} {1} {2} {3} {4} {5}    #Top half of dual pore filter \n'.format(xRightMin, xRightMax, yRightUpperMin, yMax, 0, 0))
-    # sf.write('create_atoms    {0} region topWall1 \n'.format(idType[0]))
-    # sf.write('create_atoms    {0} region botWall1 \n'.format(idType[0]))
-    # sf.write('group    botFilter1 region botWall1 \n')
-    # sf.write('group    topFilter1 region topWall1 \n')
-    # sf.write('group    filter1 union topFilter1 botFilter1 \n')
-    # sf.write('create_atoms    {0} region topWall2 \n'.format(idType[0]))
-    # sf.write('create_atoms    {0} region midWall2 \n'.format(idType[0]))
-    # sf.write('create_atoms    {0} region botWall2 \n'.format(idType[0]))
-    # sf.write('group    botFilter2 region botWall2 \n')
-    # sf.write('group    midFilter2 region midWall2 \n')
-    # sf.write('group    topFilter2 region topWall2 \n')
-    # sf.write('group    filter2 union topFilter2 midFilter2 botFilter2 \n')
-    # sf.write('group    filter union filter1 filter2 \n')
+    if nFilters == 1 and nOrifice1 == 1:
+        sf.write('region    botWall1 block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(xLeftMin, xLeftMax, yMin, yLeftLowerMax, 0, 0))
+        sf.write('region    topWall1 block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(xLeftMin, xLeftMax, yLeftUpperMin, yMax, 0, 0))
+        sf.write('create_atoms    {0} region topWall1 \n'.format(idType[0]))
+        sf.write('create_atoms    {0} region botWall1 \n'.format(idType[0]))
+        sf.write('group    botFilter1 region botWall1 \n')
+        sf.write('group    topFilter1 region topWall1 \n')
+        sf.write('group    filter union topFilter1 botFilter1 \n')
+    elif nFilters == 1 and nOrifice1 == 2:
+        sf.write('region    botWall1 block {0} {1} {2} {3} {4} {5}    #Bottom half of dual pore filter \n'.format(xLeftMin, xLeftMax, yMin, yLeftLowerMax, 0, 0))
+        sf.write('region    midWall1 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(xLeftMin, xLeftMax, yLeftMiddleMin, yLeftMiddleMax, 0, 0))
+        sf.write('region    topWall1 block {0} {1} {2} {3} {4} {5}    #Top half of dual pore filter \n'.format(xLeftMin, xLeftMax, yLeftUpperMin, yMax, 0, 0))
+        sf.write('create_atoms    {0} region topWall1 \n'.format(idType[0]))
+        sf.write('create_atoms    {0} region midWall1 \n'.format(idType[0]))
+        sf.write('create_atoms    {0} region botWall1 \n'.format(idType[0]))
+        sf.write('group    botFilter1 region botWall1 \n')
+        sf.write('group    midFilter1 region midWall1 \n')
+        sf.write('group    topFilter1 region topWall1 \n')
+        sf.write('group    filter union topFilter1 midFilter1 botFilter1 \n')
+    elif nFilters == 2 and nOrifice1 == 1:
+        sf.write('region    botWall1 block {0} {1} {2} {3} {4} {5}    #Bottom half of single pore filter \n'.format(xLeftMin, xLeftMax, yMin, yLeftLowerMax, 0, 0))
+        sf.write('region    topWall1 block {0} {1} {2} {3} {4} {5}    #Top half of single pore filter \n'.format(xLeftMin, xLeftMax, yLeftUpperMin, yMax, 0, 0))
+        sf.write('region    botWall2 block {0} {1} {2} {3} {4} {5}    #Bottom half of dual pore filter \n'.format(xRightMin, xRightMax, yMin, yRightLowerMax, 0, 0))
+        sf.write('region    midWall2 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(xRightMin, xRightMax, yRightMiddleMin, yRightMiddleMax, 0, 0))
+        sf.write('region    topWall2 block {0} {1} {2} {3} {4} {5}    #Top half of dual pore filter \n'.format(xRightMin, xRightMax, yRightUpperMin, yMax, 0, 0))
+        sf.write('create_atoms    {0} region topWall1 \n'.format(idType[0]))
+        sf.write('create_atoms    {0} region botWall1 \n'.format(idType[0]))
+        sf.write('group    botFilter1 region botWall1 \n')
+        sf.write('group    topFilter1 region topWall1 \n')
+        sf.write('group    filter1 union topFilter1 botFilter1 \n')
+        sf.write('create_atoms    {0} region topWall2 \n'.format(idType[0]))
+        sf.write('create_atoms    {0} region midWall2 \n'.format(idType[0]))
+        sf.write('create_atoms    {0} region botWall2 \n'.format(idType[0]))
+        sf.write('group    botFilter2 region botWall2 \n')
+        sf.write('group    midFilter2 region midWall2 \n')
+        sf.write('group    topFilter2 region topWall2 \n')
+        sf.write('group    filter2 union topFilter2 midFilter2 botFilter2 \n')
+        sf.write('group    filter union filter1 filter2 \n')
+    elif nFilters == 2 and nOrifice1 == 2:
+        sf.write('region    botWall1 block {0} {1} {2} {3} {4} {5}    #Bottom half of dual pore filter \n'.format(xLeftMin, xLeftMax, yMin, yLeftLowerMax, 0, 0))
+        sf.write('region    midWall1 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(xLeftMin, xLeftMax, yLeftMiddleMin, yLeftMiddleMax, 0, 0))
+        sf.write('region    topWall1 block {0} {1} {2} {3} {4} {5}    #Top half of dual pore filter \n'.format(xLeftMin, xLeftMax, yLeftUpperMin, yMax, 0, 0))
+        sf.write('region    botWall2 block {0} {1} {2} {3} {4} {5}    #Bottom half of dual pore filter \n'.format(xRightMin, xRightMax, yMin, yRightLowerMax, 0, 0))
+        sf.write('region    midWall2 block {0} {1} {2} {3} {4} {5}    #Middle portion of dual pore filter \n'.format(xRightMin, xRightMax, yRightMiddleMin, yRightMiddleMax, 0, 0))
+        sf.write('region    topWall2 block {0} {1} {2} {3} {4} {5}    #Top half of dual pore filter \n'.format(xRightMin, xRightMax, yRightUpperMin, yMax, 0, 0))
+        sf.write('create_atoms    {0} region topWall1 \n'.format(idType[0]))
+        sf.write('create_atoms    {0} region midWall1 \n'.format(idType[0]))
+        sf.write('create_atoms    {0} region botWall1 \n'.format(idType[0]))
+        sf.write('group    botFilter1 region botWall1 \n')
+        sf.write('group    midFilter1 region midWall1 \n')
+        sf.write('group    topFilter1 region topWall1 \n')
+        sf.write('group    filter1 union topFilter1 midFilter1 botFilter1 \n')
+        sf.write('create_atoms    {0} region topWall2 \n'.format(idType[0]))
+        sf.write('create_atoms    {0} region midWall2 \n'.format(idType[0]))
+        sf.write('create_atoms    {0} region botWall2 \n'.format(idType[0]))
+        sf.write('group    botFilter2 region botWall2 \n')
+        sf.write('group    midFilter2 region midWall2 \n')
+        sf.write('group    topFilter2 region topWall2 \n')
+        sf.write('group    filter2 union topFilter2 midFilter2 botFilter2 \n')
+        sf.write('group    filter union filter1 filter2 \n')
 
+
+
+    
     ##Create hopper region, add atoms and assign group
     sf.write('region    hopper block {0} {1} {2} {3} {4} {5}    #Front Region to be filled by gas \n'.format(xMin+diameterType[-1]/2+1, xLeftMin-diameterType[-1]/2-1, yMin+diameterType[-1]/2+1, yMax-diameterType[-1]/2-1, 0, 0))
     sf.write('## Define the flow area and populate with gas molecules \n')
@@ -318,32 +290,20 @@ def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurit
     sf.write('\n')
 
     ##Output regions and calculations
-    # calcRegions = ['hopper', 'frontSlice', 'midSlice', 'rearSlice', 'frontOrifice', 'rearUpperOrifice', 'rearLowerOrifice']
-    # regionXMin = [xMin, xLeftMin-2, xLeftMax+filterDepth-1, xRightMax+filterDepth-1, xLeftMin, xRightMin, xRightMin]
-    # regionXMax = [xLeftMin-1, xLeftMin-1, xRightMin-1, xMax-1, xLeftMax, xRightMax, xRightMax]
-    # regionYMin = [yMin-1, yMin-1, yMin-1, yMin-1, yLeftLowerMax, yRightMiddleMax, yRightLowerMax]
-    # regionYMax = [yMax+1, yMax+1, yMax+1, yMax+1, yLeftUpperMin, yRightUpperMin, yRightMiddleMin]    
-    
-    ##Output regions and calculations
-    # calcRegions = ['hopper', 'frontOrifice', 'midSlice',  'rearUpperOrifice', 'rearLowerOrifice']
-    # regionXMin = [xMin-1, xLeftMin, xLeftMax+filterDepth-1,  xRightMin, xRightMin]
-    # regionXMax = [xLeftMin, xLeftMax, xRightMin+1, xRightMax, xRightMax]
-    # regionYMin = [yMin-1, yLeftLowerMax, yMin-1, yRightMiddleMax, yRightLowerMax]
-    # regionYMax = [yMax+1,yLeftUpperMin, yMax+1,  yRightUpperMin, yRightMiddleMin]    
-    
-    ##Output regions and calculations
-    # calcRegions = ['hopper', 'frontOrifice', 'midSlice',  'rearUpperOrifice', 'rearLowerOrifice']
-    # regionXMin = [xMin-1, xLeftMin, xLeftMax+filterDepth-1,  xRightMin, xRightMin]
-    # regionXMax = [xLeftMin, xLeftMax, xRightMin+1, xRightMax, xRightMax]
-    # regionYMin = [yMin-1, yLeftLowerMax, yMin-1, yRightMiddleMax, yRightLowerMax]
-    # regionYMax = [yMax+1,yLeftUpperMin, yMax+1,  yRightUpperMin, yRightMiddleMin]
-
-    ##Output regions and calculations
     calcRegions = ['hopper',  'interLayer', 'outflow']
     regionXMin = [xMin-1, xLeftMax, xRightMax]
     regionXMax = [xLeftMin+1, xRightMin+1, xMax+1]
     regionYMin = [yMin-1, yMin-1, yMin-1]
     regionYMax = [yMax+1, yMax+1, yMax+1]
+
+    '''##Alternative output regions and calculations
+    calcRegions = ['hopper', 'frontSlice', 'midSlice', 'rearSlice', 'frontOrifice', 'rearUpperOrifice', 'rearLowerOrifice']
+    regionXMin = [xMin, xLeftMin-2, xLeftMax+filterDepth-1, xRightMax+filterDepth-1, xLeftMin, xRightMin, xRightMin]
+    regionXMax = [xLeftMin-1, xLeftMin-1, xRightMin-1, xMax-1, xLeftMax, xRightMax, xRightMax]
+    regionYMin = [yMin-1, yMin-1, yMin-1, yMin-1, yLeftLowerMax, yRightMiddleMax, yRightLowerMax]
+    regionYMax = [yMax+1, yMax+1, yMax+1, yMax+1, yLeftUpperMin, yRightUpperMin, yRightMiddleMin]'''
+
+    ##Compute gas temperature
     sf.write('## Compute thermodynamic temperature based only on gas molecules \n')
     sf.write('compute    gasTemp gas temp \n')
     sf.write('\n')
@@ -395,19 +355,31 @@ def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurit
     sf.write('\n')
     sf.write('thermo_modify flush yes lost ignore \n')
     sf.write('\n')    
-    
-    # ##Write out custom thermo data
-    # sf.write('thermo_style    custom step etotal ke pe c_gasTemp press & \n')
-    # for i in range(len(calcRegions)):
-    #     if atomTypes == 2:
-    #         sf.write('v_{0}ArgonCount'.format(calcRegions[i]))
-    #     else:
-    #         sf.write('v_{0}Press c_{0}Vx v_{0}ArgonCount '.format(calcRegions[i]))
-    #     if i < len(calcRegions)-1:
-    #         sf.write(' & \n')
-    # sf.write('\n')
-    # sf.write('thermo_modify flush yes lost ignore \n')
-    # sf.write('\n')
+
+    ##Chunk data limits, make square region for easy plotting
+    xChunkLow=xLeftMin-bufferWidth
+    xChunkHigh=xMax
+    yChunkHigh=round(yRightUpperMin+bufferWidth+1,-1)
+    if yLeftLowerMax < yRightLowerMax:
+        yChunkLow=round(yLeftLowerMax-bufferWidth+1,-1)
+    else:
+        yChunkLow=round(yRightLowerMax-bufferWidth+1,-1)
+
+    numChunkX = (xChunkHigh-xChunkLow)/dx
+    if numChunkX%2 != 0:
+        numChunkX = numChunkX+1
+        xChunkLow = xChunkLow-dx
+    numChunkY = (yChunkHigh-yChunkLow)/dy
+    if numChunkX > numChunkY:
+        if (numChunkX-numChunkY)%2==0:
+            yChunkLow=yChunkLow-int(20*(numChunkX-numChunkY)/2)
+            yChunkHigh=yChunkHigh+int(20*(numChunkX-numChunkY)/2)
+        else:        
+            yChunkLow=round(yHalf+halfOrificeSpacing+registryShift-int(dy*numChunkX/2)+1,-1)
+            yChunkHigh=round(yHalf+halfOrificeSpacing+registryShift+int(dy*numChunkX/2)+1,-1)
+    elif numChunkX < numChunkY:
+        xChunkLow=xChunkHigh-int(dx*numChunkY)
+        # xChunkHigh=xFilter-yHalf+yChunkHigh
 
     ##Define chunk grid for more detailed analysis
     sf.write('compute argonChunks argon chunk/atom bin/2d x {0} {1} y {2} {3} bound x {4} {5} bound y {6} {7} \n'.format(xChunkLow, dx, yChunkLow, dy, xChunkLow, xChunkHigh, yChunkLow, yChunkHigh))
@@ -491,11 +463,8 @@ def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurit
 
         sf.write('run {0} pre yes post yes \n'.format(totalTime))
         sf.close()
-    """
-        Local LAMMPS run start/restart shell files
-    """
-
-
+    
+    ##Local LAMMPS run start/restart shell files
     if dumpMovies:
         localRunScript = 'run_movie_' + trialName + '.sh'
         localCores = 2

@@ -2,7 +2,9 @@
 """
 Created on Tue Sep 19 15:01:53 2017
 
-@author: kevin
+@author: Kevin Van Slyke
+
+Run the sbatch script to convert LAMMPS .chunk files to MATLAB mesh data
 """
 import os
 import shutil

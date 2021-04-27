@@ -1,9 +1,10 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Fri Jun 14 14:54:42 2019
 
-@author: Kevin
+@author: Kevin Van Slyke
+
+Cleans up extra files from LAMMPS simulation and MATLAB processing, various flags can be toggled on and off
 """
 import os
 

@@ -1,17 +1,13 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Tue Feb 19 14:04:54 2019
 @author: Kevin
 """
 def dual_layer_LAMMPS_sbatch_generator(dirName, nTrials, timeout):
+    """Create an sbatch script to run a slurm job on CCR"""
     rushCores = 8
     mem = 128
     N=0
-
-    """
-        Rush CCR LAMMPS srun start/restart sbatch files
-    """
 
     inputName = 'input_' + dirName + '.lmp'
     sbatchName = 'slurm_' + dirName + '.sh'
@@ -70,19 +66,10 @@ def dual_layer_LAMMPS_sbatch_generator(dirName, nTrials, timeout):
 #        r.write('random4=(19339 194610 283902 137118 33176 312099 61074 605773 258572 235245 1099950 257083 34192 1331368 588470 228156 360315 910212 890104 1750558 1700984 1346837 436879 646333 2083044 1203577 1585808 180127 481450 2901184 1684988 1298364 1068844 2043993 3183593 2228850 3637488 3328760 1165047 3404832 467364 120506 2500301 3944840 732734 1832930 2159321 3919943 644777 3779862 4988402 4862147 833314 3938799 5434315 3600639 2389465 4243628 5589842 1634312 1915066 6157037 2118971 1791039 1352166 1736375 2038376 2453289 3790701 916489 2547662 2176620 1370330 6867736 2883238 6105554 7280086 7763989 3609160 6237568 1191664 1643449 4371147 4937899 5166702 374144 3815904 2483060 7442053 2384100 8322932 7197337 6473307 748884 2742450 8276023 4096254 6587049 1094476 4080763) \n')
 #        r.write('random5=(76816 31182 50538 378602 497612 158189 657054 544217 423500 577075 979628 798527 583306 1222843 10882 121588 1239633 759898 704896 954739 325955 1705354 1353947 2205138 1838981 440942 981728 523780 1836436 2991398 2022883 1683843 1151629 640453 2550889 1086068 1531062 3338695 1374983 115675 2352956 447111 3357857 3718733 3701180 4571136 888875 3460145 1911982 4523644 807754 2663390 782217 793632 560810 4799350 5543947 3087829 5206445 2665025 808856 6144843 3271337 3698639 3540037 1514741 4253001 4883506 5851212 2239222 688323 2104716 4092633 5997781 1246548 5356209 1847273 4606974 1969154 5316181 1115548 7929493 1805205 4599467 995564 5368378 3033966 5272075 6467331 6742866 1991333 3390288 7513824 7560052 8383864 9387152 721461 6911816 9266547 2428374) \n')
     r.write('\n')
+
     r.write('echo "Launch ' + str(N) + 'th restart of MPI LAMMPS air filtration simulation with srun" \n')
     r.write('echo "srun --mpi=pmi2 -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + ' -var id ${SLURM_ARRAY_TASK_ID} -var ran0 ${random0[${SLURM_ARRAY_TASK_ID}]} -var ran1 ${random1[${SLURM_ARRAY_TASK_ID}]} -var ran2 ${random2[${SLURM_ARRAY_TASK_ID}]} -var ran3 ${random3[${SLURM_ARRAY_TASK_ID}]}" \n')
     r.write('srun --mpi=pmi2 -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + ' -var id ${SLURM_ARRAY_TASK_ID} -var ran0 ${random0[${SLURM_ARRAY_TASK_ID}]} -var ran1 ${random1[${SLURM_ARRAY_TASK_ID}]} -var ran2 ${random2[${SLURM_ARRAY_TASK_ID}]} -var ran3 ${random3[${SLURM_ARRAY_TASK_ID}]} \n')
-
-    # r.write('echo "Launch ' + str(N) + 'th restart of MPI LAMMPS air filtration simulation with srun" \n')
-    # r.write('echo "srun --mpi=pmi2 -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + ' -var id ${SLURM_ARRAY_TASK_ID} -var ran0 ${random0[${SLURM_ARRAY_TASK_ID}]} -var ran1 ${random1[${SLURM_ARRAY_TASK_ID}]} -var ran2 ${random2[${SLURM_ARRAY_TASK_ID}]} -var ran3 ${random3[${SLURM_ARRAY_TASK_ID}]}" \n')
-    # r.write('srun --mpi=pmi2 -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + ' -var id ${SLURM_ARRAY_TASK_ID} -var ran0 ${random0[${SLURM_ARRAY_TASK_ID}]} -var ran1 ${random1[${SLURM_ARRAY_TASK_ID}]} -var ran2 ${random2[${SLURM_ARRAY_TASK_ID}]} -var ran3 ${random3[${SLURM_ARRAY_TASK_ID}]} \n')
-
-
-
-#        r.write('echo "Echo... srun -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + '" \n')
-#        r.write('srun -n $NPROCS lmp_mpi -nocite -screen none -in ' + inputName + ' -log ' + logName + ' \n')
-
     r.write('echo "All Done!"')
     r.close()
 

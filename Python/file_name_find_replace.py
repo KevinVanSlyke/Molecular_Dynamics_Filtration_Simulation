@@ -2,7 +2,9 @@
 """
 Created on Tue Apr 10 12:39:21 2018
 
-@author: Kevin
+@author: Kevin Van Slyke
+
+A hard coded script to iteratively change file names 
 """
 
 import os

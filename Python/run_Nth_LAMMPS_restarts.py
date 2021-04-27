@@ -2,7 +2,9 @@
 """
 Created on Tue Sep 19 15:01:53 2017
 
-@author: kevin
+@author: Kevin Van Slyke
+
+Iterates through ensemble directory to run the sbatch scripts for LAMMPS simulation restart input files.
 """
 
 import os

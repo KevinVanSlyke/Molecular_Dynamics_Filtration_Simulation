@@ -30,11 +30,8 @@ echo -e "debug=${debug} \n"
 # echo -e "dataType=${dataType} \n"
 # echo -e "trialIndex=${trialIndex} \n"
 
-
 #echo -e 'matlab -nodisplay -r "addpath(~/MATLAB)"'
 #matlab -nodisplay -r "addpath('~/MATLAB')"
 
-# echo -e 'matlab -nodisplay -r "read_convert_chunk_file(${simString}, ${nBinsX}, ${nBinsY}, ${particleType}, ${dataType}, ${trialIndex})"'
-# matlab -nodisplay -r "read_convert_chunk_file('${simString}', ${nBinsX}, ${nBinsY}, '${particleType}', '${dataType}', '${trialIndex}')"
 echo -e 'matlab -nodisplay -r "spmd_chunk_wrapper(${simString}, ${atomType}, $SLURM_NTASKS, ${trialIndex}, ${nBinsX}, ${nBinsY}, ${debug})"'
 matlab -nodisplay -r "spmd_chunk_wrapper('${simString}', '${atomType}', '$SLURM_NTASKS', '${trialIndex}', '${nBinsX}', '${nBinsY}', '${debug}')"

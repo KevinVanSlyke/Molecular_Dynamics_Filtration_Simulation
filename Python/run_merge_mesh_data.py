@@ -2,7 +2,9 @@
 """
 Created on Tue Sep 19 15:01:53 2017
 
-@author: kevin
+@author: Kevin Van Slyke
+
+Run sbatch scripts to merge MATLAB mesh data for multiple variables into a single data structure
 """
 import os
 import shutil

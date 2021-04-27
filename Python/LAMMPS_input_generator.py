@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Aug 18 14:46:50 2017
+
 @author: Kevin Van Slyke
 """
 
@@ -8,10 +9,8 @@ import time
 import os
 import stat
 def LAMMPS_input_generator(poreWidth, impurityDiameter, filterSpacing, poreSpacing, registryShift, dumpMovies):
-#def LAMMPS_input_generator(poreWidth, impurityDiameter, dumpMovies):
+    """Mostly depricated function to generate LAMMPS inputs, has been replaced by dual_layer_LAMMPS_input_generator, but that function still needs to be debugged for single layer cases"""
     #randomSeed = [12461,6426357,32578,1247568,124158,12586]
-    ##Frequently changed input variables
-        #impurityDiameter, poreWidth, trialNum, poreSpacing, registryShift, filterSpacing, nTotal
 
     ##Spatial input parameters
     dimensions = 2

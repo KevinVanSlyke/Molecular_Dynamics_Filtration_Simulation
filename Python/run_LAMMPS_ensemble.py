@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Sep 19 15:01:53 2017
-@author: kevin
+@author: Kevin Van Slyke
+
+Run all sbatch scripts for LAMMPS simulations
 """
 
 import os

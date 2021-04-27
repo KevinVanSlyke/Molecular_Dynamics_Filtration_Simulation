@@ -2,14 +2,12 @@
 """
 Created on Fri Nov  3 07:56:30 2017
 
-@author: Kevin
-"""
+@author: Kevin Van Slyke
 
-import os
-
-"""
 Create new Rush CCR LAMMPS sbatch files for Nth restart
 """
+import os
+
 N = 2 #restart file number, 0 is initial start, 1 is pre-made and copied with alterations by this script
 ensembleDir = os.getcwd()
 for paramDir in os.listdir(ensembleDir):

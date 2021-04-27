@@ -3,6 +3,8 @@
 Created on Fri Aug 18 14:46:50 2017
 
 @author: Kevin Van Slyke
+
+Like file_name_find_replace.py, but with fewer constraints. Also hard coded for a specific use case.
 """
 import os
 import shutil
@@ -13,7 +15,6 @@ import shutil
 # copyDir = '/mnt/e/scratch/Copy_Files/'
 
 dataDir = os.getcwd()
-# dataDir = '/mnt/e/Data/Molecular_Dynamics_Data/Focused_Mesh_07_2020/'
 for ensembleDir in os.listdir(dataDir):
     if os.path.isdir(os.path.join(dataDir,ensembleDir)):
         for trialDir in os.listdir(os.path.join(dataDir,ensembleDir)):
