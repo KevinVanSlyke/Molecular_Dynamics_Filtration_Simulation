@@ -1,6 +1,7 @@
 function [tauAvg, tauStd] = analyze_variable(trialsDir, selectedVar, outputDir, plotFit, plotFFT)
 %UNTITLED6 Summary of this function goes here
 %   Detailed explanation goes here
+
 cwd = pwd;
 
 [varNames, ensembleData] = collate_ensemble_data(trialsDir);
