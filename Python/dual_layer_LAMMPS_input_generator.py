@@ -8,7 +8,7 @@ import os
 import stat
 
 def dual_layer_LAMMPS_input_generator(timeSteps, periodic, orificeWidth, impurityDiameter, filterDepth, filterSeparation, orificeSpacing, registryShift, dumpMovies):
-"""Creates LAMMPS input files"""
+"""Creates LAMMPS input files based on filter geometry"""
     ##Set if potential is WCA, if not it unshifted and untruncated LJ
     WCA = False
 

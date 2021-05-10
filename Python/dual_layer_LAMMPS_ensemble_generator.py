@@ -34,6 +34,8 @@ filterDepth = [60]
 registryShift = [0]
 timeSteps = 5*10**(5)
 
+"""
+##Many alternative ensemble variable sets
 # ##Orifice Spacing study
 # poreWidth = [120]
 # poreSpacings = [40,120,240,480]
@@ -71,7 +73,7 @@ timeSteps = 5*10**(5)
 # registryShift = [0,120,480]
 # timeSteps = 1*10**(7)
 
-""" # ##Small
+# ##Small
 # poreWidth = [40]
 # poreSpacings = [40]
 # impurityDiameter = [5]
@@ -96,9 +98,9 @@ timeSteps = 5*10**(5)
 # filterSeparation = [480]
 # filterDepth = [240]
 # registryShift = [0]
-# timeSteps = 10**(6) """
+# timeSteps = 10**(6)
 
-""" # ##Skew Square
+# ##Skew Square
 # poreWidth = [120]
 # poreSpacings = [240]
 # impurityDiameter = [5]
@@ -123,7 +125,8 @@ timeSteps = 5*10**(5)
 # filterSeparation = [240]
 # filterDepth = [60]
 # registryShift = [120]
-# timeSteps = 1*10**(7) """
+# timeSteps = 1*10**(7)
+"""
 
 ##Windows directories
 # pyDir = 'E:\\Molecular_Dynamics_Filtration_Simulation\\Python'
