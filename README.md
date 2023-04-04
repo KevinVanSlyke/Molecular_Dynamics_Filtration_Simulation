@@ -33,7 +33,3 @@ Project includes:
 
 	./MATLAB/therm_LAMMPS/ as well as the LAMMPS software used to run the simulations are created by other authors at SANDIA National Labs.
 	./MATLAB/plot_utilities/ developed by other authors on MATLAB repository
-
-#==========================================================================
-
-*/depricated/ are outdated versions of functions which analyze old data output formats (kept around since that data may need to be re-evaluated)
