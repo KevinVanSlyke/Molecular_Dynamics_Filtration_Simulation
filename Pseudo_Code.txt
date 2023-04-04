@@ -1,12 +1,12 @@
 Project Outline-
-A brief top down snapshot of class based code restructuring.
+A top down snapshot of class based code restructuring which is not yet implemented.
 #######
 Python:
 #######
 lammps()
     ensemble()
         simulations()
-            simulation
+            simulation()
         generator()
         run_file()
     simulation()
