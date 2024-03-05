@@ -12,7 +12,7 @@ import shutil
 import time
 
 from dual_layer_LAMMPS_input_generator import dual_layer_LAMMPS_input_generator
-from softscaling_layers_LAMMPS_input_generator import softscaling_layers_LAMMPS_input_generator
+# from softscaling_layers_LAMMPS_input_generator import softscaling_layers_LAMMPS_input_generator
 # from LAMMPS_input_generator import LAMMPS_input_generator
 
 from dual_layer_LAMMPS_sbatch_generator import dual_layer_LAMMPS_sbatch_generator
@@ -38,7 +38,7 @@ timeSteps = 1*10**(6)
 # nCores = [2,8]
 nCores = range(1,17,1)
 ##Windows directories
-# pyDir = 'E:\\Molecular_Dynamics_Filtration_Simulation\\Python'
+# pyDir = 'E:\\Molecular_Dynamics_Simulation\\Python'
 # simDir = 'E:\\scratch\\Input_Files'
 
 ##Unix directories
@@ -57,8 +57,12 @@ if movies is True:
     ensembleDir = 'Local_' + ensembleDir
 if not os.path.exists(ensembleDir):
     os.makedirs(ensembleDir)
-shutil.copy2(os.path.join(pyDir, 'run_LAMMPS_ensemble.py'),ensembleDir)
-shutil.copy2(os.path.join(pyDir, 'delete_extra_files.py'),ensembleDir)
+#For new directory structure in Windows
+# shutil.copy2(os.path.join(pyDir, 'run_scripts\\run_LAMMPS_ensemble.py'),ensembleDir)
+# shutil.copy2(os.path.join(pyDir, 'file_manipulation\\delete_extra_files.py'),ensembleDir)
+#For old directory structure in Unix
+shutil.copy2(os.path.join(pyDir, 'run_scripts/run_LAMMPS_ensemble.py'),ensembleDir)
+shutil.copy2(os.path.join(pyDir, 'file_manipulation/delete_extra_files.py'),ensembleDir)
 os.chdir(ensembleDir)
 for cores in nCores:
     for depth in filterDepth:
@@ -82,8 +86,8 @@ for cores in nCores:
                                 os.makedirs(paramDir)
                             os.chdir(paramDir)
                             if movies is False:
-                                # dual_layer_LAMMPS_input_generator(timeSteps, periodic, width, diameter, depth, fSeparation, oSpacing, shift, movies, cores)
-                                softscaling_layers_LAMMPS_input_generator(timeSteps, periodic, width, diameter, depth, fSeparation, oSpacing, shift, movies, cores)
+                                dual_layer_LAMMPS_input_generator(timeSteps, periodic, width, diameter, depth, fSeparation, oSpacing, shift, movies, cores)
+                                # softscaling_layers_LAMMPS_input_generator(timeSteps, periodic, width, diameter, depth, fSeparation, oSpacing, shift, movies, cores)
                                 # LAMMPS_input_generator(width, diameter, fSeparation, oSpacing, shift, movies)
                                 dual_layer_LAMMPS_sbatch_generator(paramDir, nTrialEnsemble, timeout, cores)
                                 os.chdir('..')
@@ -92,8 +96,8 @@ for cores in nCores:
                                 randomSeed = []
                                 for i in range(6):
                                     randomSeed.append(random.randint(i+1,(i+1)*100000))
-                                # dual_layer_LAMMPS_input_generator(timeSteps, periodic, width, diameter, depth, fSeparation, oSpacing, shift, movies, cores)
-                                softscaling_layers_LAMMPS_input_generator(timeSteps, periodic, width, diameter, depth, fSeparation, oSpacing, shift, movies, cores)
+                                dual_layer_LAMMPS_input_generator(timeSteps, periodic, width, diameter, depth, fSeparation, oSpacing, shift, movies, cores)
+                                # softscaling_layers_LAMMPS_input_generator(timeSteps, periodic, width, diameter, depth, fSeparation, oSpacing, shift, movies, cores)
                                 # LAMMPS_input_generator(width, diameter, fSeparation, oSpacing, shift, movies)
                                 os.chdir('..')
 
