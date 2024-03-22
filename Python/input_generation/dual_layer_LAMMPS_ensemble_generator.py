@@ -42,7 +42,7 @@ nCores = range(1,17,1)
 # simDir = 'E:\\scratch\\Input_Files'
 
 ##Unix directories
-pyDir = '/mnt/e/Molecular_Dynamics_Filtration_Simulation/Python'
+pyDir = '/mnt/e/Molecular_Dynamics_Simulation/Python'
 simDir = '/mnt/e/scratch/Input_Files/'
 
 os.chdir(simDir)
